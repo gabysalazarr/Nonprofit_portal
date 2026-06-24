@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Organizations — ImpactHub</title>
+<title>Nonprofits — Bastrop</title>
 <link rel="stylesheet" href="../css/styles.css" />
 </head>
 <body>
@@ -11,9 +11,9 @@
 
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-row">
-        <div class="brand-icon"><svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <span class="brand-name">ImpactHub</span>
+      <div class="brand-row" style="align-items:center; gap:12px;">
+        <img src="../images/bastrop_logo.png" alt="Bastrop Nonprofit logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
+        <span class="brand-name">Portal</span>
       </div>
       <span class="org-chip manager">Manager</span>
     </div>
@@ -27,7 +27,7 @@
         </a>
         <a class="nav-item active mgr" href="organizations.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Organizations
+          Nonprofits
         </a>
         <a class="nav-item" href="submissions.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
@@ -61,8 +61,8 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div class="user-avi mgr">JD</div>
-      <div><div class="user-name">Jane Doe</div><div class="user-role">Program Manager</div></div>
+      <div class="user-avi mgr">TA</div>
+      <div><div class="user-name">Taylor Andry</div><div class="user-role">Manager</div></div>
       <a class="sign-out" href="../index.html" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </a>
@@ -72,17 +72,17 @@
   <div class="main">
     <header class="topbar">
       <div>
-        <div class="page-title">Organizations</div>
-        <div class="page-sub">All registered nonprofits</div>
+        <div class="page-title">Nonprofits</div>
+        <div class="page-sub">All Regsitered Nonprofits. One log in per nonprofit</div>
       </div>
       <div class="topbar-right">
         <button class="btn btn-icon" style="position:relative;">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span class="notif-dot"></span>
         </button>
-        <button class="btn btn-primary mgr">
+        <button class="btn btn-primary mgr" onclick="openAddOrgModal()">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Organization
+          Add Nonprofit
         </button>
       </div>
     </header>
@@ -92,8 +92,8 @@
 
         <div class="org-card">
           <div class="org-card-top">
-            <div class="org-avi" style="background:#3D2B6B;">HW</div>
-            <div><div class="org-name">HopeWorks</div><div class="org-contact">sarah@hopeworks.org</div></div>
+            <div class="org-avi" style="background:#3D2B6B;">N1</div>
+            <div><div class="org-name">Nonprofit #1</div><div class="org-contact">test@nonprofit1.org</div></div>
             <span class="pill pill-green" style="margin-left:auto;">Active</span>
           </div>
           <div class="org-stats"><div class="org-stat"><span>3</span> pending</div><div class="org-stat">· <span>4</span> submitted</div></div>
@@ -101,8 +101,8 @@
 
         <div class="org-card">
           <div class="org-card-top">
-            <div class="org-avi" style="background:#2D5016;">BF</div>
-            <div><div class="org-name">Bright Futures</div><div class="org-contact">admin@brightfutures.org</div></div>
+            <div class="org-avi" style="background:#2D5016;">N2</div>
+            <div><div class="org-name">Nonprofit #2</div><div class="org-contact">test@nonprofit2.org</div></div>
             <span class="pill pill-green" style="margin-left:auto;">Active</span>
           </div>
           <div class="org-stats"><div class="org-stat"><span>1</span> pending</div><div class="org-stat">· <span>4</span> submitted</div></div>
@@ -110,8 +110,8 @@
 
         <div class="org-card">
           <div class="org-card-top">
-            <div class="org-avi" style="background:#B45309;">GA</div>
-            <div><div class="org-name">GreenAct</div><div class="org-contact">info@greenact.org</div></div>
+            <div class="org-avi" style="background:#B45309;">N3</div>
+            <div><div class="org-name">Nonprofit #3</div><div class="org-contact">test@nonprofit3.org</div></div>
             <span class="pill pill-green" style="margin-left:auto;">Active</span>
           </div>
           <div class="org-stats"><div class="org-stat"><span>2</span> pending</div><div class="org-stat">· <span>4</span> submitted</div></div>
@@ -119,8 +119,8 @@
 
         <div class="org-card">
           <div class="org-card-top">
-            <div class="org-avi" style="background:#9B1C1C;">CF</div>
-            <div><div class="org-name">CareFirst</div><div class="org-contact">contact@carefirst.org</div></div>
+            <div class="org-avi" style="background:#9B1C1C;">N4</div>
+            <div><div class="org-name">Nonprofit #4</div><div class="org-contact">test@nonprofit4.org</div></div>
             <span class="pill pill-green" style="margin-left:auto;">Active</span>
           </div>
           <div class="org-stats"><div class="org-stat"><span>0</span> pending</div><div class="org-stat">· <span>4</span> submitted</div></div>
@@ -128,8 +128,8 @@
 
         <div class="org-card">
           <div class="org-card-top">
-            <div class="org-avi" style="background:#2D5016;">EF</div>
-            <div><div class="org-name">EduFirst</div><div class="org-contact">team@edufirst.org</div></div>
+            <div class="org-avi" style="background:#2D5016;">N5</div>
+            <div><div class="org-name">Nonprofit #5</div><div class="org-contact">test@nonprofit5.org</div></div>
             <span class="pill pill-green" style="margin-left:auto;">Active</span>
           </div>
           <div class="org-stats"><div class="org-stat"><span>1</span> pending</div><div class="org-stat">· <span>4</span> submitted</div></div>
@@ -137,8 +137,8 @@
 
         <div class="org-card">
           <div class="org-card-top">
-            <div class="org-avi" style="background:#3D2B6B;">RH</div>
-            <div><div class="org-name">RiseHope</div><div class="org-contact">hello@risehope.org</div></div>
+            <div class="org-avi" style="background:#3D2B6B;">N6</div>
+            <div><div class="org-name">Nonprofit #6</div><div class="org-contact">test@nonprofit6.org</div></div>
             <span class="pill pill-gray" style="margin-left:auto;">Inactive</span>
           </div>
           <div class="org-stats"><div class="org-stat"><span>0</span> pending</div><div class="org-stat">· <span>4</span> submitted</div></div>
@@ -147,6 +147,69 @@
       </div>
     </div>
   </div>
+  <!-- Add Nonprofit Modal -->
+<div class="modal-overlay" id="add-org-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Add Nonprofit</h3>
+      <button class="modal-close" onclick="closeAddOrgModal()">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Organization name</label>
+        <input class="form-input" id="org-name-input" placeholder="e.g. HopeWorks" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="org-email-input" placeholder="contact@org.org" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contact person</label>
+        <input class="form-input" id="org-contact-input" placeholder="e.g. Sarah Kim" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeAddOrgModal()">Cancel</button>
+      <button class="btn btn-primary mgr" onclick="submitAddOrg()">Add Nonprofit</button>
+    </div>
+  </div>
 </div>
+</div>
+<script>
+  function openAddOrgModal() {
+    document.getElementById('add-org-modal').classList.add('open');
+  }
+  function closeAddOrgModal() {
+    document.getElementById('add-org-modal').classList.remove('open');
+    document.getElementById('org-name-input').value = '';
+    document.getElementById('org-email-input').value = '';
+    document.getElementById('org-contact-input').value = '';
+  }
+  function submitAddOrg() {
+    const name = document.getElementById('org-name-input').value.trim();
+    const email = document.getElementById('org-email-input').value.trim();
+    const contact = document.getElementById('org-contact-input').value.trim();
+    if (!name || !email || !contact) {
+      alert('Please fill in all fields.');
+      return;
+    }
+    const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const grid = document.querySelector('.org-grid');
+    const card = document.createElement('div');
+    card.className = 'org-card';
+    card.innerHTML = `
+      <div class="org-card-top">
+        <div class="org-avi" style="background:var(--accent);">${initials}</div>
+        <div><div class="org-name">${name}</div><div class="org-contact">${email}</div></div>
+        <span class="pill pill-green" style="margin-left:auto;">Active</span>
+      </div>
+      <div class="org-stats"><div class="org-stat"><span>0</span> pending</div><div class="org-stat">· <span>0</span> submitted</div></div>
+    `;
+    grid.appendChild(card);
+    closeAddOrgModal();
+  }
+</script>
 </body>
 </html>

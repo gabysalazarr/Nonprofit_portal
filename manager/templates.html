@@ -82,7 +82,6 @@
         </button>
       </div>
     </header>
-
     <div class="content">
       <div class="two-col-narrow">
         <div class="card">
@@ -91,15 +90,14 @@
             <table>
               <thead><tr><th>Template name</th><th>Assigned to</th><th>Due date</th><th>Submissions</th><th></th></tr></thead>
               <tbody>
-                <tr><td style="font-weight:500;">June 2026 Template</td><td style="color:var(--text2);">Nonprofit #1</td><td style="color:var(--text3);">Jun 30, 2025</td><td><span class="pill pill-purple">3 / 6</span></td><td><button class="btn" style="font-size:11px;padding:4px 9px;">View</button></td></tr>
+                <tr><td style="font-weight:500;">June 2026 Template</td><td style="color:var(--text2);">Nonprofit #1</td><td style="color:var(--text3);">Jun 30, 2025</td><td><span class="pill pill-purple">0 / 1</span></td><td><button class="btn" style="font-size:11px;padding:4px 9px;">View</button></td></tr>
                 <tr><td style="font-weight:500;">Quarterly 2026 Template</td><td style="color:var(--text2);">All Organizations</td><td style="color:var(--text3);">Jul 15, 2025</td><td><span class="pill pill-purple">6 / 6</span></td><td><button class="btn" style="font-size:11px;padding:4px 9px;">View</button></td></tr>
-                <tr><td style="font-weight:500;">Annual 2026 Template</td><td style="color:var(--text2);">Nonprofit #1, Nonprofit #3</td><td style="color:var(--text3);">Aug 1, 2025</td><td><span class="pill pill-purple">0 / 1</span></td><td><button class="btn" style="font-size:11px;padding:4px 9px;">View</button></td></tr>
+                <tr><td style="font-weight:500;">Annual 2026 Template</td><td style="color:var(--text2);">Nonprofit #1, Nonprofit #3</td><td style="color:var(--text3);">Aug 1, 2025</td><td><span class="pill pill-purple">1 / 2</span></td><td><button class="btn" style="font-size:11px;padding:4px 9px;">View</button></td></tr>
                 <tr><td style="font-weight:500;">Action 2026 Template</td><td style="color:var(--text2);">All Organizations</td><td style="color:var(--text3);">Mar 20, 2025</td><td><span class="pill pill-purple">5 / 6</span></td><td><button class="btn" style="font-size:11px;padding:4px 9px;">View</button></td></tr>
               </tbody>
             </table>
           </div>
         </div>
-
         <div class="card">
           <div class="card-header"><div class="card-title">Upload new template</div></div>
           <div class="card-body">
@@ -124,24 +122,20 @@
                     </button>
                   </div>
                   <div class="modal-body">
-
                     <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
                       <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
                       <p id="upload-zone-text">Drop a file or click to upload</p>
                       <span>PDF, DOCX, XLSX supported</span>
                       <input type="file" id="file-input" accept=".pdf,.docx,.xlsx" style="display:none;" onchange="handleFileSelect(this)" />
                     </div>
-
                     <div class="form-group" style="margin-top:16px;">
                       <label class="form-label">Template name</label>
                       <input class="form-input" id="template-name-input" placeholder="e.g. Q3 Impact Report" />
                     </div>
-
                     <div class="form-group">
                       <label class="form-label">Due date</label>
                       <input class="form-input" type="date" id="template-due-input" />
                     </div>
-
                     <div class="form-group">
                       <div class="assign-select-all">
                         <label class="form-label" style="margin:0;">Assign to</label>
@@ -175,7 +169,6 @@
                       </div>
                       <div class="assign-count" id="assign-count">0 selected</div>
                     </div>
-
                   </div>
                   <div class="modal-footer">
                     <button class="btn" onclick="closeUploadTemplateModal()">Cancel</button>

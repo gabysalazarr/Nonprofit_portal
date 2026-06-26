@@ -99,137 +99,208 @@
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Upload new template</div></div>
+          <div class="card-header"><div class="card-title">Create a template</div></div>
           <div class="card-body">
-            <div class="upload-zone">
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-              <p>Drop a file or click to upload</p>
-              <span>PDF, DOCX, XLSX supported</span>
+
+            <div class="method-tabs">
+              <div class="method-tab active mgr" id="tab-upload" onclick="switchMethod('upload')">
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                Upload PDF
+              </div>
+              <div class="method-tab" id="tab-build" onclick="switchMethod('build')">
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Build Form
+              </div>
             </div>
-            <div style="margin-top:14px;">
-              <div class="form-group"><label class="form-label">Template name</label><input class="form-input" placeholder="Template" /></div>
-              <div class="form-group"><label class="form-label">Due date</label><input class="form-input" type="date" /></div>
-              <div class="form-group"><label class="form-label">Assign to</label>
-                <select class="form-select"><option>All Organizations</option><option>Nonprofit #1</option><option>Nonprofit #2</option><option>Nonprofit #3</option></select>
-              </div>
-              <!-- Upload Template Modal -->
-              <div class="modal-overlay" id="upload-template-modal">
-                <div class="modal-box">
-                  <div class="modal-header">
-                    <h3>Upload Template</h3>
-                    <button class="modal-close" onclick="closeUploadTemplateModal()">
-                      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-                      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-                      <p id="upload-zone-text">Drop a file or click to upload</p>
-                      <span>PDF, DOCX, XLSX supported</span>
-                      <input type="file" id="file-input" accept=".pdf,.docx,.xlsx" style="display:none;" onchange="handleFileSelect(this)" />
-                    </div>
-                    <div class="form-group" style="margin-top:16px;">
-                      <label class="form-label">Template name</label>
-                      <input class="form-input" id="template-name-input" placeholder="e.g. Q3 Impact Report" />
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label">Due date</label>
-                      <input class="form-input" type="date" id="template-due-input" />
-                    </div>
-                    <div class="form-group">
-                      <div class="assign-select-all">
-                        <label class="form-label" style="margin:0;">Assign to</label>
-                        <span onclick="toggleSelectAllOrgs()" id="select-all-toggle">Select all</span>
-                      </div>
-                      <div class="assign-list" id="assign-list">
-                        <label class="assign-option">
-                          <input type="checkbox" value="Nonprofit #1" onchange="updateAssignCount()" />
-                          Nonprofit #1
-                        </label>
-                        <label class="assign-option">
-                          <input type="checkbox" value="Nonprofit #2" onchange="updateAssignCount()" />
-                          Nonprofit #2
-                        </label>
-                        <label class="assign-option">
-                          <input type="checkbox" value="Nonprofit #3" onchange="updateAssignCount()" />
-                          Nonprofit #3
-                        </label>
-                        <label class="assign-option">
-                          <input type="checkbox" value="Nonprofit #4" onchange="updateAssignCount()" />
-                          Nonprofit #4
-                        </label>
-                        <label class="assign-option">
-                          <input type="checkbox" value="Nonprofit #5" onchange="updateAssignCount()" />
-                          Nonprofit #5
-                        </label>
-                        <label class="assign-option">
-                          <input type="checkbox" value="Nonprofit #6" onchange="updateAssignCount()" />
-                          Nonprofit #6
-                        </label>
-                      </div>
-                      <div class="assign-count" id="assign-count">0 selected</div>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button class="btn" onclick="closeUploadTemplateModal()">Cancel</button>
-                    <button class="btn btn-primary mgr" onclick="submitUploadTemplate()">Upload template</button>
-                  </div>
-                </div>
-              </div>
-              <button class="btn btn-primary mgr" onclick="openUploadTemplateModal()">
+
+            <!-- PANEL 1: Upload PDF -->
+            <div class="method-panel active" id="panel-upload">
+              <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
                 <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-                Upload Template
+                <p id="upload-zone-text">Drop a file or click to upload</p>
+                <span>PDF, DOCX, XLSX supported</span>
+                <input type="file" id="file-input" accept=".pdf,.docx,.xlsx" style="display:none;" onchange="handleFileSelect(this)" />
+              </div>
+
+              <div class="form-group" style="margin-top:16px;">
+                <label class="form-label">Template name</label>
+                <input class="form-input" id="template-name-input" placeholder="e.g. Q3 Impact Report" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Due date</label>
+                <input class="form-input" type="date" id="template-due-input" />
+              </div>
+              <div class="form-group">
+                <div class="assign-select-all">
+                  <label class="form-label" style="margin:0;">Assign to</label>
+                  <span onclick="toggleSelectAllOrgs('assign-list','select-all-toggle')" id="select-all-toggle">Select all</span>
+                </div>
+                <div class="assign-list" id="assign-list">
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #1" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #1</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #2" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #2</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #3" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #3</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #4" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #4</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #5" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #5</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #6" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #6</label>
+                </div>
+                <div class="assign-count" id="assign-count">0 selected</div>
+              </div>
+
+              <button class="btn btn-primary mgr" style="width:100%;justify-content:center;margin-top:10px;" onclick="submitUploadTemplate()">
+                Upload template
               </button>
             </div>
+
+            <!-- PANEL 2: Build Form -->
+            <div class="method-panel" id="panel-build">
+
+              <div class="form-group">
+                <label class="form-label">Template name</label>
+                <input class="form-input" id="build-name-input" placeholder="e.g. Volunteer Hours Log" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Due date</label>
+                <input class="form-input" type="date" id="build-due-input" />
+              </div>
+
+              <label class="form-label">Form fields</label>
+              <div class="field-list" id="field-list">
+                <!-- fields get added here dynamically -->
+              </div>
+              <div class="field-empty-state" id="field-empty-state">
+                No fields yet — add your first one below.
+              </div>
+
+              <button class="add-field-btn" onclick="addField()">
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add field
+              </button>
+
+              <div class="form-group" style="margin-top:16px;">
+                <div class="assign-select-all">
+                  <label class="form-label" style="margin:0;">Assign to</label>
+                  <span onclick="toggleSelectAllOrgs('build-assign-list','build-select-all-toggle')" id="build-select-all-toggle">Select all</span>
+                </div>
+                <div class="assign-list" id="build-assign-list">
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #1" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #1</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #2" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #2</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #3" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #3</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #4" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #4</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #5" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #5</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #6" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #6</label>
+                </div>
+                <div class="assign-count" id="build-assign-count">0 selected</div>
+              </div>
+
+              <button class="btn btn-primary mgr" style="width:100%;justify-content:center;margin-top:10px;" onclick="submitBuildTemplate()">
+                Create template
+              </button>
+            </div>
+
           </div>
         </div>
+
       </div>
     </div>
   </div>
 </div>
 <script>
-  function openUploadTemplateModal() {
-    document.getElementById('upload-template-modal').classList.add('open');
+  // ── Tab switching ──
+  function switchMethod(method) {
+    document.getElementById('tab-upload').classList.toggle('active', method === 'upload');
+    document.getElementById('tab-build').classList.toggle('active', method === 'build');
+    document.getElementById('panel-upload').classList.toggle('active', method === 'upload');
+    document.getElementById('panel-build').classList.toggle('active', method === 'build');
   }
-  function closeUploadTemplateModal() {
-    document.getElementById('upload-template-modal').classList.remove('open');
-    document.getElementById('template-name-input').value = '';
-    document.getElementById('template-due-input').value = '';
-    document.getElementById('upload-zone-text').textContent = 'Drop a file or click to upload';
-    document.getElementById('file-input').value = '';
-    document.querySelectorAll('#assign-list input[type="checkbox"]').forEach(cb => cb.checked = false);
-    document.getElementById('select-all-toggle').textContent = 'Select all';
-    updateAssignCount();
-  }
+
+  // ── Upload panel ──
   function handleFileSelect(input) {
     if (input.files.length > 0) {
       document.getElementById('upload-zone-text').textContent = input.files[0].name;
     }
   }
-  function toggleSelectAllOrgs() {
-    const checkboxes = document.querySelectorAll('#assign-list input[type="checkbox"]');
-    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-    checkboxes.forEach(cb => cb.checked = !allChecked);
-    document.getElementById('select-all-toggle').textContent = allChecked ? 'Select all' : 'Deselect all';
-    updateAssignCount();
-  }
-  function updateAssignCount() {
-    const checked = document.querySelectorAll('#assign-list input[type="checkbox"]:checked');
-    document.getElementById('assign-count').textContent = `${checked.length} selected`;
-  }
   function submitUploadTemplate() {
     const name = document.getElementById('template-name-input').value.trim();
     const due = document.getElementById('template-due-input').value;
     const file = document.getElementById('file-input').files[0];
-    const selectedOrgs = Array.from(document.querySelectorAll('#assign-list input[type="checkbox"]:checked')).map(cb => cb.value);
-
-    if (!name || !due || !file || selectedOrgs.length === 0) {
+    const orgs = Array.from(document.querySelectorAll('#assign-list input:checked')).map(cb => cb.value);
+    if (!name || !due || !file || orgs.length === 0) {
       alert('Please fill in the template name, due date, select a file, and assign at least one nonprofit.');
       return;
     }
+    alert(`(Demo only) "${name}" PDF would be uploaded, due ${due}, assigned to: ${orgs.join(', ')}.\n\nNext step: you'd map its fields before nonprofits can fill it out.`);
+  }
 
-    alert(`(Demo only) "${name}" would be uploaded, due ${due}, assigned to: ${selectedOrgs.join(', ')}.`);
-    closeUploadTemplateModal();
+  // ── Build panel ──
+  let fieldCount = 0;
+  function addField() {
+    fieldCount++;
+    const id = `field-${fieldCount}`;
+    const list = document.getElementById('field-list');
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    row.id = id;
+    row.innerHTML = `
+      <div class="field-drag">
+        <svg viewBox="0 0 24 24"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg>
+      </div>
+      <input class="field-label-input" placeholder="Field label, e.g. Total Beneficiaries" />
+      <select class="field-type-select">
+        <option>Text</option>
+        <option>Number</option>
+        <option>Date</option>
+        <option>Dropdown</option>
+        <option>Checkbox</option>
+        <option>File upload</option>
+      </select>
+      <div class="field-required-toggle" onclick="this.classList.toggle('on')" title="Required field"></div>
+      <button class="field-remove" onclick="removeField('${id}')">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    `;
+    list.appendChild(row);
+    updateFieldEmptyState();
+  }
+  function removeField(id) {
+    document.getElementById(id).remove();
+    updateFieldEmptyState();
+  }
+  function updateFieldEmptyState() {
+    const hasFields = document.getElementById('field-list').children.length > 0;
+    document.getElementById('field-empty-state').style.display = hasFields ? 'none' : 'block';
+  }
+  function submitBuildTemplate() {
+    const name = document.getElementById('build-name-input').value.trim();
+    const due = document.getElementById('build-due-input').value;
+    const fieldRows = document.querySelectorAll('#field-list .field-row');
+    const orgs = Array.from(document.querySelectorAll('#build-assign-list input:checked')).map(cb => cb.value);
+
+    if (!name || !due || fieldRows.length === 0 || orgs.length === 0) {
+      alert('Please name the template, set a due date, add at least one field, and assign at least one nonprofit.');
+      return;
+    }
+
+    const fields = Array.from(fieldRows).map(row => {
+      const label = row.querySelector('.field-label-input').value.trim() || '(untitled field)';
+      const type = row.querySelector('.field-type-select').value;
+      const required = row.querySelector('.field-required-toggle').classList.contains('on');
+      return `${label} [${type}]${required ? ' *required' : ''}`;
+    });
+
+    alert(`(Demo only) "${name}" form would be created, due ${due}, assigned to: ${orgs.join(', ')}.\n\nFields:\n${fields.join('\n')}`);
+  }
+
+  // ── Shared: assign-to checklist logic (works for both panels) ──
+  function toggleSelectAllOrgs(listId, toggleId) {
+    const checkboxes = document.querySelectorAll(`#${listId} input[type="checkbox"]`);
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => cb.checked = !allChecked);
+    document.getElementById(toggleId).textContent = allChecked ? 'Select all' : 'Deselect all';
+    updateAssignCount(listId, toggleId.replace('select-all-toggle', 'assign-count').replace('build-select-all-toggle','build-assign-count'));
+  }
+  function updateAssignCount(listId, countId) {
+    const checked = document.querySelectorAll(`#${listId} input[type="checkbox"]:checked`);
+    document.getElementById(countId).textContent = `${checked.length} selected`;
   }
 </script>
 </body>

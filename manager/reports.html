@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Reports — Bastrop Manager</title>
@@ -78,23 +79,78 @@
         </button>
       </div>
     </header>
+
+    <!-- Report Preview Modal -->
+    <div class="modal-overlay" id="report-preview-modal">
+      <div class="modal-box report-preview-box">
+        <div class="modal-header">
+          <h3>Report Preview</h3>
+          <button class="modal-close" onclick="closeReportPreview()">
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="report-preview-header">
+            <div class="report-preview-title" id="preview-report-name">Report Name</div>
+          </div>
+          <div class="report-preview-sub" id="preview-report-meta">Generated · Status</div>
+
+          <div class="report-stat-row">
+            <div class="report-stat"><div class="report-stat-num" id="preview-total">—</div><div class="report-stat-lbl">Total submitted</div></div>
+            <div class="report-stat"><div class="report-stat-num" id="preview-orgs">—</div><div class="report-stat-lbl">Orgs included</div></div>
+            <div class="report-stat"><div class="report-stat-num" id="preview-avg">—</div><div class="report-stat-lbl">Avg per org</div></div>
+          </div>
+
+          <div class="report-chart">
+            <div class="report-chart-label">Submissions by organization</div>
+            <div id="preview-bar-chart"></div>
+          </div>
+
+          <div class="report-preview-table-label">Org-by-org breakdown</div>
+          <div class="table-wrap">
+            <table id="preview-table">
+              <thead><tr><th>Organization</th><th>Submitted</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="exportPreviewAs('csv')">
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+          <button class="btn" onclick="exportPreviewAs('excel')">
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Excel
+          </button>
+          <button class="btn btn-primary mgr" onclick="closeReportPreview()">Done</button>
+        </div>
+      </div>
+    </div>
+
     <div class="content">
       <div class="two-col-narrow">
         <div>
           <div class="section-label">Generated Reports</div>
           <div class="report-grid" style="grid-template-columns:1fr 1fr;">
+
             <div class="report-card">
               <div class="rc-header">
                 <div class="rc-icon green"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
                 <span class="pill pill-amber">Draft</span>
               </div>
-              <div class="rc-name">Nonprofit #2 June Report</div>
-              <div class="rc-meta">Generated from 61 submissions</div>
+              <div class="rc-name">Cummulative June Report</div>
+              <div class="rc-meta">Generated from 6 submissions</div>
               <div class="rc-footer">
-                <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview</div>
-                <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</div>
+                <div class="dl-btn" onclick='previewReport("Nonprofit #2 June Report","Generated Jun 2026 · Draft")'>
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview
+                </div>
+                <div class="dl-btn" onclick='askExportFormat("Nonprofit #2 June Report")'>
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export
+                </div>
               </div>
             </div>
+
             <div class="report-card">
               <div class="rc-header">
                 <div class="rc-icon purple"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
@@ -103,22 +159,32 @@
               <div class="rc-name">Quarterly Report 2026</div>
               <div class="rc-meta">Generated Jan 2026 · Published</div>
               <div class="rc-footer">
-                <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview</div>
-                <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</div>
+                <div class="dl-btn" onclick='previewReport("Quarterly Report 2026","Generated Jan 2026 · Published")'>
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview
+                </div>
+                <div class="dl-btn" onclick='askExportFormat("Quarterly Report 2026")'>
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export
+                </div>
               </div>
             </div>
+
             <div class="report-card">
               <div class="rc-header">
                 <div class="rc-icon amber"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
                 <span class="pill pill-green">Published</span>
               </div>
-              <div class="rc-name">Cummulative Annual Report</div>
+              <div class="rc-name">Cumulative Annual Report</div>
               <div class="rc-meta">Generated Jan 2026 · Published</div>
               <div class="rc-footer">
-                <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview</div>
-                <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</div>
+                <div class="dl-btn" onclick='previewReport("Cumulative Annual Report","Generated Jan 2026 · Published")'>
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview
+                </div>
+                <div class="dl-btn" onclick='askExportFormat("Cumulative Annual Report")'>
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export
+                </div>
               </div>
             </div>
+
             <div class="report-card">
               <div class="rc-header">
                 <div class="rc-icon amber"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
@@ -127,10 +193,15 @@
               <div class="rc-name">Nonprofit #6 Action Report</div>
               <div class="rc-meta">Generated Jan 2026 · Published</div>
               <div class="rc-footer">
-                <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview</div>
-                <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</div>
+                <div class="dl-btn" onclick='previewReport("Nonprofit #6 Action Report","Generated Jan 2026 · Published")'>
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview
+                </div>
+                <div class="dl-btn" onclick='askExportFormat("Nonprofit #6 Action Report")'>
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export
+                </div>
               </div>
             </div>
+
             <div class="report-card">
               <div class="rc-header">
                 <div class="rc-icon green"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
@@ -139,12 +210,18 @@
               <div class="rc-name">Nonprofit #6 Annual Report 2026</div>
               <div class="rc-meta">Generated Jan 2026 · Published</div>
               <div class="rc-footer">
-                <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview</div>
-                <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</div>
+                <div class="dl-btn" onclick='previewReport("Nonprofit #6 Annual Report 2026","Generated Jan 2026 · Published")'>
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview
+                </div>
+                <div class="dl-btn" onclick='askExportFormat("Nonprofit #6 Annual Report 2026")'>
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export
+                </div>
               </div>
             </div>
+
           </div>
         </div>
+
         <div style="display:flex;flex-direction:column;gap:14px;">
           <div class="card">
             <div class="card-header"><div class="card-title">Visibility controls</div></div>
@@ -161,9 +238,33 @@
               <button class="btn btn-primary mgr" style="width:100%;justify-content:center;margin-top:12px;">Save visibility</button>
             </div>
           </div>
+
           <div class="card">
             <div class="card-header"><div class="card-title">Generate From Template</div></div>
             <div class="card-body">
+              <div class="modal-overlay" id="export-format-modal">
+                <div class="modal-box" style="width:320px;">
+                  <div class="modal-header">
+                    <h3>Export Report</h3>
+                    <button class="modal-close" onclick="closeExportFormatModal()">
+                      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">Choose a file format for "<span id="export-modal-report-name"></span>"</p>
+                    <div style="display:flex;gap:10px;">
+                      <button class="btn" style="flex:1;justify-content:center;padding:14px;" onclick="confirmExportFormat('csv')">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        CSV
+                      </button>
+                      <button class="btn" style="flex:1;justify-content:center;padding:14px;" onclick="confirmExportFormat('excel')">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Excel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <!-- Generate Report Modal -->
               <div class="modal-overlay" id="generate-report-modal">
                 <div class="modal-box">
@@ -189,6 +290,7 @@
                         <option>Action 2026 Template</option>
                       </select>
                     </div>
+
                     <div class="form-group">
                       <div class="assign-select-all">
                         <label class="form-label" style="margin:0;">Include submissions from</label>
@@ -204,6 +306,7 @@
                       </div>
                       <div class="assign-count" id="report-org-count">0 selected</div>
                     </div>
+
                   </div>
                   <div class="modal-footer">
                     <button class="btn" onclick="closeGenerateReportModal()">Cancel</button>
@@ -211,9 +314,10 @@
                   </div>
                 </div>
               </div>
+
               <button class="btn btn-primary mgr" onclick="openGenerateReportModal()">
                 <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Generate Report
+                Generate Simple Report
               </button>
             </div>
           </div>
@@ -222,10 +326,81 @@
     </div>
   </div>
 </div>
+
 <script>
+  // ── Demo dataset used to populate report previews (stand-in for real DB data) ──
+  const DEMO_ORG_DATA = [
+    { name: "Nonprofit #1", submitted: 4 },
+    { name: "Nonprofit #2", submitted: 6 },
+    { name: "Nonprofit #3", submitted: 2 },
+    { name: "Nonprofit #4", submitted: 5 },
+    { name: "Nonprofit #5", submitted: 3 },
+    { name: "Nonprofit #6", submitted: 1 },
+  ];
+
+  // ── Report Preview Modal ──
+  function previewReport(name, meta) {
+    document.getElementById('preview-report-name').textContent = name;
+    document.getElementById('preview-report-meta').textContent = meta;
+
+    const total = DEMO_ORG_DATA.reduce((sum, o) => sum + o.submitted, 0);
+    const avg = (total / DEMO_ORG_DATA.length).toFixed(1);
+    document.getElementById('preview-total').textContent = total;
+    document.getElementById('preview-orgs').textContent = DEMO_ORG_DATA.length;
+    document.getElementById('preview-avg').textContent = avg;
+
+    const max = Math.max(...DEMO_ORG_DATA.map(o => o.submitted));
+    document.getElementById('preview-bar-chart').innerHTML = DEMO_ORG_DATA.map(o => `
+      <div class="report-bar-row">
+        <div class="report-bar-name">${o.name}</div>
+        <div class="report-bar-track"><div class="report-bar-fill" style="width:${(o.submitted / max * 100)}%;"></div></div>
+        <div class="report-bar-val">${o.submitted}</div>
+      </div>
+    `).join('');
+
+    const tbody = document.querySelector('#preview-table tbody');
+    tbody.innerHTML = DEMO_ORG_DATA.map(o => `<tr><td>${o.name}</td><td>${o.submitted}</td></tr>`).join('');
+
+    document.getElementById('report-preview-modal').classList.add('open');
+    window._currentReportName = name;
+  }
+
+  function closeReportPreview() {
+    document.getElementById('report-preview-modal').classList.remove('open');
+  }
+
+  function exportPreviewAs(format) {
+    exportReport(window._currentReportName || 'Report', format);
+  }
+
+  function exportReport(reportName, format) {
+    const filename = reportName.replace(/[^a-z0-9]+/gi, '_');
+
+    if (format === 'excel') {
+      const ws = XLSX.utils.json_to_sheet(DEMO_ORG_DATA.map(o => ({ Organization: o.name, Submitted: o.submitted })));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Report");
+      XLSX.writeFile(wb, `${filename}.xlsx`);
+    } else {
+      let csv = 'Organization,Submitted\n';
+      DEMO_ORG_DATA.forEach(o => { csv += `${o.name},${o.submitted}\n`; });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${filename}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  // ── Generate Report Modal ──
   function openGenerateReportModal() {
     document.getElementById('generate-report-modal').classList.add('open');
   }
+
   function closeGenerateReportModal() {
     document.getElementById('generate-report-modal').classList.remove('open');
     document.getElementById('report-name-input').value = '';
@@ -233,6 +408,7 @@
     document.getElementById('report-select-all-toggle').textContent = 'Select all';
     updateReportOrgCount();
   }
+
   function toggleSelectAllReportOrgs() {
     const checkboxes = document.querySelectorAll('#report-org-list input[type="checkbox"]');
     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
@@ -240,14 +416,15 @@
     document.getElementById('report-select-all-toggle').textContent = allChecked ? 'Select all' : 'Deselect all';
     updateReportOrgCount();
   }
+
   function updateReportOrgCount() {
     const checked = document.querySelectorAll('#report-org-list input[type="checkbox"]:checked');
     document.getElementById('report-org-count').textContent = `${checked.length} selected`;
   }
+
   function submitGenerateReport() {
     const name = document.getElementById('report-name-input').value.trim();
     const template = document.getElementById('report-template-input').value;
-    const format = document.getElementById('report-format-input').value;
     const orgs = Array.from(document.querySelectorAll('#report-org-list input[type="checkbox"]:checked')).map(cb => cb.value);
 
     if (!name || orgs.length === 0) {
@@ -255,8 +432,26 @@
       return;
     }
 
-    alert(`(Demo only) "${name}" would be generated from "${template}" submissions (${format}), including: ${orgs.join(', ')}.`);
+    alert(`(Demo only) "${name}" would be generated from "${template}" submissions, including: ${orgs.join(', ')}.`);
     closeGenerateReportModal();
+  }
+
+  // ── Visibility toggle (shared helper used by inline onclick="toggleSwitch(this)") ──
+  function toggleSwitch(el) {
+    el.classList.toggle('on');
+  }
+
+  function askExportFormat(reportName) {
+    window._pendingExportName = reportName;
+    document.getElementById('export-modal-report-name').textContent = reportName;
+    document.getElementById('export-format-modal').classList.add('open');
+  }
+  function closeExportFormatModal() {
+    document.getElementById('export-format-modal').classList.remove('open');
+  }
+  function confirmExportFormat(format) {
+    exportReport(window._pendingExportName, format);
+    closeExportFormatModal();
   }
 </script>
 </body>

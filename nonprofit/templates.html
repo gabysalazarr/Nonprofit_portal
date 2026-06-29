@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>My Templates — Bastrop</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<style>
+  .source-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px; }
+  .source-tag.live { background: var(--accent-light); color: var(--accent); }
+  .source-tag.demo { background: var(--surface2); color: var(--text3); }
+  .org-select-row { margin-bottom: 18px; }
+  .no-real-templates { text-align: center; padding: 24px 16px; color: var(--text3); font-size: 12.5px; grid-column: 1 / -1; }
+</style>
 </head>
 <body>
 <div class="app">
@@ -14,7 +21,7 @@
         <img src="../images/bastrop_logo.png" alt="Bastrop Nonprofit logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
         <span class="brand-name">Portal</span>
       </div>
-      <span class="org-chip">Nonprofit #1</span>
+      <span class="org-chip" id="org-chip-label">Nonprofit #1</span>
     </div>
     <nav class="nav">
       <div class="nav-section">
@@ -47,8 +54,8 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi">JD</div>
-      <div><div class="user-name">Jane Doe</div><div class="user-role">Nonprofit #1</div></div>
+      <div class="user-avi" id="user-avi">JD</div>
+      <div><div class="user-name">Jane Doe</div><div class="user-role" id="user-org-label">Nonprofit #1</div></div>
       <a class="sign-out" href="../index.html" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </a>
@@ -68,10 +75,32 @@
       </div>
     </header>
     <div class="content">
+
+      <!-- Demo org switcher, since there's no real per-user login yet -->
+      <div class="card">
+        <div class="card-body org-select-row">
+          <label class="form-label">Viewing templates as (demo org switcher)</label>
+          <select class="form-select" id="org-switcher" onchange="renderRealTemplateCards()">
+            <option>Nonprofit #1</option>
+            <option>Nonprofit #2</option>
+            <option>Nonprofit #3</option>
+            <option>Nonprofit #4</option>
+            <option>Nonprofit #5</option>
+            <option>Nonprofit #6</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-label">Live templates <span class="source-tag live">LIVE</span></div>
+      <div class="template-grid" id="real-template-grid" style="margin-bottom:24px;">
+        <!-- populated by JS -->
+      </div>
+
+      <div class="section-label">Demo templates <span class="source-tag demo">DEMO</span></div>
       <div class="template-grid">
         <div class="card template-card">
           <div class="card-body">
-            <div class="tc-name">June 2026 Template </div>
+            <div class="tc-name">June 2026 Template</div>
             <div class="tc-meta">Uploaded by manager · Jun 1 · Due Jun 30</div>
             <div class="tc-footer">
               <span class="pill pill-gray">Not started</span>
@@ -99,10 +128,57 @@
             </div>
           </div>
         </div>
-        </div>
       </div>
+
     </div>
   </div>
 </div>
+
+<script src="../js/storage.js"></script>
+<script>
+  function renderRealTemplateCards() {
+    const org = document.getElementById('org-switcher').value;
+    document.getElementById('user-org-label').textContent = org;
+    document.getElementById('org-chip-label').textContent = org;
+    document.getElementById('user-avi').textContent = org.replace('Nonprofit #', 'N');
+
+    const templates = getTemplates().filter(t => t.assignedOrgs.includes(org));
+    const grid = document.getElementById('real-template-grid');
+
+    if (templates.length === 0) {
+      grid.innerHTML = `<div class="no-real-templates">No live templates assigned to ${org} yet. Build one in the manager's Template Library.</div>`;
+      return;
+    }
+
+    grid.innerHTML = templates.map(t => {
+      const submission = getSubmissionForOrg(t.id, org);
+      let statusPill, buttonLabel;
+
+      if (submission) {
+        statusPill = '<span class="pill pill-green">Submitted</span>';
+        buttonLabel = 'View';
+      } else {
+        statusPill = '<span class="pill pill-gray">Not started</span>';
+        buttonLabel = 'Open';
+      }
+
+      return `
+        <div class="card template-card">
+          <div class="card-body">
+            <div class="tc-name">${t.name} <span class="source-tag live">LIVE</span></div>
+            <div class="tc-meta">Built by manager · Due ${t.dueDate || '—'}</div>
+            <div class="tc-footer">
+              ${statusPill}
+              <a class="btn btn-primary" style="font-size:11px;padding:5px 10px;" href="fill-template.html">${buttonLabel}</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Init
+  renderRealTemplateCards();
+</script>
 </body>
 </html>

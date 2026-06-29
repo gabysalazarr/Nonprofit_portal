@@ -73,60 +73,13 @@
         <div class="page-sub">Generate & Share Reports</div>
       </div>
       <div class="topbar-right">
+        <button class="btn btn-primary mgr" style="width:100%;justify-content:center;margin-top:12px;">Upload Report</button>
         <button class="btn btn-icon" style="position:relative;">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span class="notif-dot"></span>
         </button>
       </div>
     </header>
-
-    <!-- Report Preview Modal -->
-    <div class="modal-overlay" id="report-preview-modal">
-      <div class="modal-box report-preview-box">
-        <div class="modal-header">
-          <h3>Report Preview</h3>
-          <button class="modal-close" onclick="closeReportPreview()">
-            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="report-preview-header">
-            <div class="report-preview-title" id="preview-report-name">Report Name</div>
-          </div>
-          <div class="report-preview-sub" id="preview-report-meta">Generated · Status</div>
-
-          <div class="report-stat-row">
-            <div class="report-stat"><div class="report-stat-num" id="preview-total">—</div><div class="report-stat-lbl">Total submitted</div></div>
-            <div class="report-stat"><div class="report-stat-num" id="preview-orgs">—</div><div class="report-stat-lbl">Orgs included</div></div>
-            <div class="report-stat"><div class="report-stat-num" id="preview-avg">—</div><div class="report-stat-lbl">Avg per org</div></div>
-          </div>
-
-          <div class="report-chart">
-            <div class="report-chart-label">Submissions by organization</div>
-            <div id="preview-bar-chart"></div>
-          </div>
-
-          <div class="report-preview-table-label">Org-by-org breakdown</div>
-          <div class="table-wrap">
-            <table id="preview-table">
-              <thead><tr><th>Organization</th><th>Submitted</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn" onclick="exportPreviewAs('csv')">
-            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export CSV
-          </button>
-          <button class="btn" onclick="exportPreviewAs('excel')">
-            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export Excel
-          </button>
-          <button class="btn btn-primary mgr" onclick="closeReportPreview()">Done</button>
-        </div>
-      </div>
-    </div>
 
     <div class="content">
       <div class="two-col-narrow">
@@ -137,7 +90,7 @@
             <div class="report-card">
               <div class="rc-header">
                 <div class="rc-icon green"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-                <span class="pill pill-amber">Draft</span>
+                <span class="pill pill-green">Published</span>
               </div>
               <div class="rc-name">Cummulative June Report</div>
               <div class="rc-meta">Generated from 6 submissions</div>
@@ -236,89 +189,6 @@
                 <div class="vis-row"><div class="vis-org"><div class="vis-avi" style="background:#999b1c;">N6</div>Nonprofit #6</div><div class="toggle" onclick="toggleSwitch(this)"></div></div>
               </div>
               <button class="btn btn-primary mgr" style="width:100%;justify-content:center;margin-top:12px;">Save visibility</button>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header"><div class="card-title">Generate From Template</div></div>
-            <div class="card-body">
-              <div class="modal-overlay" id="export-format-modal">
-                <div class="modal-box" style="width:320px;">
-                  <div class="modal-header">
-                    <h3>Export Report</h3>
-                    <button class="modal-close" onclick="closeExportFormatModal()">
-                      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">Choose a file format for "<span id="export-modal-report-name"></span>"</p>
-                    <div style="display:flex;gap:10px;">
-                      <button class="btn" style="flex:1;justify-content:center;padding:14px;" onclick="confirmExportFormat('csv')">
-                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        CSV
-                      </button>
-                      <button class="btn" style="flex:1;justify-content:center;padding:14px;" onclick="confirmExportFormat('excel')">
-                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Excel
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- Generate Report Modal -->
-              <div class="modal-overlay" id="generate-report-modal">
-                <div class="modal-box">
-                  <div class="modal-header">
-                    <h3>Generate Report</h3>
-                    <button class="modal-close" onclick="closeGenerateReportModal()">
-                      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-
-                    <div class="form-group">
-                      <label class="form-label">Report name</label>
-                      <input class="form-input" id="report-name-input" placeholder="" />
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label">Pull data from template</label>
-                      <select class="form-select" id="report-template-input">
-                        <option>June 2026 Template</option>
-                        <option>Quarterly 2026 Template</option>
-                        <option>Annual 2026 Template</option>
-                        <option>Action 2026 Template</option>
-                      </select>
-                    </div>
-
-                    <div class="form-group">
-                      <div class="assign-select-all">
-                        <label class="form-label" style="margin:0;">Include submissions from</label>
-                        <span onclick="toggleSelectAllReportOrgs()" id="report-select-all-toggle">Select all</span>
-                      </div>
-                      <div class="assign-list" id="report-org-list">
-                        <label class="assign-option"><input type="checkbox" value="Nonprofit #1" onchange="updateReportOrgCount()" /> Nonprofit #1</label>
-                        <label class="assign-option"><input type="checkbox" value="Nonprofit #2" onchange="updateReportOrgCount()" /> Nonprofit #2</label>
-                        <label class="assign-option"><input type="checkbox" value="Nonprofit #3" onchange="updateReportOrgCount()" /> Nonprofit #3</label>
-                        <label class="assign-option"><input type="checkbox" value="Nonprofit #4" onchange="updateReportOrgCount()" /> Nonprofit #4</label>
-                        <label class="assign-option"><input type="checkbox" value="Nonprofit #5" onchange="updateReportOrgCount()" /> Nonprofit #5</label>
-                        <label class="assign-option"><input type="checkbox" value="Nonprofit #6" onchange="updateReportOrgCount()" /> Nonprofit #6</label>
-                      </div>
-                      <div class="assign-count" id="report-org-count">0 selected</div>
-                    </div>
-
-                  </div>
-                  <div class="modal-footer">
-                    <button class="btn" onclick="closeGenerateReportModal()">Cancel</button>
-                    <button class="btn btn-primary mgr" onclick="submitGenerateReport()">Generate report</button>
-                  </div>
-                </div>
-              </div>
-
-              <button class="btn btn-primary mgr" onclick="openGenerateReportModal()">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Generate Simple Report
-              </button>
             </div>
           </div>
         </div>

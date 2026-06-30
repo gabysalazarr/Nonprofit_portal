@@ -3,47 +3,29 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Template Library — Bastrop</title>
+<title>Template Library — Bastrop Manager</title>
 <link rel="stylesheet" href="../css/styles.css" />
 <style>
-  .field-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
-  .field-row { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 10px; }
-  .field-drag { color: var(--text3); flex-shrink: 0; display: flex; }
-  .field-drag svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
-  .field-label-input { flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 12.5px; color: var(--text); outline: none; min-width: 0; }
-  .field-label-input::placeholder { color: var(--text3); }
-  .field-type-select { border: 1px solid var(--border2); border-radius: 7px; background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: 11px; color: var(--text2); padding: 5px 6px; outline: none; flex-shrink: 0; }
-  .field-required-toggle { width: 28px; height: 17px; border-radius: 10px; background: var(--border2); cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.2s; }
-  .field-required-toggle.on { background: var(--accent); }
-  .field-required-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: white; transition: left 0.2s; }
-  .field-required-toggle.on::after { left: 13px; }
-  .field-remove { background: none; border: none; cursor: pointer; color: var(--text3); padding: 3px; border-radius: 5px; display: flex; flex-shrink: 0; transition: all 0.15s; }
-  .field-remove:hover { color: var(--red); background: var(--red-light); }
-  .field-remove svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
-  .add-field-btn { width: 100%; padding: 9px; border: 1.5px dashed var(--border2); border-radius: var(--radius); background: transparent; color: var(--text2); font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s; }
-  .add-field-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
-  .add-field-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
-  .field-empty-state { text-align: center; padding: 24px 12px; color: var(--text3); font-size: 12px; }
-  .saved-banner { background: var(--accent-light); color: var(--accent); font-size: 12.5px; padding: 10px 14px; border-radius: var(--radius); margin-bottom: 14px; display: none; align-items: center; gap: 8px; }
-  .saved-banner.show { display: flex; }
-  .saved-banner svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
   .source-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px; }
   .source-tag.live { background: var(--accent-light); color: var(--accent); }
   .source-tag.demo { background: var(--surface2); color: var(--text3); }
+  .saved-banner { background: var(--accent-light); color: var(--accent); font-size: 12.5px; padding: 10px 14px; border-radius: var(--radius); margin-bottom: 14px; display: none; align-items: center; gap: 8px; }
+  .saved-banner.show { display: flex; }
+  .saved-banner svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+  .file-name-display { font-size: 12px; color: var(--accent); margin-top: 6px; font-weight: 500; display: none; }
+  .file-name-display.show { display: block; }
 </style>
 </head>
 <body>
 <div class="app">
-
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-row" style="align-items:center; gap:12px;">
-        <img src="../images/bastrop_logo.png" alt="Bastrop Nonprofit logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
+        <img src="../images/bastrop_logo.png" alt="Portal logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
         <span class="brand-name">Portal</span>
       </div>
       <span class="org-chip manager">Manager</span>
     </div>
-
     <nav class="nav">
       <div class="nav-section">
         <div class="nav-label">Overview</div>
@@ -58,7 +40,6 @@
         <a class="nav-item" href="submissions.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
           Submissions
-          <span class="nav-badge amber">7</span>
         </a>
       </div>
       <div class="nav-section">
@@ -76,6 +57,10 @@
           Messages
           <span class="nav-badge red">5</span>
         </a>
+        <a class="nav-item" href="announcements.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Announcements
+        </a>
       </div>
       <div class="nav-section">
         <div class="nav-label">Admin</div>
@@ -85,7 +70,6 @@
         </a>
       </div>
     </nav>
-
     <div class="sidebar-footer">
       <div class="user-avi mgr">TA</div>
       <div><div class="user-name">Taylor Andry</div><div class="user-role">Manager</div></div>
@@ -99,7 +83,7 @@
     <header class="topbar">
       <div>
         <div class="page-title">Template Library</div>
-        <div class="page-sub">Upload and Manage Templates</div>
+        <div class="page-sub">Upload and assign templates to nonprofits</div>
       </div>
       <div class="topbar-right">
         <button class="btn btn-icon" style="position:relative;">
@@ -108,135 +92,94 @@
         </button>
       </div>
     </header>
-    <div class="content">
-      <div class="two-col-templates">
 
-        <!-- LEFT: Template list — now reads real saved templates + shows the old demo rows tagged as demo -->
+    <div class="content">
+      <div class="two-col-narrow">
+
+        <!-- LEFT: live template table -->
         <div class="card">
-          <div class="card-header"><div class="card-title"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>Template Library</div></div>
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+              Template Library
+            </div>
+          </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Template name</th><th>Assigned to</th><th>Due date</th><th>Submissions</th><th></th></tr></thead>
+              <thead>
+                <tr><th>Template name</th><th>File</th><th>Assigned to</th><th>Due date</th><th>Submissions</th><th></th></tr>
+              </thead>
               <tbody id="templates-table-body">
-                <!-- Real (localStorage) templates are inserted here by JS, followed by the original demo rows below -->
-                <tr><td style="font-weight:500;">June 2026 Template <span class="source-tag demo">DEMO</span></td><td style="color:var(--text2);">Nonprofit #1</td><td style="color:var(--text3);">Jun 30, 2025</td><td><span class="pill pill-purple">0 / 1</span></td><td><button class="btn" style="font-size:11px;padding:4px 9px;">View</button></td></tr>
-                <tr><td style="font-weight:500;">Quarterly 2026 Template <span class="source-tag demo">DEMO</span></td><td style="color:var(--text2);">All Organizations</td><td style="color:var(--text3);">Jul 15, 2025</td><td><span class="pill pill-purple">6 / 6</span></td><td><button class="btn" style="font-size:11px;padding:4px 9px;">View</button></td></tr>
-                <tr><td style="font-weight:500;">Annual 2026 Template <span class="source-tag demo">DEMO</span></td><td style="color:var(--text2);">Nonprofit #1, Nonprofit #3</td><td style="color:var(--text3);">Aug 1, 2025</td><td><span class="pill pill-purple">1 / 2</span></td><td><button class="btn" style="font-size:11px;padding:4px 9px;">View</button></td></tr>
-                <tr><td style="font-weight:500;">Action 2026 Template <span class="source-tag demo">DEMO</span></td><td style="color:var(--text2);">All Organizations</td><td style="color:var(--text3);">Mar 20, 2025</td><td><span class="pill pill-purple">5 / 6</span></td><td><button class="btn" style="font-size:11px;padding:4px 9px;">View</button></td></tr>
+                <!-- demo rows -->
+                <tr>
+                  <td style="font-weight:500;">June 2026 Template <span class="source-tag demo">DEMO</span></td>
+                  <td style="color:var(--text3);">june_2026.pdf</td>
+                  <td style="color:var(--text2);">Nonprofit #1</td>
+                  <td style="color:var(--text3);">Jun 30, 2026</td>
+                  <td><span class="pill pill-purple">0 / 1</span></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500;">Quarterly 2026 Template <span class="source-tag demo">DEMO</span></td>
+                  <td style="color:var(--text3);">quarterly_2026.pdf</td>
+                  <td style="color:var(--text2);">All Orgs</td>
+                  <td style="color:var(--text3);">Jul 15, 2026</td>
+                  <td><span class="pill pill-purple">6 / 6</span></td>
+                  <td></td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- RIGHT: Create a template (tabs) -->
+        <!-- RIGHT: upload form -->
         <div class="card">
-          <div class="card-header"><div class="card-title">Create a template</div></div>
+          <div class="card-header"><div class="card-title">Upload new template</div></div>
           <div class="card-body">
 
-            <div class="method-tabs">
-              <div class="method-tab active mgr" id="tab-upload" onclick="switchMethod('upload')">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-                Upload PDF
-              </div>
-              <div class="method-tab" id="tab-build" onclick="switchMethod('build')">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                Build Form
-              </div>
+            <div class="saved-banner" id="saved-banner">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Template uploaded and saved. Nonprofits can now download it.
             </div>
 
-            <!-- PANEL 1: Upload PDF — still a demo, PDF field-mapping isn't built -->
-            <div class="method-panel active" id="panel-upload">
-              <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-                <p id="upload-zone-text">Drop a file or click to upload</p>
-                <span>PDF, DOCX, XLSX supported</span>
-                <input type="file" id="file-input" accept=".pdf,.docx,.xlsx" style="display:none;" onchange="handleFileSelect(this)" />
-              </div>
+            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('template-file').click()">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              <p>Click to upload a template file</p>
+              <span>PDF, DOCX, XLSX · Max ~2MB for this demo</span>
+              <input type="file" id="template-file" accept=".pdf,.docx,.xlsx,.doc" style="display:none;" onchange="handleFileSelect(this)" />
+            </div>
+            <div class="file-name-display" id="file-name-display"></div>
 
-              <div class="form-group" style="margin-top:16px;">
-                <label class="form-label">Template name</label>
-                <input class="form-input" id="template-name-input" placeholder="e.g. Template" />
+            <div class="form-group" style="margin-top:16px;">
+              <label class="form-label">Template name</label>
+              <input class="form-input" id="template-name" placeholder="e.g. Q3 Impact Report" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Due date</label>
+              <input class="form-input" type="date" id="template-due" />
+            </div>
+            <div class="form-group">
+              <div class="assign-select-all">
+                <label class="form-label" style="margin:0;">Assign to</label>
+                <span id="select-all-toggle" onclick="toggleSelectAll()" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:500;">Select all</span>
               </div>
-              <div class="form-group">
-                <label class="form-label">Due date</label>
-                <input class="form-input" type="date" id="template-due-input" />
+              <div class="assign-list" id="assign-list">
+                <label class="assign-option"><input type="checkbox" value="Nonprofit #1" onchange="updateCount()" /> Nonprofit #1</label>
+                <label class="assign-option"><input type="checkbox" value="Nonprofit #2" onchange="updateCount()" /> Nonprofit #2</label>
+                <label class="assign-option"><input type="checkbox" value="Nonprofit #3" onchange="updateCount()" /> Nonprofit #3</label>
+                <label class="assign-option"><input type="checkbox" value="Nonprofit #4" onchange="updateCount()" /> Nonprofit #4</label>
+                <label class="assign-option"><input type="checkbox" value="Nonprofit #5" onchange="updateCount()" /> Nonprofit #5</label>
+                <label class="assign-option"><input type="checkbox" value="Nonprofit #6" onchange="updateCount()" /> Nonprofit #6</label>
               </div>
-              <div class="form-group">
-                <div class="assign-select-all">
-                  <label class="form-label" style="margin:0;">Assign to</label>
-                  <span onclick="toggleSelectAllOrgs('assign-list','select-all-toggle')" id="select-all-toggle">Select all</span>
-                </div>
-                <div class="assign-list" id="assign-list">
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #1" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #1</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #2" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #2</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #3" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #3</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #4" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #4</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #5" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #5</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #6" onchange="updateAssignCount('assign-list','assign-count')" /> Nonprofit #6</label>
-                </div>
-                <div class="assign-count" id="assign-count">0 selected</div>
-              </div>
-
-              <button class="btn btn-primary mgr" style="width:100%;justify-content:center;margin-top:10px;" onclick="submitUploadTemplate()">
-                Upload template
-              </button>
-              <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;">
-                PDF upload is a visual demo only — field-mapping isn't built yet.
-              </div>
+              <div class="assign-count" id="assign-count">0 selected</div>
             </div>
 
-            <!-- PANEL 2: Build Form — now REAL, saves to localStorage -->
-            <div class="method-panel" id="panel-build">
-
-              <div class="saved-banner" id="saved-banner">
-                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                Template saved! It now appears in the table on the left and on assigned nonprofits' dashboards.
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Template name</label>
-                <input class="form-input" id="build-name-input" placeholder="e.g. Template " />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Due date</label>
-                <input class="form-input" type="date" id="build-due-input" />
-              </div>
-
-              <label class="form-label">Form fields</label>
-              <div class="field-list" id="field-list"></div>
-              <div class="field-empty-state" id="field-empty-state">
-                No fields yet — add your first one below.
-              </div>
-
-              <button class="add-field-btn" onclick="addField()">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Add field
-              </button>
-
-              <div class="form-group" style="margin-top:16px;">
-                <div class="assign-select-all">
-                  <label class="form-label" style="margin:0;">Assign to</label>
-                  <span onclick="toggleSelectAllOrgs('build-assign-list','build-select-all-toggle')" id="build-select-all-toggle">Select all</span>
-                </div>
-                <div class="assign-list" id="build-assign-list">
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #1" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #1</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #2" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #2</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #3" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #3</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #4" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #4</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #5" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #5</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #6" onchange="updateAssignCount('build-assign-list','build-assign-count')" /> Nonprofit #6</label>
-                </div>
-                <div class="assign-count" id="build-assign-count">0 selected</div>
-              </div>
-
-              <button class="btn btn-primary mgr" style="width:100%;justify-content:center;margin-top:10px;" onclick="submitBuildTemplate()">
-                Create template
-              </button>
-            </div>
-
+            <button class="btn btn-primary mgr" style="width:100%;justify-content:center;" onclick="uploadTemplate()">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              Upload Template
+            </button>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -244,162 +187,102 @@
 
 <script src="../js/storage.js"></script>
 <script>
-  // ── Tab switching ──
-  function switchMethod(method) {
-    document.getElementById('tab-upload').classList.toggle('active', method === 'upload');
-    document.getElementById('tab-build').classList.toggle('active', method === 'build');
-    document.getElementById('panel-upload').classList.toggle('active', method === 'upload');
-    document.getElementById('panel-build').classList.toggle('active', method === 'build');
-  }
+  let selectedFile = null;
 
-  // ── Upload panel (still demo — no real PDF field-mapping yet) ──
   function handleFileSelect(input) {
     if (input.files.length > 0) {
-      document.getElementById('upload-zone-text').textContent = input.files[0].name;
+      selectedFile = input.files[0];
+      const display = document.getElementById('file-name-display');
+      display.textContent = '✓ ' + selectedFile.name;
+      display.classList.add('show');
     }
   }
-  function submitUploadTemplate() {
-    const name = document.getElementById('template-name-input').value.trim();
-    const due = document.getElementById('template-due-input').value;
-    const file = document.getElementById('file-input').files[0];
+
+  function toggleSelectAll() {
+    const checkboxes = document.querySelectorAll('#assign-list input[type="checkbox"]');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => cb.checked = !allChecked);
+    document.getElementById('select-all-toggle').textContent = allChecked ? 'Select all' : 'Deselect all';
+    updateCount();
+  }
+
+  function updateCount() {
+    const checked = document.querySelectorAll('#assign-list input:checked');
+    document.getElementById('assign-count').textContent = `${checked.length} selected`;
+  }
+
+  async function uploadTemplate() {
+    const name = document.getElementById('template-name').value.trim();
+    const due  = document.getElementById('template-due').value;
     const orgs = Array.from(document.querySelectorAll('#assign-list input:checked')).map(cb => cb.value);
-    if (!name || !due || !file || orgs.length === 0) {
-      alert('Please fill in the template name, due date, select a file, and assign at least one nonprofit.');
-      return;
-    }
-    alert(`(Demo only) "${name}" PDF would be uploaded, due ${due}, assigned to: ${orgs.join(', ')}.\n\nNext step: you'd map its fields before nonprofits can fill it out.`);
-  }
 
-  // ── Build panel — REAL, saves to localStorage via storage.js ──
-  let fieldCount = 0;
-  function addField() {
-    fieldCount++;
-    const id = `field-${fieldCount}`;
-    const list = document.getElementById('field-list');
-    const row = document.createElement('div');
-    row.className = 'field-row';
-    row.id = id;
-    row.innerHTML = `
-      <div class="field-drag">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="6" r="1.2"/><circle cx="8" cy="12" r="1.2"/><circle cx="8" cy="18" r="1.2"/><circle cx="16" cy="6" r="1.2"/><circle cx="16" cy="12" r="1.2"/><circle cx="16" cy="18" r="1.2"/></svg>
-      </div>
-      <input class="field-label-input" placeholder="Field label" />
-      <select class="field-type-select">
-        <option value="text">Text</option>
-        <option value="number">Number</option>
-        <option value="date">Date</option>
-        <option value="textarea">Long text</option>
-      </select>
-      <div class="field-required-toggle" onclick="this.classList.toggle('on')" title="Required field"></div>
-      <button class="field-remove" onclick="removeField('${id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    `;
-    list.appendChild(row);
-    updateFieldEmptyState();
-  }
-  function removeField(id) {
-    document.getElementById(id).remove();
-    updateFieldEmptyState();
-  }
-  function updateFieldEmptyState() {
-    const hasFields = document.getElementById('field-list').children.length > 0;
-    document.getElementById('field-empty-state').style.display = hasFields ? 'none' : 'block';
-  }
-
-  function submitBuildTemplate() {
-    const name = document.getElementById('build-name-input').value.trim();
-    const due = document.getElementById('build-due-input').value;
-    const fieldRows = document.querySelectorAll('#field-list .field-row');
-    const orgs = Array.from(document.querySelectorAll('#build-assign-list input:checked')).map(cb => cb.value);
-
-    if (!name || !due || fieldRows.length === 0 || orgs.length === 0) {
-      alert('Please name the template, set a due date, add at least one field, and assign at least one nonprofit.');
+    if (!name || !due || !selectedFile || orgs.length === 0) {
+      alert('Please fill in all fields, select a file, and assign at least one nonprofit.');
       return;
     }
 
-    const fields = Array.from(fieldRows).map((row, i) => ({
-      id: 'f' + i,
-      label: row.querySelector('.field-label-input').value.trim() || 'Untitled field',
-      type: row.querySelector('.field-type-select').value,
-      required: row.querySelector('.field-required-toggle').classList.contains('on'),
-    }));
+    const btn = document.querySelector('button[onclick="uploadTemplate()"]');
+    btn.textContent = 'Uploading…';
+    btn.disabled = true;
 
-    addTemplate({
-      name,
-      dueDate: due,
-      fields,
-      assignedOrgs: orgs,
-      method: 'form-builder',
-    });
+    const result = await addTemplate({ name, dueDate: due, assignedOrgs: orgs, file: selectedFile });
 
-    // Reset the build form
-    document.getElementById('build-name-input').value = '';
-    document.getElementById('build-due-input').value = '';
-    document.getElementById('field-list').innerHTML = '';
-    document.querySelectorAll('#build-assign-list input').forEach(cb => cb.checked = false);
-    document.getElementById('build-select-all-toggle').textContent = 'Select all';
-    updateFieldEmptyState();
-    updateAssignCount('build-assign-list', 'build-assign-count');
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Upload Template`;
+
+    if (!result) return;
+
+    // Reset form
+    document.getElementById('template-name').value = '';
+    document.getElementById('template-due').value = '';
+    document.getElementById('file-name-display').classList.remove('show');
+    document.getElementById('template-file').value = '';
+    document.querySelectorAll('#assign-list input').forEach(cb => cb.checked = false);
+    document.getElementById('select-all-toggle').textContent = 'Select all';
+    updateCount();
+    selectedFile = null;
 
     const banner = document.getElementById('saved-banner');
     banner.classList.add('show');
     setTimeout(() => banner.classList.remove('show'), 4000);
 
-    renderRealTemplateRows();
+    renderLiveRows();
   }
 
-  // ── Shared: assign-to checklist logic (works for both panels) ──
-  function toggleSelectAllOrgs(listId, toggleId) {
-    const checkboxes = document.querySelectorAll(`#${listId} input[type="checkbox"]`);
-    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-    checkboxes.forEach(cb => cb.checked = !allChecked);
-    document.getElementById(toggleId).textContent = allChecked ? 'Select all' : 'Deselect all';
-    const countId = listId === 'build-assign-list' ? 'build-assign-count' : 'assign-count';
-    updateAssignCount(listId, countId);
-  }
-  function updateAssignCount(listId, countId) {
-    const checked = document.querySelectorAll(`#${listId} input[type="checkbox"]:checked`);
-    document.getElementById(countId).textContent = `${checked.length} selected`;
-  }
-
-  // ── Real templates table: insert saved (localStorage) templates above the old demo rows ──
-  function renderRealTemplateRows() {
-    const templates = getTemplates(); // from storage.js
+  function renderLiveRows() {
+    const templates = getTemplates();
     const tbody = document.getElementById('templates-table-body');
+    tbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
 
-    // Remove any previously-inserted "real" rows (tagged with data-real) before re-inserting
-    tbody.querySelectorAll('tr[data-real="true"]').forEach(row => row.remove());
+    templates.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    if (templates.length === 0) return;
-
-    const rowsHtml = templates.map(t => {
+    const rows = templates.map(t => {
       const subs = getSubmissionsForTemplate(t.id).length;
-      const totalAssigned = t.assignedOrgs.length;
-      const assignedLabel = t.assignedOrgs.length === 6 ? 'All Organizations' : t.assignedOrgs.join(', ');
+      const assigned = t.assignedOrgs.length === 6 ? 'All Orgs' : t.assignedOrgs.join(', ');
       return `
-        <tr data-real="true">
+        <tr data-live="true">
           <td style="font-weight:500;">${t.name} <span class="source-tag live">LIVE</span></td>
-          <td style="color:var(--text2);">${assignedLabel}</td>
+          <td style="color:var(--text3);">${t.fileName}</td>
+          <td style="color:var(--text2);">${assigned}</td>
           <td style="color:var(--text3);">${t.dueDate || '—'}</td>
-          <td><span class="pill pill-purple">${subs} / ${totalAssigned}</span></td>
-          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="deleteTemplateConfirm('${t.id}')">Delete</button></td>
-        </tr>
-      `;
+          <td><span class="pill pill-purple">${subs} / ${t.assignedOrgs.length}</span></td>
+          <td style="display:flex;gap:6px;">
+            <button class="btn" style="font-size:11px;padding:4px 9px;" onclick="downloadTemplate('${t.id}')">Download</button>
+            <button class="btn" style="font-size:11px;padding:4px 9px;color:var(--red);" onclick="removeTemplate('${t.id}')">Delete</button>
+          </td>
+        </tr>`;
     }).join('');
 
-    tbody.insertAdjacentHTML('afterbegin', rowsHtml);
+    tbody.insertAdjacentHTML('afterbegin', rows);
   }
 
-  function deleteTemplateConfirm(id) {
-    if (confirm('Delete this template? This cannot be undone (browser storage only).')) {
-      deleteTemplate(id);
-      renderRealTemplateRows();
-    }
+  function removeTemplate(id) {
+    if (!confirm('Delete this template? Nonprofits will no longer be able to download it.')) return;
+    deleteTemplate(id);
+    renderLiveRows();
   }
 
-  // Init
-  renderRealTemplateRows();
+  renderLiveRows();
 </script>
 </body>
 </html>

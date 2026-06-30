@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CS — Dashboard</title>
+<link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-row" style="align-items:center; gap:12px;">
+        <img src="../images/bastrop_logo.png" alt="Portal logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
+        <span class="brand-name"></span>
+      </div>
+      <span class="org-chip">Community Support</span>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">
+        <div class="nav-label">My Portal</div>
+        <a class="nav-item active" href="dashboard.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" href="messages.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Messages
+          <span class="nav-badge" style="background:var(--accent);">2</span>
+        </a>
+        <a class="nav-item" href="reports.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Reports
+        </a>
+        <a class="nav-item" href="announcements.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Announcements
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Account</div>
+        <a class="nav-item" href="settings.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          Settings
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-avi" style="background:var(--purple);" id="user-avi">CS</div>
+      <div>
+        <div class="user-name" id="user-name">John Doe</div>
+        <div class="user-role" id="user-org">Community Support</div>
+      </div>
+      <a class="sign-out" href="../index.html" title="Sign out">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Community Support Overview · 2026</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-icon" style="position:relative;">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <div class="banner" style="background:var(--accent);color:white;border-radius:var(--radius-lg);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+        <div>
+          <h2 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;margin-bottom:3px;">Welcome back, John! </h2>
+          <p style="font-size:12px;opacity:0.75;">Upload reports and stay up to date with announcements.</p>
+        </div>
+        <div style="display:flex;gap:24px;">
+          <div style="text-align:center;">
+            <div id="stat-reports" style="font-size:22px;font-weight:600;letter-spacing:-0.5px;">0</div>
+            <div style="font-size:10px;opacity:0.7;">Reports uploaded</div>
+          </div>
+          <div style="text-align:center;">
+            <div id="stat-announcements" style="font-size:22px;font-weight:600;letter-spacing:-0.5px;">0</div>
+            <div style="font-size:10px;opacity:0.7;">Announcements</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              My Reports
+            </div>
+            <a class="btn" href="reports.html" style="font-size:11px;padding:5px 10px;">Upload Report</a>
+          </div>
+          <div class="card-body" id="dashboard-reports">
+            <div style="text-align:center;padding:20px;color:var(--text3);font-size:12.5px;">No reports uploaded yet. Go to Reports to upload your first one.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              Recent Announcements
+            </div>
+            <a class="btn" href="announcements.html" style="font-size:11px;padding:5px 10px;">View all</a>
+          </div>
+          <div class="card-body" id="dashboard-announcements">
+            <div style="text-align:center;padding:20px;color:var(--text3);font-size:12.5px;">No announcements yet.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="../js/storage.js"></script>
+<script>
+  const CS_ORG = 'Community Support';
+
+  function init() {
+    const submissions = getSubmissions().filter(s => s.orgName === CS_ORG);
+    const announcements = getAnnouncements();
+
+    document.getElementById('stat-reports').textContent = submissions.length;
+    document.getElementById('stat-announcements').textContent = announcements.length;
+
+    const reportsEl = document.getElementById('dashboard-reports');
+    if (submissions.length === 0) {
+      reportsEl.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);font-size:12.5px;">No reports uploaded yet. Go to Reports to upload your first one.</div>`;
+    } else {
+      reportsEl.innerHTML = submissions.slice(0, 4).map(s => `
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:15px;height:15px;color:var(--accent);flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.fileName}</div>
+            <div style="font-size:11px;color:var(--text3);">${formatDate(s.submittedAt)}</div>
+          </div>
+        </div>`).join('');
+    }
+
+    const annEl = document.getElementById('dashboard-announcements');
+    if (announcements.length === 0) {
+      annEl.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);font-size:12.5px;">No announcements yet.</div>`;
+    } else {
+      annEl.innerHTML = announcements.slice(0, 3).map(a => `
+        <div style="padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">${a.authorName} · ${formatDate(a.postedAt)}</div>
+          <div style="font-size:12.5px;">${a.message}</div>
+        </div>`).join('');
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

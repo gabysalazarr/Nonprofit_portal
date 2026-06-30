@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reports — Community Support</title>
+<link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-row" style="align-items:center; gap:12px;">
+        <img src="../images/bastrop_logo.png" alt="Portal logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
+        <span class="brand-name">Portal</span>
+      </div>
+      <span class="org-chip">Community Support</span>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">
+        <div class="nav-label">My Portal</div>
+        <a class="nav-item" href="dashboard.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" href="messages.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Messages
+          <span class="nav-badge" style="background:var();">2</span>
+        </a>
+        <a class="nav-item active" href="reports.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Reports
+        </a>
+        <a class="nav-item" href="announcements.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Announcements
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Account</div>
+        <a class="nav-item" href="settings.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          Settings
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-avi;">CS</div>
+      <div><div class="user-name">Community Support</div><div class="user-role">Community Support</div></div>
+      <a class="sign-out" href="../index.html" title="Sign out">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="page-title">Reports</div>
+        <div class="page-sub">Upload your community support reports</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-icon" style="position:relative;">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="two-col-narrow">
+
+        <!-- LEFT: uploaded reports list -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              My Uploaded Reports
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>File name</th><th>Uploaded</th><th>Status</th><th></th></tr></thead>
+              <tbody id="cs-reports-tbody">
+                <tr id="empty-row"><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;font-size:12.5px;">No reports uploaded yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- RIGHT: upload form -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Upload a report</div></div>
+          <div class="card-body">
+
+            <div class="saved-banner" id="saved-banner">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Report uploaded. The manager can now view and download it.
+            </div>
+
+            <div>
+              Upload your community support reports here. The manager will be able to download them from the Reports page.
+            </div>
+
+            <div class="upload-zone" onclick="document.getElementById('cs-file-input').click()">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              <p>Click to upload your report</p>
+              <span>PDF, DOCX, XLSX · Max ~2MB</span>
+              <input type="file" id="cs-file-input" accept=".pdf,.docx,.xlsx,.doc" style="display:none;" onchange="handleCSUpload(this)" />
+            </div>
+            <div class="file-name-display" id="file-name-display"></div>
+
+            <div class="form-group" style="margin-top:14px;">
+              <label class="form-label">Report name / description (optional)</label>
+              <input class="form-input" id="cs-report-desc" placeholder="e.g. Q2 Community Support Summary" />
+            </div>
+
+            <button class="btn btn-primary" ;width:100%;justify-content:center;margin-top:4px;" onclick="submitCSReport()">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              Upload Report
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/storage.js"></script>
+<script>
+  const CS_ORG = 'Community Support';
+  let selectedFile = null;
+
+  function handleCSUpload(input) {
+    if (input.files.length > 0) {
+      selectedFile = input.files[0];
+      const el = document.getElementById('file-name-display');
+      el.textContent = '✓ ' + selectedFile.name;
+      el.classList.add('show');
+    }
+  }
+
+  async function submitCSReport() {
+    if (!selectedFile) {
+      alert('Please select a file to upload.');
+      return;
+    }
+
+    const btn = document.querySelector('button[onclick="submitCSReport()"]');
+    btn.textContent = 'Uploading…';
+    btn.disabled = true;
+
+    // Community Support reports are stored as submissions with no templateId
+    const result = await addSubmission({
+      templateId: 'cs-report', // special marker — not a real template
+      orgName: CS_ORG,
+      role: 'community-support',
+      file: selectedFile,
+    });
+
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Upload Report`;
+
+    if (!result) return;
+
+    document.getElementById('cs-file-input').value = '';
+    document.getElementById('cs-report-desc').value = '';
+    document.getElementById('file-name-display').classList.remove('show');
+    selectedFile = null;
+
+    const banner = document.getElementById('saved-banner');
+    banner.classList.add('show');
+    setTimeout(() => banner.classList.remove('show'), 4000);
+
+    renderCSReports();
+  }
+
+  function renderCSReports() {
+    const reports = getSubmissions()
+      .filter(s => s.orgName === CS_ORG)
+      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+    const tbody = document.getElementById('cs-reports-tbody');
+
+    if (reports.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;font-size:12.5px;">No reports uploaded yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = reports.map(r => {
+      const status = r.status || 'Pending';
+      const pillClass = getStatusPillClass(status);
+      return `
+        <tr>
+          <td style="font-weight:500;">${r.fileName}</td>
+          <td style="color:var(--text3);">${formatDate(r.submittedAt)}</td>
+          <td><span class="pill ${pillClass}">${status}</span></td>
+          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="downloadSubmission('${r.id}')">Download</button></td>
+        </tr>`;
+    }).join('');
+  }
+
+  renderCSReports();
+</script>
+</body>
+</html>

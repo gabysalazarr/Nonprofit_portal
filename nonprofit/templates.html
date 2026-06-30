@@ -3,75 +3,53 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>My Templates — Bastrop</title>
+<title>My Templates — Community Essential</title>
 <link rel="stylesheet" href="../css/styles.css" />
 <style>
-  .source-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px; }
-  .source-tag.live { background: var(--accent-light); color: var(--accent); }
-  .source-tag.demo { background: var(--surface2); color: var(--text3); }
+  /* ── Card ── */
+  .tc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: box-shadow 0.15s; }
+  .tc:hover { box-shadow: 0 3px 14px rgba(0,0,0,0.08); }
 
-  .template-flow-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    transition: box-shadow 0.15s;
-  }
-  .template-flow-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+  /* Status accent stripe on left edge */
+  .tc.status-approved { border-left: 4px solid var(--accent); }
+  .tc.status-rejected { border-left: 4px solid var(--red); }
+  .tc.status-pending  { border-left: 4px solid var(--border2); }
+  .tc.status-review   { border-left: 4px solid var(--amber); }
 
-  .template-flow-header {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
-  .template-flow-name { font-size: 13px; font-weight: 600; }
-  .template-flow-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .tc-header { padding: 14px 16px 10px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .tc-name { font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .tc-due  { font-size: 11px; color: var(--text3); margin-top: 3px; }
 
-  .template-flow-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .tc-file-row { padding: 0 16px 10px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .tc-file-row svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
 
-  .flow-step {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: var(--radius);
-    font-size: 12.5px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-  }
-  .flow-step.done { border-color: var(--accent); background: var(--accent-light); }
-  .flow-step.active { border-color: var(--amber); background: var(--amber-light); }
-  .flow-step-num {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    background: var(--surface2);
-    color: var(--text3);
-    font-size: 11px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .flow-step.done .flow-step-num { background: var(--accent); color: white; }
-  .flow-step.active .flow-step-num { background: var(--amber); color: white; }
+  /* Submission status row */
+  .tc-sub-row { padding: 8px 16px; background: var(--surface2); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); }
+  .tc-sub-row svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+  .tc-sub-row .sub-file { font-weight: 500; color: var(--text); }
+  .tc-sub-row .sub-date { color: var(--text3); }
 
-  .upload-zone-inline {
-    border: 1.5px dashed var(--border2);
-    border-radius: var(--radius);
-    padding: 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-size: 12px;
-    color: var(--text2);
-  }
-  .upload-zone-inline:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+  /* Rejection callout */
+  .tc-rejection { margin: 0 12px 10px; background: var(--red-light); border: 1.5px solid var(--red); border-radius: var(--radius); padding: 10px 12px; }
+  .tc-rejection-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--red); margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+  .tc-rejection-label svg { width: 12px; height: 12px; stroke: var(--red); fill: none; stroke-width: 2.5; }
+  .tc-rejection-comment { font-size: 12.5px; color: var(--red); line-height: 1.5; }
+  .tc-rejection-no-comment { font-size: 12px; color: var(--red); opacity: 0.65; font-style: italic; }
 
-  .submitted-tag { font-size: 11px; color: var(--accent); font-weight: 500; display: flex; align-items: center; gap: 4px; }
-  .submitted-tag svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+  /* Actions */
+  .tc-actions { padding: 10px 16px 14px; display: flex; gap: 8px; }
+  .tc-actions .btn { flex: 1; justify-content: center; padding: 9px; font-size: 12px; }
+  .tc-actions .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  .org-switcher-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 4px; }
+  /* Empty state */
+  .empty-state { text-align: center; padding: 70px 20px; color: var(--text3); grid-column: 1/-1; }
+  .empty-state svg { width: 44px; height: 44px; stroke: var(--text3); fill: none; stroke-width: 1.5; margin-bottom: 14px; display: block; margin-inline: auto; }
+  .empty-state h3 { font-size: 15px; font-weight: 500; margin-bottom: 6px; color: var(--text2); }
+  .empty-state p { font-size: 13px; line-height: 1.6; max-width: 300px; margin-inline: auto; }
+
+  /* Instruction banner */
+  .info-banner { background: var(--surface2); border-radius: var(--radius); padding: 11px 14px; font-size: 12.5px; color: var(--text2); display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+  .info-banner svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; stroke-width: 2; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -80,9 +58,9 @@
     <div class="sidebar-brand">
       <div class="brand-row" style="align-items:center; gap:12px;">
         <img src="../images/bastrop_logo.png" alt="Portal logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
-        <span class="brand-name">Portal</span>
+        <span class="brand-name"></span>
       </div>
-      <span class="org-chip" id="org-chip-label">Nonprofit #1</span>
+      <span class="org-chip">Cmty Essential #1</span>
     </div>
     <nav class="nav">
       <div class="nav-section">
@@ -94,12 +72,7 @@
         <a class="nav-item active" href="templates.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
           My Templates
-          <span class="nav-badge amber" id="pending-badge" style="display:none;">0</span>
-        </a>
-        <a class="nav-item" href="messages.html">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Messages
-          <span class="nav-badge">3</span>
+          <span class="nav-badge amber" id="pending-badge" style="display:none;"></span>
         </a>
         <a class="nav-item" href="reports.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -108,6 +81,11 @@
         <a class="nav-item" href="announcements.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           Announcements
+        </a>
+        <a class="nav-item" href="messages.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Messages
+          <span class="nav-badge purple">3</span>
         </a>
       </div>
       <div class="nav-section">
@@ -119,10 +97,10 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi" id="user-avi">N1</div>
-      <div>
+      <div class="user-avi" style="background:var(--red);">JD</div>
+      <div style="min-width:0;">
         <div class="user-name">Jane Doe</div>
-        <div class="user-role" id="user-org-label">Nonprofit #1</div>
+        <div class="user-role" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Cmty Essential #1</div>
       </div>
       <a class="sign-out" href="../index.html" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -134,7 +112,7 @@
     <header class="topbar">
       <div>
         <div class="page-title">My Templates</div>
-        <div class="page-sub">Download each template, fill it out, then upload your completed file</div>
+        <div class="page-sub">Download, complete, and submit each assigned template</div>
       </div>
       <div class="topbar-right">
         <button class="btn btn-icon" style="position:relative;">
@@ -145,229 +123,255 @@
     </header>
 
     <div class="content">
-
-      <!-- Demo org switcher (no real login yet) -->
-      <div class="org-switcher-card">
-        <label class="form-label">Viewing as (demo org switcher)</label>
-        <select class="form-select" id="org-switcher" onchange="switchOrg()">
-          <option>Nonprofit #1</option>
-          <option>Nonprofit #2</option>
-          <option>Nonprofit #3</option>
-          <option>Nonprofit #4</option>
-          <option>Nonprofit #5</option>
-          <option>Nonprofit #6</option>
-        </select>
+      <div class="info-banner">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Download each template, complete it on your computer, then upload your finished file. Upload is enabled after downloading.
       </div>
-
-      <!-- How it works note -->
-      <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 16px;font-size:12.5px;color:var(--text2);display:flex;align-items:center;gap:10px;">
-        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;color:var(--accent);"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>For each template: <strong>1) Download</strong> the file → <strong>2) Fill it out</strong> on your computer → <strong>3) Upload</strong> your completed file back here.</span>
-      </div>
-
-      <!-- Live templates -->
-      <div class="section-label">Assigned Templates <span class="source-tag live">LIVE</span></div>
-      <div class="template-grid" id="live-templates-grid">
-        <div style="grid-column:1/-1;text-align:center;padding:30px 16px;color:var(--text3);font-size:12.5px;">
-          No templates assigned to this org yet. The manager will upload them from the Template Library.
-        </div>
-      </div>
-
-      <!-- Demo templates -->
-      <div class="section-label" style="margin-top:8px;">Demo Templates <span class="source-tag demo">DEMO</span></div>
-      <div class="template-grid">
-
-        <div class="template-flow-card">
-          <div class="template-flow-header">
-            <div>
-              <div class="template-flow-name">June 2026 Template <span class="source-tag demo">DEMO</span></div>
-              <div class="template-flow-meta">Due Jun 30, 2026</div>
-            </div>
-            <span class="pill pill-gray">Not started</span>
-          </div>
-          <div class="template-flow-body">
-            <div class="flow-step">
-              <div class="flow-step-num">1</div>
-              <div style="flex:1;">Download the template file</div>
-              <button class="btn" style="font-size:11px;padding:5px 10px;" disabled>Download</button>
-            </div>
-            <div class="flow-step">
-              <div class="flow-step-num">2</div>
-              <div style="flex:1;color:var(--text3);">Fill it out on your computer</div>
-            </div>
-            <div class="flow-step">
-              <div class="flow-step-num">3</div>
-              <div style="flex:1;color:var(--text3);">Upload your completed file</div>
-              <button class="btn" style="font-size:11px;padding:5px 10px;" disabled>Upload</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="template-flow-card">
-          <div class="template-flow-header">
-            <div>
-              <div class="template-flow-name">Quarterly 2026 Template <span class="source-tag demo">DEMO</span></div>
-              <div class="template-flow-meta">Due Jul 15, 2026</div>
-            </div>
-            <span class="pill pill-green">Submitted</span>
-          </div>
-          <div class="template-flow-body">
-            <div class="flow-step done">
-              <div class="flow-step-num">1</div>
-              <div style="flex:1;">Downloaded</div>
-            </div>
-            <div class="flow-step done">
-              <div class="flow-step-num">2</div>
-              <div style="flex:1;">Filled out</div>
-            </div>
-            <div class="flow-step done">
-              <div class="flow-step-num">3</div>
-              <div style="flex:1;">Uploaded — quarterly_submission.pdf</div>
-              <div class="submitted-tag"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Done</div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
+      <div id="templates-grid" class="template-grid"></div>
     </div>
   </div>
 </div>
 
-<!-- Hidden file input for uploads -->
-<input type="file" id="submission-file-input" style="display:none;" accept=".pdf,.docx,.xlsx,.doc" onchange="handleSubmissionUpload(this)" />
+<!-- Template Details Modal -->
+<div class="modal-overlay" id="details-modal">
+  <div class="modal-box" style="width:480px;">
+    <div class="modal-header">
+      <h3 id="details-modal-title">Template Details</h3>
+      <button class="modal-close" onclick="closeDetailsModal()">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+
+      <!-- Manager's file -->
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:8px;">Template from Manager</div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;background:var(--accent-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" stroke="var(--accent)" fill="none" stroke-width="2" style="width:16px;height:16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div id="details-template-filename" style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            <div id="details-template-due" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
+          </div>
+          <button class="btn btn-primary" style="font-size:11px;padding:6px 12px;flex-shrink:0;" id="details-download-template-btn">
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download  
+          </button>
+        </div>
+      </div>
+
+      <!-- Nonprofit's submission -->
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:8px;">Your Submission</div>
+        <div id="details-submission-area"></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeDetailsModal()">Close</button>
+      <button class="btn btn-primary" id="details-upload-btn">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        Upload Submission
+      </button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="upload-input" style="display:none;" accept=".pdf,.docx,.xlsx,.doc" onchange="handleUpload(this)" />
 
 <script src="../js/storage.js"></script>
 <script>
-  let activeUploadTemplateId = null;
+  const MY_ORG = 'Nonprofit #1';
+  const DOWNLOADED_KEY = 'np_downloaded_templates';
 
-  function currentOrg() {
-    return document.getElementById('org-switcher').value;
+  function openDetailsModal(templateId) {
+  const t = getTemplateById(templateId);
+  const sub = getSubmissionForOrg(templateId, MY_ORG);
+  const hasDownloaded = getDownloaded().includes(templateId);
+
+  document.getElementById('details-modal-title').textContent = t.name;
+  document.getElementById('details-template-filename').textContent = t.fileName;
+  document.getElementById('details-template-due').textContent = `Due ${t.dueDate || '—'}`;
+  document.getElementById('details-download-template-btn').onclick = () => {
+    handleDownload(templateId);
+    // enable upload btn after download
+    document.getElementById('details-upload-btn').removeAttribute('disabled');
+    document.getElementById('details-upload-btn').style.opacity = '';
+  };
+
+  // Submission area
+  const subArea = document.getElementById('details-submission-area');
+  if (sub) {
+    const statusColor = sub.status === 'Approved' ? 'var(--accent)' : sub.status === 'Rejected' ? 'var(--red)' : 'var(--text3)';
+    subArea.innerHTML = `
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" stroke="var(--text2)" fill="none" stroke-width="2" style="width:16px;height:16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sub.fileName}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">Submitted ${formatDate(sub.submittedAt)} · <span style="color:${statusColor};font-weight:500;">${sub.status || 'Pending'}</span></div>
+        </div>
+      </div>`;
+  } else {
+    subArea.innerHTML = `
+      <div style="background:var(--surface2);border:1.5px dashed var(--border2);border-radius:var(--radius);padding:20px;text-align:center;color:var(--text3);font-size:12.5px;">
+        No submission yet. Download the template, complete it, then upload it below.
+      </div>`;
   }
 
-  function switchOrg() {
-    const org = currentOrg();
-    document.getElementById('org-chip-label').textContent = org;
-    document.getElementById('user-org-label').textContent = org;
-    document.getElementById('user-avi').textContent = 'N' + org.replace('Nonprofit #', '');
-    renderLiveTemplates();
+  // Upload button state
+  const uploadBtn = document.getElementById('details-upload-btn');
+  uploadBtn.textContent = sub ? 'Re-upload' : 'Upload Submission';
+  uploadBtn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> ${sub ? 'Re-upload' : 'Upload Submission'}`;
+  uploadBtn.onclick = () => { closeDetailsModal(); triggerUpload(templateId); };
+
+  if (!hasDownloaded && !sub) {
+    uploadBtn.setAttribute('disabled', '');
+    uploadBtn.style.opacity = '0.4';
+    uploadBtn.title = 'Download the template first';
+  } else {
+    uploadBtn.removeAttribute('disabled');
+    uploadBtn.style.opacity = '';
+    uploadBtn.title = '';
   }
 
-  function renderLiveTemplates() {
-    const org = currentOrg();
-    const templates = getTemplatesForOrg(org);
-    const grid = document.getElementById('live-templates-grid');
+  document.getElementById('details-modal').classList.add('open');
+}
+
+function closeDetailsModal() {
+  document.getElementById('details-modal').classList.remove('open');
+}
+
+  function getDownloaded() {
+    try { return JSON.parse(sessionStorage.getItem(DOWNLOADED_KEY)) || []; }
+    catch(e) { return []; }
+  }
+
+  function markDownloaded(id) {
+    const dl = getDownloaded();
+    if (!dl.includes(id)) { dl.push(id); sessionStorage.setItem(DOWNLOADED_KEY, JSON.stringify(dl)); }
+  }
+
+  let activeUploadId = null;
+
+  function statusClass(sub) {
+    if (!sub) return 'status-pending';
+    const s = (sub.status || 'Pending').toLowerCase();
+    if (s === 'approved') return 'status-approved';
+    if (s === 'rejected') return 'status-rejected';
+    if (s === 'in review') return 'status-review';
+    return 'status-pending';
+  }
+
+  function statusPill(sub) {
+    if (!sub) return `<span class="pill pill-gray" style="font-size:11px;white-space:nowrap;">Not submitted</span>`;
+    const s = sub.status || 'Pending';
+    const cls = s === 'Approved' ? 'pill-green' : s === 'Rejected' ? 'pill-red' : s === 'In Review' ? 'pill-amber' : 'pill-gray';
+    return `<span class="pill ${cls}" style="font-size:11px;white-space:nowrap;">${s}</span>`;
+  }
+
+  function render() {
+    const templates = getTemplatesForOrg(MY_ORG);
+    const grid = document.getElementById('templates-grid');
+    const downloaded = getDownloaded();
+
+    const pending = templates.filter(t => {
+      const sub = getSubmissionForOrg(t.id, MY_ORG);
+      return !sub || sub.status === 'Rejected';
+    }).length;
+    const badge = document.getElementById('pending-badge');
+    badge.textContent = pending;
+    badge.style.display = pending > 0 ? '' : 'none';
 
     if (templates.length === 0) {
-      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px 16px;color:var(--text3);font-size:12.5px;">No templates assigned to ${org} yet. The manager will upload them from the Template Library.</div>`;
-      document.getElementById('pending-badge').style.display = 'none';
+      grid.innerHTML = `
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          <h3>No templates assigned yet</h3>
+          <p>Your manager hasn't assigned any templates to your organization. Check back soon.</p>
+        </div>`;
       return;
     }
 
-    const pending = templates.filter(t => !getSubmissionForOrg(t.id, org)).length;
-    const badge = document.getElementById('pending-badge');
-    if (pending > 0) {
-      badge.textContent = pending;
-      badge.style.display = '';
-    } else {
-      badge.style.display = 'none';
-    }
-
     grid.innerHTML = templates.map(t => {
-      const sub = getSubmissionForOrg(t.id, org);
-      const hasSubmission = !!sub;
-      const status = hasSubmission ? 'Submitted' : 'Not started';
-      const statusPill = hasSubmission
-        ? '<span class="pill pill-green">Submitted</span>'
-        : '<span class="pill pill-gray">Not started</span>';
+      const sub = getSubmissionForOrg(t.id, MY_ORG);
+      const hasDownloaded = downloaded.includes(t.id);
+      const sc = statusClass(sub);
+      const isRejected = sub && (sub.status || '') === 'Rejected';
 
-      const step1 = `
-        <div class="flow-step done">
-          <div class="flow-step-num">1</div>
-          <div style="flex:1;">Download the template file</div>
-          <button class="btn btn-primary" style="font-size:11px;padding:5px 10px;" onclick="downloadTemplate('${t.id}')">Download</button>
-        </div>`;
-
-      const step2 = `
-        <div class="flow-step active">
-          <div class="flow-step-num">2</div>
-          <div style="flex:1;">Fill it out on your computer, then come back here</div>
-        </div>`;
-
-      const step3done = `
-        <div class="flow-step done">
-          <div class="flow-step-num">3</div>
-          <div style="flex:1;min-width:0;">
-            <div>Uploaded — <span style="font-size:11px;color:var(--accent);">${sub ? sub.fileName : ''}</span></div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px;">Status: ${sub ? sub.status : ''}</div>
+      // Rejection callout
+      const rejectionBlock = isRejected ? `
+        <div class="tc-rejection">
+          <div class="tc-rejection-label">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Rejected — action required
           </div>
-          <div class="submitted-tag">
-            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Done
-          </div>
-        </div>
-        <button class="btn" style="font-size:11px;padding:5px 10px;width:100%;" onclick="triggerUpload('${t.id}')">Re-upload</button>`;
+          ${sub.rejectionComment
+            ? `<div class="tc-rejection-comment">${sub.rejectionComment}</div>`
+            : `<div class="tc-rejection-no-comment">No comment was left. Contact your manager for details.</div>`}
+        </div>` : '';
 
-      const step3pending = `
-        <div class="flow-step">
-          <div class="flow-step-num">3</div>
-          <div style="flex:1;">Upload your completed file</div>
-          <button class="btn btn-primary" style="font-size:11px;padding:5px 10px;" onclick="triggerUpload('${t.id}')">Upload</button>
-        </div>`;
+      const uploadLabel = sub ? (isRejected ? 'Re-upload' : 'Re-upload') : 'Upload';
+      const uploadDisabled = !hasDownloaded ? 'disabled' : '';
+      const uploadTip = !hasDownloaded ? 'title="Download the template first"' : '';
 
       return `
-        <div class="template-flow-card">
-          <div class="template-flow-header">
+        <div class="tc ${sc}">
+          <div class="tc-header">
             <div>
-              <div class="template-flow-name">${t.name} <span class="source-tag live">LIVE</span></div>
-              <div class="template-flow-meta">Due ${t.dueDate || '—'} · ${t.fileName}</div>
+              <div class="tc-name">${t.name}</div>
+              <div class="tc-due">Due ${t.dueDate || '—'}</div>
             </div>
-            ${statusPill}
+            ${statusPill(sub)}
           </div>
-          <div class="template-flow-body">
-            ${step1}
-            ${step2}
-            ${hasSubmission ? step3done : step3pending}
+          ${rejectionBlock}
+          <div class="tc-actions">
+            <button class="btn" onclick="handleDownload('${t.id}')">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Template
+            </button>
+            <button class="btn btn-primary" id="upload-btn-${t.id}" onclick="triggerUpload('${t.id}')" ${uploadDisabled} ${uploadTip}>
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              ${uploadLabel}
+            </button>
+            <button class="btn" onclick="openDetailsModal('${t.id}')" style="flex:0 0 auto;padding:9px 12px;">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              View
+            </button>
           </div>
         </div>`;
     }).join('');
   }
 
-  function triggerUpload(templateId) {
-    activeUploadTemplateId = templateId;
-    document.getElementById('submission-file-input').click();
+  function handleDownload(id) {
+    downloadTemplate(id);
+    markDownloaded(id);
+    const btn = document.getElementById(`upload-btn-${id}`);
+    if (btn) { btn.removeAttribute('disabled'); btn.removeAttribute('title'); }
   }
 
-  async function handleSubmissionUpload(input) {
-    if (!input.files.length || !activeUploadTemplateId) return;
-    const file = input.files[0];
-    const org = currentOrg();
+  function triggerUpload(id) {
+    activeUploadId = id;
+    document.getElementById('upload-input').click();
+  }
 
-    // Remove any existing submission for this org + template first
-    const existing = getSubmissionForOrg(activeUploadTemplateId, org);
+  async function handleUpload(input) {
+    if (!input.files.length || !activeUploadId) return;
+    const file = input.files[0];
+    const existing = getSubmissionForOrg(activeUploadId, MY_ORG);
     if (existing) {
       const subs = getSubmissions().filter(s => s.id !== existing.id);
       safeSet(STORAGE_KEYS.SUBMISSIONS, subs);
     }
-
-    const btn = document.querySelector(`button[onclick="triggerUpload('${activeUploadTemplateId}')"]`);
-    if (btn) { btn.textContent = 'Uploading…'; btn.disabled = true; }
-
-    const result = await addSubmission({
-      templateId: activeUploadTemplateId,
-      orgName: org,
-      role: 'nonprofit',
-      file,
-    });
-
+    const result = await addSubmission({ templateId: activeUploadId, orgName: MY_ORG, role: 'nonprofit', file });
     input.value = '';
-    activeUploadTemplateId = null;
-
+    activeUploadId = null;
     if (!result) return;
-    alert(`✓ "${file.name}" uploaded successfully. The manager can now review and download your submission.`);
-    renderLiveTemplates();
+    alert(`✓ "${file.name}" uploaded. Your manager will review it shortly.`);
+    render();
   }
 
-  renderLiveTemplates();
+  render();
 </script>
 </body>
 </html>

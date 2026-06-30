@@ -7,27 +7,44 @@
 <link rel="stylesheet" href="../css/styles.css" />
 <style>
   .ann-board { display: flex; flex-direction: column; gap: 12px; }
-  .ann-post {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 16px 18px;
-    transition: box-shadow 0.15s;
-  }
+  .ann-post { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; transition: box-shadow 0.15s; }
   .ann-post:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   .ann-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .ann-avatar { width: 34px; height: 34px; border-radius: 50%; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
   .ann-author { font-size: 13px; font-weight: 600; }
-  .ann-role-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
-  .ann-time { font-size: 11px; color: var(--text3); margin-left: auto; }
+  .ann-role-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; margin-top: 2px; display: inline-block; }
+  .ann-audience-tag { font-size: 10px; padding: 2px 7px; border-radius: 10px; background: var(--surface2); color: var(--text3); margin-top: 2px; display: inline-block; margin-left: 4px; }
+  .ann-time { font-size: 11px; color: var(--text3); margin-left: auto; white-space: nowrap; }
   .ann-message { font-size: 13px; line-height: 1.6; color: var(--text); white-space: pre-wrap; }
-  .ann-delete { background: none; border: none; cursor: pointer; color: var(--text3); padding: 4px; border-radius: 6px; transition: all 0.15s; font-size: 11px; display: flex; align-items: center; gap: 4px; }
+  .ann-delete { background: none; border: none; cursor: pointer; color: var(--text3); padding: 4px 6px; border-radius: 6px; transition: all 0.15s; font-size: 11px; display: flex; align-items: center; gap: 4px; margin-left: 6px; flex-shrink: 0; }
   .ann-delete:hover { color: var(--red); background: var(--red-light); }
   .ann-delete svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
-  .ann-empty { text-align: center; padding: 50px 20px; color: var(--text3); font-size: 13px; }
-  .ann-empty svg { width: 36px; height: 36px; stroke: var(--text3); fill: none; stroke-width: 1.5; margin-bottom: 10px; }
+  .ann-empty { text-align: center; padding: 60px 20px; color: var(--text3); font-size: 13px; }
+  .ann-empty svg { width: 36px; height: 36px; stroke: var(--text3); fill: none; stroke-width: 1.5; margin-bottom: 12px; display: block; margin-inline: auto; }
   .char-count { font-size: 11px; color: var(--text3); text-align: right; margin-top: 4px; }
-  .post-btn-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+  .post-btn-row { display: flex; align-items: center; justify-content: flex-end; margin-top: 10px; }
+
+  .audience-selector { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .audience-radio-row { display: flex; gap: 6px; }
+  .audience-radio { flex: 1; }
+  .audience-radio input { display: none; }
+  .audience-radio label {
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px; padding: 8px 6px; border-radius: var(--radius);
+    border: 1.5px solid var(--border2); font-size: 12px; font-weight: 500;
+    color: var(--text2); cursor: pointer; transition: all 0.15s; text-align: center;
+  }
+  .audience-radio input:checked + label {
+    border-color: var(--accent); background: var(--accent-light); color: var(--accent);
+  }
+  .audience-radio label svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .org-checklist { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; max-height: 160px; overflow-y: auto; display: none; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .org-checklist.show { display: flex; }
+  .org-check-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; }
+  .org-check-item input { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+  .select-all-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .select-all-row span { font-size: 11px; color: var(--accent); cursor: pointer; font-weight: 500; }
 </style>
 </head>
 <body>
@@ -36,7 +53,7 @@
     <div class="sidebar-brand">
       <div class="brand-row" style="align-items:center; gap:12px;">
         <img src="../images/bastrop_logo.png" alt="Portal logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
-        <span class="brand-name">Portal</span>
+        <span class="brand-name"></span>
       </div>
       <span class="org-chip manager">Manager</span>
     </div>
@@ -51,9 +68,9 @@
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Nonprofits
         </a>
-        <a class="nav-item" href="submissions.html">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-          Submissions
+        <a class="nav-item active mgr" href="announcements.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Announcements
         </a>
       </div>
       <div class="nav-section">
@@ -62,6 +79,11 @@
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
           Template Library
         </a>
+        <a class="nav-item" href="submissions.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          Submissions
+          <span class="nav-badge red">7</span>
+        </a>
         <a class="nav-item" href="reports.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
           Reports
@@ -69,11 +91,7 @@
         <a class="nav-item" href="messages.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Messages
-          <span class="nav-badge red">5</span>
-        </a>
-        <a class="nav-item active mgr" href="announcements.html">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          Announcements
+          <span class="nav-badge purple">5</span>
         </a>
       </div>
       <div class="nav-section">
@@ -97,7 +115,7 @@
     <header class="topbar">
       <div>
         <div class="page-title">Announcements</div>
-        <div class="page-sub">Shared board — visible to all nonprofits and community support</div>
+        <div class="page-sub">Post announcements to nonprofits and community support</div>
       </div>
       <div class="topbar-right">
         <button class="btn btn-icon" style="position:relative;">
@@ -108,24 +126,61 @@
     </header>
 
     <div class="content">
-      <div class="two-col-narrow" style="grid-template-columns:1fr 300px;align-items:start;">
+      <div class="two-col-narrow" style="grid-template-columns:1fr 320px;align-items:start;">
 
         <!-- LEFT: board -->
-        <div>
-          <div id="ann-board" class="ann-board">
-            <!-- populated by JS -->
-          </div>
-        </div>
+        <div id="ann-board" class="ann-board"></div>
 
         <!-- RIGHT: post form -->
         <div class="card">
           <div class="card-header"><div class="card-title">Post an announcement</div></div>
           <div class="card-body">
-            <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Posting as <strong>Taylor Andry</strong> (Manager). All users will see this.</div>
+
+            <label class="form-label">Send to</label>
+            <div class="audience-selector">
+              <div class="audience-radio-row">
+                <div class="audience-radio">
+                  <input type="radio" name="audience" id="aud-nonprofits" value="nonprofits" onchange="onAudienceChange()" checked />
+                  <label for="aud-nonprofits">
+                    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    Nonprofits
+                  </label>
+                </div>
+                <div class="audience-radio">
+                  <input type="radio" name="audience" id="aud-cs" value="community" onchange="onAudienceChange()" />
+                  <label for="aud-cs">
+                    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Community
+                  </label>
+                </div>
+                <div class="audience-radio">
+                  <input type="radio" name="audience" id="aud-both" value="both" onchange="onAudienceChange()" />
+                  <label for="aud-both">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    Both
+                  </label>
+                </div>
+              </div>
+
+              <!-- Nonprofit org checklist (shown when Nonprofits or Both selected) -->
+              <div class="org-checklist show" id="np-checklist">
+                <div class="select-all-row">
+                  <span style="font-size:11px;color:var(--text2);font-weight:500;">Select nonprofits</span>
+                  <span onclick="toggleSelectAll()">Select all</span>
+                </div>
+                <label class="org-check-item"><input type="checkbox" value="Nonprofit #1" checked /> Nonprofit #1</label>
+                <label class="org-check-item"><input type="checkbox" value="Nonprofit #2" checked /> Nonprofit #2</label>
+                <label class="org-check-item"><input type="checkbox" value="Nonprofit #3" checked /> Nonprofit #3</label>
+                <label class="org-check-item"><input type="checkbox" value="Nonprofit #4" checked /> Nonprofit #4</label>
+                <label class="org-check-item"><input type="checkbox" value="Nonprofit #5" checked /> Nonprofit #5</label>
+                <label class="org-check-item"><input type="checkbox" value="Nonprofit #6" checked /> Nonprofit #6</label>
+              </div>
+            </div>
+
+            <label class="form-label">Message</label>
             <textarea class="form-textarea form-input" id="ann-message" placeholder="Write your announcement…" rows="5" maxlength="500" oninput="updateCharCount()"></textarea>
             <div class="char-count"><span id="char-count">0</span> / 500</div>
             <div class="post-btn-row">
-              <span style="font-size:11px;color:var(--text3);">Visible to everyone</span>
               <button class="btn btn-primary mgr" onclick="postAnnouncement()">
                 <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
                 Post
@@ -141,42 +196,69 @@
 
 <script src="../js/storage.js"></script>
 <script>
-  const AUTHOR = { name: 'Taylor Andry', role: 'Manager', initials: 'TA', color: '#2D5016' };
+  const AUTHOR = { name: 'Taylor Andry', role: 'Manager' };
+
+  function onAudienceChange() {
+    const val = document.querySelector('input[name="audience"]:checked').value;
+    const checklist = document.getElementById('np-checklist');
+    checklist.classList.toggle('show', val === 'nonprofits' || val === 'both');
+  }
+
+  function toggleSelectAll() {
+    const boxes = document.querySelectorAll('#np-checklist input[type="checkbox"]');
+    const allChecked = Array.from(boxes).every(b => b.checked);
+    boxes.forEach(b => b.checked = !allChecked);
+    document.querySelector('.select-all-row span:last-child').textContent = allChecked ? 'Select all' : 'Deselect all';
+  }
+
+  function getAudience() {
+    const val = document.querySelector('input[name="audience"]:checked').value;
+    if (val === 'community') return { type: 'community', orgs: [] };
+    if (val === 'both') {
+      const orgs = Array.from(document.querySelectorAll('#np-checklist input:checked')).map(b => b.value);
+      return { type: 'both', orgs };
+    }
+    const orgs = Array.from(document.querySelectorAll('#np-checklist input:checked')).map(b => b.value);
+    return { type: 'nonprofits', orgs };
+  }
+
+  function audienceLabel(audience) {
+    if (audience.type === 'community') return 'Community Support';
+    if (audience.type === 'both') return audience.orgs.length === 6 ? 'All Nonprofits + Community Support' : `${audience.orgs.join(', ')} + Community Support`;
+    if (audience.orgs.length === 6) return 'All Nonprofits';
+    return audience.orgs.join(', ');
+  }
 
   function updateCharCount() {
-    const len = document.getElementById('ann-message').value.length;
-    document.getElementById('char-count').textContent = len;
+    document.getElementById('char-count').textContent = document.getElementById('ann-message').value.length;
   }
 
   function postAnnouncement() {
     const message = document.getElementById('ann-message').value.trim();
     if (!message) { alert('Please write something before posting.'); return; }
-    addAnnouncement({ authorName: AUTHOR.name, authorRole: AUTHOR.role, message });
+
+    const audience = getAudience();
+    if ((audience.type === 'nonprofits' || audience.type === 'both') && audience.orgs.length === 0) {
+      alert('Please select at least one nonprofit.');
+      return;
+    }
+
+    addAnnouncement({
+      authorName: AUTHOR.name,
+      authorRole: AUTHOR.role,
+      message,
+      audience, // stored so recipient pages can filter
+    });
+
     document.getElementById('ann-message').value = '';
     updateCharCount();
     renderBoard();
   }
 
-  function removeAnnouncement(id) {
-    if (!confirm('Delete this announcement? Everyone will lose access to it.')) return;
+  function removePost(id) {
+    if (!confirm('Delete this announcement?')) return;
     deleteAnnouncement(id);
     renderBoard();
-  }
-
-  function roleStyle(role) {
-    if (role === 'Manager') return 'background:var(--accent-light);color:var(--accent);';
-    if (role === 'Community Support') return 'background:var(--purple-light);color:var(--purple);';
-    return 'background:var(--surface2);color:var(--text3);';
-  }
-
-  function avatarColor(role) {
-    if (role === 'Manager') return '#2D5016';
-    if (role === 'Community Support') return '#3D2B6B';
-    return '#B45309';
-  }
-
-  function initials(name) {
-    return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   }
 
   function timeAgo(isoString) {
@@ -188,34 +270,47 @@
   }
 
   function renderBoard() {
-    const announcements = getAnnouncements();
+    const posts = getAnnouncements();
     const board = document.getElementById('ann-board');
 
-    if (announcements.length === 0) {
+    if (posts.length === 0) {
       board.innerHTML = `
         <div class="ann-empty">
           <svg viewBox="0 0 24 24"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <p>No announcements yet.<br>Post one to get started.</p>
+          <p>No announcements yet. Post one to get started.</p>
         </div>`;
       return;
     }
 
-    board.innerHTML = announcements.map(a => `
-      <div class="ann-post">
-        <div class="ann-post-header">
-          <div class="ann-avatar" style="background:${avatarColor(a.authorRole)};">${initials(a.authorName)}</div>
-          <div>
-            <div class="ann-author">${a.authorName}</div>
-            <span class="ann-role-tag" style="${roleStyle(a.authorRole)}">${a.authorRole}</span>
+    board.innerHTML = posts.map(a => {
+      const audience = a.audience || { type: 'both', orgs: [] };
+      const audLabel = audienceLabel(audience);
+      const roleColor = a.authorRole === 'Manager' ? '#2D5016' : a.authorRole === 'Community Support' ? '#3D2B6B' : '#B45309';
+      const roleTagStyle = a.authorRole === 'Manager'
+        ? 'background:var(--accent-light);color:var(--accent);'
+        : a.authorRole === 'Community Support'
+          ? 'background:var(--purple-light);color:var(--purple);'
+          : 'background:var(--surface2);color:var(--text2);';
+      const init = a.authorName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+
+      return `
+        <div class="ann-post">
+          <div class="ann-post-header">
+            <div class="ann-avatar" style="background:${roleColor};">${init}</div>
+            <div>
+              <div class="ann-author">${a.authorName}</div>
+              <span class="ann-role-tag" style="${roleTagStyle}">${a.authorRole}</span>
+              <span class="ann-audience-tag">→ ${audLabel}</span>
+            </div>
+            <div class="ann-time">${timeAgo(a.postedAt)}</div>
+            <button class="ann-delete" onclick="removePost('${a.id}')">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              Delete
+            </button>
           </div>
-          <div class="ann-time">${timeAgo(a.postedAt)}</div>
-          <button class="ann-delete" onclick="removeAnnouncement('${a.id}')">
-            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-            Delete
-          </button>
-        </div>
-        <div class="ann-message">${a.message}</div>
-      </div>`).join('');
+          <div class="ann-message">${a.message}</div>
+        </div>`;
+    }).join('');
   }
 
   renderBoard();

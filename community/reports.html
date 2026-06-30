@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Reports — Community Support</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<style>
+  .file-name-display { font-size: 12px; color: var(--accent); margin-top: 6px; font-weight: 500; display: none; }
+  .file-name-display.show { display: block; }
+  .saved-banner { background: var(--accent-light); color: var(--accent); font-size: 12.5px; padding: 10px 14px; border-radius: var(--radius); margin-bottom: 14px; display: none; align-items: center; gap: 8px; }
+  .saved-banner.show { display: flex; }
+  .saved-banner svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+</style>
 </head>
 <body>
 <div class="app">
@@ -12,9 +19,9 @@
     <div class="sidebar-brand">
       <div class="brand-row" style="align-items:center; gap:12px;">
         <img src="../images/bastrop_logo.png" alt="Portal logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
-        <span class="brand-name">Portal</span>
+        <span class="brand-name"></span>
       </div>
-      <span class="org-chip">Community Support</span>
+      <span class="org-chip" style="background:var(--accent-light);color:var(--accent);">Cmty Support #1</span>
     </div>
     <nav class="nav">
       <div class="nav-section">
@@ -23,11 +30,6 @@
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           Dashboard
         </a>
-        <a class="nav-item" href="messages.html">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Messages
-          <span class="nav-badge" style="background:var();">2</span>
-        </a>
         <a class="nav-item active" href="reports.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
           Reports
@@ -35,6 +37,11 @@
         <a class="nav-item" href="announcements.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           Announcements
+        </a>
+        <a class="nav-item" href="messages.html">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Messages
+          <span class="nav-badge" style="background:var(--accent);">2</span>
         </a>
       </div>
       <div class="nav-section">
@@ -46,8 +53,11 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi;">CS</div>
-      <div><div class="user-name">Community Support</div><div class="user-role">Community Support</div></div>
+      <div class="user-avi" style="background:var(--red);">JD</div>
+      <div style="min-width:0;">
+        <div class="user-name">Jane Doe</div>
+        <div class="user-role" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Cmty Support #1</div>
+      </div>
       <a class="sign-out" href="../index.html" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </a>
@@ -99,7 +109,7 @@
               Report uploaded. The manager can now view and download it.
             </div>
 
-            <div>
+            <div style="background:var(--accent-light);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--accent);margin-bottom:16px;">
               Upload your community support reports here. The manager will be able to download them from the Reports page.
             </div>
 
@@ -113,10 +123,10 @@
 
             <div class="form-group" style="margin-top:14px;">
               <label class="form-label">Report name / description (optional)</label>
-              <input class="form-input" id="cs-report-desc" placeholder="e.g. Q2 Community Support Summary" />
+              <input class="form-input" id="cs-report-desc" placeholder="e.g. Community Support Report" />
             </div>
 
-            <button class="btn btn-primary" ;width:100%;justify-content:center;margin-top:4px;" onclick="submitCSReport()">
+            <button class="btn btn-primary" style="background:var(--accent);border-color:var(--accent);width:100%;justify-content:center;margin-top:4px;" onclick="submitCSReport()">
               <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
               Upload Report
             </button>

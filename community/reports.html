@@ -11,6 +11,7 @@
   .saved-banner { background: var(--accent-light); color: var(--accent); font-size: 12.5px; padding: 10px 14px; border-radius: var(--radius); margin-bottom: 14px; display: none; align-items: center; gap: 8px; }
   .saved-banner.show { display: flex; }
   .saved-banner svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+  
 </style>
 </head>
 <body>
@@ -53,9 +54,9 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi" style="background:var(--red);">JD</div>
+      <div class="user-avi" style="background:#0953b4;">JD</div>
       <div style="min-width:0;">
-        <div class="user-name">Jane Doe</div>
+        <div class="user-name">John Doe</div>
         <div class="user-role" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Cmty Support #1</div>
       </div>
       <a class="sign-out" href="../index.html" title="Sign out">
@@ -151,6 +152,35 @@
       el.classList.add('show');
     }
   }
+  function openViewModal(id) {
+  const r = getSubmissions().find(s => s.id === id);
+  if (!r) return;
+
+  const status = r.status || 'Pending';
+  const pillClass = getStatusPillClass(status);
+
+  document.getElementById('modal-report-title').textContent = r.fileName;
+  document.getElementById('modal-file-name').textContent = r.fileName;
+  document.getElementById('modal-file-meta').textContent = `Uploaded ${formatDate(r.submittedAt)}`;
+  document.getElementById('modal-download-btn').onclick = () => downloadSubmission(id);
+  document.getElementById('modal-status-pill').className = `pill ${pillClass}`;
+  document.getElementById('modal-status-pill').textContent = status;
+
+  const rejBlock = document.getElementById('modal-rejection-block');
+  if (status === 'Rejected') {
+    rejBlock.style.display = 'block';
+    document.getElementById('modal-rejection-text').textContent =
+      r.rejectionComment || 'No comment was left. Contact your manager for details.';
+  } else {
+    rejBlock.style.display = 'none';
+  }
+
+  document.getElementById('report-view-modal').classList.add('open');
+}
+
+function closeViewModal() {
+  document.getElementById('report-view-modal').classList.remove('open');
+}
 
   async function submitCSReport() {
     if (!selectedFile) {
@@ -187,32 +217,78 @@
     renderCSReports();
   }
 
-  function renderCSReports() {
-    const reports = getSubmissions()
-      .filter(s => s.orgName === CS_ORG)
-      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+function renderCSReports() {
+  const reports = getSubmissions()
+    .filter(s => s.orgName === CS_ORG)
+    .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
 
-    const tbody = document.getElementById('cs-reports-tbody');
+  const tbody = document.getElementById('cs-reports-tbody');
 
-    if (reports.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;font-size:12.5px;">No reports uploaded yet.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = reports.map(r => {
-      const status = r.status || 'Pending';
-      const pillClass = getStatusPillClass(status);
-      return `
-        <tr>
-          <td style="font-weight:500;">${r.fileName}</td>
-          <td style="color:var(--text3);">${formatDate(r.submittedAt)}</td>
-          <td><span class="pill ${pillClass}">${status}</span></td>
-          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="downloadSubmission('${r.id}')">Download</button></td>
-        </tr>`;
-    }).join('');
+  if (reports.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;font-size:12.5px;">No reports uploaded yet.</td></tr>`;
+    return;
   }
+
+  tbody.innerHTML = reports.map(r => {
+    const status = r.status || 'Pending';
+    const pillClass = getStatusPillClass(status);
+    return `
+      <tr>
+        <td style="font-weight:500;">${r.fileName}</td>
+        <td style="color:var(--text3);">${formatDate(r.submittedAt)}</td>
+        <td><span class="pill ${pillClass}">${status}</span></td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openViewModal('${r.id}')">View</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
 
   renderCSReports();
 </script>
+<div class="modal-overlay" id="report-view-modal">
+  <div class="modal-box" style="width:440px;">
+    <div class="modal-header">
+      <h3 id="modal-report-title">Report Details</h3>
+      <button class="modal-close" onclick="closeViewModal()">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+
+      <!-- File card -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;">
+        <div style="width:38px;height:38px;background:var(--accent-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" stroke="var(--accent)" fill="none" stroke-width="2" style="width:18px;height:18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div id="modal-file-name" style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          <div id="modal-file-meta" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
+        </div>
+        <button class="btn btn-primary" style="font-size:11px;padding:6px 12px;flex-shrink:0;" id="modal-download-btn">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </button>
+      </div>
+
+      <!-- Status -->
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+        <span style="color:var(--text2);font-weight:500;">Status:</span>
+        <span id="modal-status-pill" class="pill"></span>
+      </div>
+
+      <!-- Rejection comment — only shown if rejected -->
+      <div id="modal-rejection-block" style="display:none;background:var(--red-light);border:1.5px solid var(--red);border-radius:var(--radius);padding:12px 14px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--red);margin-bottom:6px;display:flex;align-items:center;gap:5px;">
+          <svg viewBox="0 0 24 24" stroke="var(--red)" fill="none" stroke-width="2.5" style="width:12px;height:12px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Manager's comment
+        </div>
+        <div id="modal-rejection-text" style="font-size:12.5px;color:var(--red);line-height:1.5;"></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeViewModal()">Close</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

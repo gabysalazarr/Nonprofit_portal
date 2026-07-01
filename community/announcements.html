@@ -64,9 +64,9 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi" style="background:var(--red);">JD</div>
+      <div class="user-avi" style="background:#0953b4;">JD</div>
       <div style="min-width:0;">
-        <div class="user-name">Jane Doe</div>
+        <div class="user-name">John Doe</div>
         <div class="user-role" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Cmty Support #1</div>
       </div>
       <a class="sign-out" href="../index.html" title="Sign out">
@@ -127,7 +127,12 @@
   function postAnnouncement() {
     const message = document.getElementById('ann-message').value.trim();
     if (!message) { alert('Please write something before posting.'); return; }
-    addAnnouncement({ authorName: CS_NAME, authorRole: CS_ROLE, message });
+    addAnnouncement({
+      authorName: CS_NAME,
+      authorRole: CS_ROLE,
+      message,
+      audience: { type: 'community', orgs: [], csOrgs: ['Community Support #1'] }
+    });
     document.getElementById('ann-message').value = '';
     updateCharCount();
     renderBoard();
@@ -141,7 +146,7 @@
 
   function roleStyle(role) {
     if (role === 'Manager') return 'background:var(--accent-light);color:var(--accent);';
-    if (role === 'Community Support') return 'background:var(--purple-light);color:var(--purple);';
+    if (role === 'Community Support') return 'background:var(--accent-light);color:var(--accent);';
     return 'background:var(--surface2);color:var(--text2);';
   }
 
@@ -164,41 +169,50 @@
   }
 
   function renderBoard() {
-    const announcements = getAnnouncements();
-    const board = document.getElementById('ann-board');
+  const all = getAnnouncements();
 
-    if (announcements.length === 0) {
-      board.innerHTML = `
-        <div class="ann-empty">
-          <svg viewBox="0 0 24 24"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <p>No announcements yet.<br>Be the first to post.</p>
-        </div>`;
-      return;
-    }
+  // Only show announcements directed at Community Support or Both
+  const announcements = all.filter(a => {
+    if (a.authorRole === 'Community Support') return true;
+    const audience = a.audience;
+    if (!audience) return false; // ← was true, now false
+    return audience.type === 'community' || audience.type === 'both';
+  });
 
-    board.innerHTML = announcements.map(a => {
-      const canDelete = a.authorName === CS_NAME && a.authorRole === CS_ROLE;
-      const deleteBtn = canDelete
-        ? `<button class="ann-delete" onclick="removeAnnouncement('${a.id}')">
-             <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-             Delete
-           </button>`
-        : '';
-      return `
-        <div class="ann-post">
-          <div class="ann-post-header">
-            <div class="ann-avatar" style="background:${avatarColor(a.authorRole)};">${initials(a.authorName)}</div>
-            <div>
-              <div class="ann-author">${a.authorName}</div>
-              <span class="ann-role-tag" style="${roleStyle(a.authorRole)}">${a.authorRole}</span>
-            </div>
-            <div class="ann-time">${timeAgo(a.postedAt)}</div>
-            ${deleteBtn}
-          </div>
-          <div class="ann-message">${a.message}</div>
-        </div>`;
-    }).join('');
+  const board = document.getElementById('ann-board');
+
+  if (announcements.length === 0) {
+    board.innerHTML = `
+      <div class="ann-empty">
+        <svg viewBox="0 0 24 24"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <p>No announcements yet.<br>Be the first to post.</p>
+      </div>`;
+    return;
   }
+
+  board.innerHTML = announcements.map(a => {
+    const canDelete = a.authorName === CS_NAME && a.authorRole === CS_ROLE;
+    const deleteBtn = canDelete
+      ? `<button class="ann-delete" onclick="removeAnnouncement('${a.id}')">
+           <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+           Delete
+         </button>`
+      : '';
+    return `
+      <div class="ann-post">
+        <div class="ann-post-header">
+          <div class="ann-avatar" style="background:${avatarColor(a.authorRole)};">${initials(a.authorName)}</div>
+          <div>
+            <div class="ann-author">${a.authorName}</div>
+            <span class="ann-role-tag" style="${roleStyle(a.authorRole)}">${a.authorRole}</span>
+          </div>
+          <div class="ann-time">${timeAgo(a.postedAt)}</div>
+          ${deleteBtn}
+        </div>
+        <div class="ann-message">${a.message}</div>
+      </div>`;
+  }).join('');
+}
 
   renderBoard();
 </script>

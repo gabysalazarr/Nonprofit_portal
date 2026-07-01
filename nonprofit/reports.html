@@ -75,47 +75,57 @@
       </div>
     </header>
     <div class="content">
-      <div style="font-size:13px;color:var(--text2);">Reports shared with your organization by your manager.</div>
-      <div class="report-grid">
-        <div class="report-card">
-          <div class="rc-header">
-            <div class="rc-icon green"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-            <span class="pill pill-green">Visible</span>
-          </div>
-          <div class="rc-name">Nonprofit #1 June Report 2026</div>
-          <div class="rc-meta">Shared July 1, 2026</div>
-          <div class="rc-footer">
-            <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</div>
-            <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View</div>
-          </div>
-        </div>
-        <div class="report-card">
-          <div class="rc-header">
-            <div class="rc-icon purple"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-            <span class="pill pill-green">Visible</span>
-          </div>
-          <div class="rc-name">Quarterly Report 2026</div>
-          <div class="rc-meta">Shared Jan 15, 2026</div>
-          <div class="rc-footer">
-            <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</div>
-            <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View</div>
-          </div>
-        </div>
-        <div class="report-card">
-          <div class="rc-header">
-            <div class="rc-icon amber"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-            <span class="pill pill-green">Visible</span>
-          </div>
-          <div class="rc-name">Annual Report 2025</div>
-          <div class="rc-meta">Shared Dec 3, 2024</div>
-          <div class="rc-footer">
-            <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</div>
-            <div class="dl-btn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View</div>
-          </div>
-        </div>
+      <div class="section-label">Reports from your manager</div>
+      <div class="report-grid" id="reports-grid">
+        <!-- populated by JS -->
+      </div>
+      <div id="reports-empty" style="display:none;text-align:center;padding:60px 20px;color:var(--text3);font-size:13px;">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5" style="width:36px;height:36px;stroke:var(--text3);margin-bottom:12px;display:block;margin-inline:auto;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        No reports have been shared with your organization yet.
       </div>
     </div>
   </div>
 </div>
+<script src="../js/storage.js"></script>
+<script>
+  // In production this comes from the authenticated session
+  const MY_ORG = 'Nonprofit #1';
+
+  function renderReports() {
+    const reports = getReportsVisibleTo(MY_ORG)
+      .sort((a,b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+
+    const grid  = document.getElementById('reports-grid');
+    const empty = document.getElementById('reports-empty');
+    const ICON_COLORS = ['green','purple','amber','blue'];
+
+    if (reports.length === 0) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    grid.innerHTML = reports.map((r, i) => `
+      <div class="report-card">
+        <div class="rc-header">
+          <div class="rc-icon ${ICON_COLORS[i % ICON_COLORS.length]}">
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <span class="pill pill-green">Visible</span>
+        </div>
+        <div class="rc-name">${r.name}</div>
+        <div class="rc-meta">Shared ${formatDate(r.uploadedAt)}</div>
+        <div class="rc-footer">
+          <div class="dl-btn" onclick="downloadReport('${r.id}')">
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  renderReports();
+</script>
 </body>
 </html>

@@ -209,14 +209,15 @@ function getAnnouncements() {
   return safeGet(STORAGE_KEYS.ANNOUNCEMENTS);
 }
 
-function addAnnouncement({ authorName, authorRole, message }) {
+function addAnnouncement({ authorName, authorRole, message, audience }) {
   const announcements = getAnnouncements();
   const announcement = {
-    id:         'ann_' + Date.now(),
+    id:        'ann_' + Date.now(),
     authorName,
     authorRole,
     message,
-    postedAt:   new Date().toISOString(),
+    audience,
+    postedAt:  new Date().toISOString(),
   };
   announcements.unshift(announcement);
   safeSet(STORAGE_KEYS.ANNOUNCEMENTS, announcements);

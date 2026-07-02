@@ -14,6 +14,28 @@
   .saved-banner svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
   .file-name-display { font-size: 12px; color: var(--accent); margin-top: 6px; font-weight: 500; display: none; }
   .file-name-display.show { display: block; }
+  .method-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .method-tab { flex: 1; padding: 8px; border-radius: var(--radius); border: 1.5px solid var(--border2); background: transparent; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s; }
+  .method-tab svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .method-tab.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+  .method-panel { display: none; }
+  .method-panel.active { display: block; }
+  .field-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .field-row { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 10px; }
+  .field-label-input { flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 12.5px; color: var(--text); outline: none; min-width: 0; }
+  .field-label-input::placeholder { color: var(--text3); }
+  .field-type-select { border: 1px solid var(--border2); border-radius: 7px; background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: 11px; color: var(--text2); padding: 5px 6px; outline: none; flex-shrink: 0; }
+  .field-required-toggle { width: 28px; height: 17px; border-radius: 10px; background: var(--border2); cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.2s; }
+  .field-required-toggle.on { background: var(--accent); }
+  .field-required-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: white; transition: left 0.2s; }
+  .field-required-toggle.on::after { left: 13px; }
+  .field-remove { background: none; border: none; cursor: pointer; color: var(--text3); padding: 3px; border-radius: 5px; display: flex; flex-shrink: 0; transition: all 0.15s; }
+  .field-remove:hover { color: var(--red); background: var(--red-light); }
+  .field-remove svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .add-field-btn { width: 100%; padding: 9px; border: 1.5px dashed var(--border2); border-radius: var(--radius); background: transparent; color: var(--text2); font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s; }
+  .add-field-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .add-field-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .field-empty-state { text-align: center; padding: 18px 12px; color: var(--text3); font-size: 12px; }
 </style>
 </head>
 <body>
@@ -79,7 +101,6 @@
       </a>
     </div>
   </aside>
-
   <div class="main">
     <header class="topbar">
       <div>
@@ -93,10 +114,8 @@
         </button>
       </div>
     </header>
-
     <div class="content">
       <div class="two-col-narrow">
-
         <!-- LEFT: live template table -->
         <div class="card">
           <div class="card-header">
@@ -132,53 +151,100 @@
             </table>
           </div>
         </div>
-
-        <!-- RIGHT: upload form -->
+        <!-- RIGHT: create template -->
         <div class="card">
-          <div class="card-header"><div class="card-title">Upload new template</div></div>
+          <div class="card-header"><div class="card-title">Create a template</div></div>
           <div class="card-body">
-
             <div class="saved-banner" id="saved-banner">
               <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-              Template uploaded and saved. Nonprofits can now download it.
+              Template saved. Nonprofits can now access it.
             </div>
-
-            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('template-file').click()">
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-              <p>Click to upload a template file</p>
-              <span>PDF, DOCX, XLSX · Max ~2MB for this demo</span>
-              <input type="file" id="template-file" accept=".pdf,.docx,.xlsx,.doc" style="display:none;" onchange="handleFileSelect(this)" />
+            <!-- Tab switcher -->
+            <div class="method-tabs">
+              <button class="method-tab active" id="tab-upload" onclick="switchTab('upload')">
+                <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                Upload File
+              </button>
+              <button class="method-tab" id="tab-build" onclick="switchTab('build')">
+                <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Build Form
+              </button>
             </div>
-            <div class="file-name-display" id="file-name-display"></div>
-
-            <div class="form-group" style="margin-top:16px;">
-              <label class="form-label">Template name</label>
-              <input class="form-input" id="template-name" placeholder="e.g. Template #1" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Due date</label>
-              <input class="form-input" type="date" id="template-due" />
-            </div>
-            <div class="form-group">
-              <div class="assign-select-all">
-                <label class="form-label" style="margin:0;">Assign to</label>
-                <span id="select-all-toggle" onclick="toggleSelectAll()" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:500;">Select all</span>
+            <!-- Upload File panel -->
+            <div class="method-panel active" id="panel-upload">
+              <div class="upload-zone" id="upload-zone" onclick="document.getElementById('template-file').click()">
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                <p>Click to upload a template file</p>
+                <span>PDF, DOCX, XLSX · Max ~2MB</span>
+                <input type="file" id="template-file" accept=".pdf,.docx,.xlsx,.doc" style="display:none;" onchange="handleFileSelect(this)" />
               </div>
-              <div class="assign-list" id="assign-list">
-                <label class="assign-option"><input type="checkbox" value="Nonprofit #1" onchange="updateCount()" /> Nonprofit #1</label>
-                <label class="assign-option"><input type="checkbox" value="Nonprofit #2" onchange="updateCount()" /> Nonprofit #2</label>
-                <label class="assign-option"><input type="checkbox" value="Nonprofit #3" onchange="updateCount()" /> Nonprofit #3</label>
-                <label class="assign-option"><input type="checkbox" value="Nonprofit #4" onchange="updateCount()" /> Nonprofit #4</label>
-                <label class="assign-option"><input type="checkbox" value="Nonprofit #5" onchange="updateCount()" /> Nonprofit #5</label>
-                <label class="assign-option"><input type="checkbox" value="Nonprofit #6" onchange="updateCount()" /> Nonprofit #6</label>
-              </div>
-              <div class="assign-count" id="assign-count">0 selected</div>
-            </div>
+              <div class="file-name-display" id="file-name-display"></div>
 
-            <button class="btn btn-primary mgr" style="width:100%;justify-content:center;" onclick="uploadTemplate()">
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-              Upload Template
-            </button>
+              <div class="form-group" style="margin-top:14px;">
+                <label class="form-label">Template name</label>
+                <input class="form-input" id="template-name" placeholder="e.g. Q3 Impact Report" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Due date</label>
+                <input class="form-input" type="date" id="template-due" />
+              </div>
+              <div class="form-group">
+                <div class="assign-select-all">
+                  <label class="form-label" style="margin:0;">Assign to</label>
+                  <span id="select-all-toggle" onclick="toggleSelectAll()" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:500;">Select all</span>
+                </div>
+                <div class="assign-list" id="assign-list">
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #1" onchange="updateCount()" /> Community Essential #1</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #2" onchange="updateCount()" /> Community Essential #2</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #3" onchange="updateCount()" /> Community Essential #3</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #4" onchange="updateCount()" /> Community Essential #4</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #5" onchange="updateCount()" /> Community Essential #5</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #6" onchange="updateCount()" /> Community Essential #6</label>
+                </div>
+                <div class="assign-count" id="assign-count">0 selected</div>
+              </div>
+              <button class="btn btn-primary mgr" style="width:100%;justify-content:center;" onclick="uploadTemplate()">
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                Upload Template
+              </button>
+            </div>
+            <!-- Build Form panel -->
+            <div class="method-panel" id="panel-build">
+              <div class="form-group">
+                <label class="form-label">Template name</label>
+                <input class="form-input" id="build-name" placeholder="e.g. Volunteer Hours Log" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Due date</label>
+                <input class="form-input" type="date" id="build-due" />
+              </div>
+              <label class="form-label">Form fields</label>
+              <div class="field-list" id="field-list"></div>
+              <div class="field-empty-state" id="field-empty-state">No fields yet — add one below.</div>
+              <button class="add-field-btn" onclick="addField()">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add field
+              </button>
+              <div class="form-group" style="margin-top:14px;">
+                <div class="assign-select-all">
+                  <label class="form-label" style="margin:0;">Assign to</label>
+                  <span id="build-select-all-toggle" onclick="toggleBuildSelectAll()" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:500;">Select all</span>
+                </div>
+                <div class="assign-list" id="build-assign-list">
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #1" onchange="updateBuildCount()" /> Community Essential #1</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #2" onchange="updateBuildCount()" /> Community Essential #2</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #3" onchange="updateBuildCount()" /> Community Essential #3</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #4" onchange="updateBuildCount()" /> Community Essential #4</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #5" onchange="updateBuildCount()" /> Community Essential #5</label>
+                  <label class="assign-option"><input type="checkbox" value="Nonprofit #6" onchange="updateBuildCount()" /> Community Essential #6</label>
+                </div>
+                <div class="assign-count" id="build-assign-count">0 selected</div>
+              </div>
+              <button class="btn btn-primary mgr" style="width:100%;justify-content:center;margin-top:4px;" onclick="submitBuildForm()">
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Form Template
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -249,6 +315,107 @@
 
     renderLiveRows();
   }
+  // ── Tab switcher ──
+  function switchTab(tab) {
+    document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
+    document.getElementById('tab-build').classList.toggle('active', tab === 'build');
+    document.getElementById('panel-upload').classList.toggle('active', tab === 'upload');
+    document.getElementById('panel-build').classList.toggle('active', tab === 'build');
+  }
+
+  // ── Build Form ──
+  let fieldCount = 0;
+
+  function addField() {
+    fieldCount++;
+    const id = `field-${fieldCount}`;
+    const list = document.getElementById('field-list');
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    row.id = id;
+    row.innerHTML = `
+      <input class="field-label-input" placeholder="Field label, e.g. Total Beneficiaries" />
+      <select class="field-type-select">
+        <option value="text">Text</option>
+        <option value="number">Number</option>
+        <option value="date">Date</option>
+        <option value="textarea">Long text</option>
+      </select>
+      <div class="field-required-toggle" onclick="this.classList.toggle('on')" title="Required"></div>
+      <button class="field-remove" onclick="removeField('${id}')">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>`;
+    list.appendChild(row);
+    document.getElementById('field-empty-state').style.display = 'none';
+  }
+
+  function removeField(id) {
+    document.getElementById(id).remove();
+    const hasFields = document.getElementById('field-list').children.length > 0;
+    document.getElementById('field-empty-state').style.display = hasFields ? 'none' : 'block';
+  }
+
+  function toggleBuildSelectAll() {
+    const boxes = document.querySelectorAll('#build-assign-list input');
+    const allChecked = Array.from(boxes).every(b => b.checked);
+    boxes.forEach(b => b.checked = !allChecked);
+    document.getElementById('build-select-all-toggle').textContent = allChecked ? 'Select all' : 'Deselect all';
+    updateBuildCount();
+  }
+
+  function updateBuildCount() {
+    const checked = document.querySelectorAll('#build-assign-list input:checked');
+    document.getElementById('build-assign-count').textContent = `${checked.length} selected`;
+  }
+
+  async function submitBuildForm() {
+    const name = document.getElementById('build-name').value.trim();
+    const due  = document.getElementById('build-due').value;
+    const fieldRows = document.querySelectorAll('#field-list .field-row');
+    const orgs = Array.from(document.querySelectorAll('#build-assign-list input:checked')).map(cb => cb.value);
+
+    if (!name || !due || fieldRows.length === 0 || orgs.length === 0) {
+      alert('Please fill in the name, due date, add at least one field, and assign at least one org.');
+      return;
+    }
+
+    const fields = Array.from(fieldRows).map((row, i) => ({
+      id: 'f' + i,
+      label: row.querySelector('.field-label-input').value.trim() || 'Untitled field',
+      type: row.querySelector('.field-type-select').value,
+      required: row.querySelector('.field-required-toggle').classList.contains('on'),
+    }));
+
+    // Save form-builder template directly to localStorage (no file needed)
+    const templates = getTemplates();
+    const template = {
+      id:           'tpl_' + Date.now(),
+      name,
+      dueDate:      due,
+      assignedOrgs: orgs,
+      fields,
+      method:       'form-builder',
+      createdAt:    new Date().toISOString(),
+    };
+    templates.push(template);
+    safeSet(STORAGE_KEYS.TEMPLATES, templates);
+
+    // Reset
+    document.getElementById('build-name').value = '';
+    document.getElementById('build-due').value = '';
+    document.getElementById('field-list').innerHTML = '';
+    document.getElementById('field-empty-state').style.display = 'block';
+    document.querySelectorAll('#build-assign-list input').forEach(cb => cb.checked = false);
+    document.getElementById('build-select-all-toggle').textContent = 'Select all';
+    updateBuildCount();
+    fieldCount = 0;
+
+    const banner = document.getElementById('saved-banner');
+    banner.classList.add('show');
+    setTimeout(() => banner.classList.remove('show'), 4000);
+
+    renderLiveRows();
+  }
 
   function renderLiveRows() {
     const templates = getTemplates();
@@ -284,6 +451,7 @@
   }
 
   renderLiveRows();
+
 </script>
 </body>
 </html>

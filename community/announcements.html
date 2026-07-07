@@ -22,6 +22,42 @@
   .ann-empty svg { width: 36px; height: 36px; stroke: var(--text3); fill: none; stroke-width: 1.5; margin-bottom: 10px; }
   .char-count { font-size: 11px; color: var(--text3); text-align: right; margin-top: 4px; }
   .post-btn-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+  .video-upload-zone {
+    border: 1.5px dashed var(--border2); border-radius: var(--radius);
+    padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: all 0.15s; margin-top: 10px;
+  }
+  .video-upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+  .video-upload-zone svg { width: 16px; height: 16px; stroke: var(--text3); fill: none; stroke-width: 2; flex-shrink: 0; }
+  .video-upload-zone:hover svg { stroke: var(--accent); }
+  .video-upload-zone span { font-size: 12px; color: var(--text2); }
+  .video-selected { font-size: 11.5px; color: var(--accent); margin-top: 6px; display: none; font-weight: 500; }
+  .video-selected.show { display: block; }
+  .video-size-warning { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .ann-video-attachment {
+    margin-top: 10px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+  }
+  .ann-video-attachment svg { width: 16px; height: 16px; stroke: var(--text2); fill: none; stroke-width: 2; flex-shrink: 0; }
+  .ann-video-attachment span { font-size: 12.5px; color: var(--text2); font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ann-video-attachment .btn { font-size: 11px; padding: 4px 10px; flex-shrink: 0; }
+  .attach-upload-zone {
+    border: 1.5px dashed var(--border2); border-radius: var(--radius);
+    padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: all 0.15s; margin-top: 8px;
+  }
+  .attach-upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+  .attach-upload-zone svg { width: 16px; height: 16px; stroke: var(--text3); fill: none; stroke-width: 2; flex-shrink: 0; }
+  .attach-upload-zone:hover svg { stroke: var(--accent); }
+  .attach-upload-zone span { font-size: 12px; color: var(--text2); }
+  .attach-selected { font-size: 11.5px; color: var(--accent); margin-top: 4px; display: none; font-weight: 500; }
+  .attach-selected.show { display: block; }
+  .ann-file-attachment {
+    margin-top: 8px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+  }
+  .ann-file-attachment svg { width: 16px; height: 16px; stroke: var(--text2); fill: none; stroke-width: 2; flex-shrink: 0; }
+  .ann-file-attachment span { font-size: 12.5px; color: var(--text2); font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
 </head>
 <body>
@@ -79,7 +115,7 @@
     <header class="topbar">
       <div>
         <div class="page-title">Announcements</div>
-        <div class="page-sub">Shared board — visible to all users</div>
+        <div class="page-sub">Shared board — visible to all organizations</div>
       </div>
       <div class="topbar-right">
         <button class="btn btn-icon" style="position:relative;">
@@ -97,8 +133,20 @@
         <div class="card">
           <div class="card-header"><div class="card-title">Post an announcement</div></div>
           <div class="card-body">
-            <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Posting as <strong>Community Support</strong>. All users will see this.</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Posting as <strong>Cmty Support #1</strong>. All organizations will see this.</div>
             <textarea class="form-textarea form-input" id="ann-message" placeholder="Write your announcement…" rows="5" maxlength="500" oninput="updateCharCount()"></textarea>
+            <div class="video-upload-zone" onclick="document.getElementById('ann-video-input').click()">
+              <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              <span>Attach a video (optional)</span>
+              <input type="file" id="ann-video-input" accept="video/*" style="display:none;" onchange="handleVideoSelect(this)" />
+            </div>
+            <div class="video-selected" id="video-selected-name"></div>
+            <div class="attach-upload-zone" onclick="document.getElementById('ann-file-input').click()">
+              <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              <span>Attach a file (optional · PDF, Word, Excel, image)</span>
+              <input type="file" id="ann-file-input" accept=".pdf,.docx,.xlsx,.doc,.png,.jpg,.jpeg" style="display:none;" onchange="handleFileAttachment(this)" />
+            </div>
+            <div class="attach-selected" id="file-selected-name"></div>
             <div class="char-count"><span id="char-count">0</span> / 500</div>
             <div class="post-btn-row">
               <span style="font-size:11px;color:var(--text3);">Visible to everyone</span>
@@ -126,14 +174,31 @@
 
   function postAnnouncement() {
     const message = document.getElementById('ann-message').value.trim();
-    if (!message) { alert('Please write something before posting.'); return; }
+    const videoName = selectedVideo ? selectedVideo.name : null;
+    const attachmentName = selectedAttachment ? selectedAttachment.name : null;
+
+    if (!message && !videoName) {
+      alert('Please write a message or attach a video before posting.');
+      return;
+    }
+
     addAnnouncement({
       authorName: CS_NAME,
       authorRole: CS_ROLE,
       message,
-      audience: { type: 'community', orgs: [], csOrgs: ['Community Support #1'] }
+      audience: { type: 'community', orgs: [], csOrgs: ['Community Support #1'] },
+      videoName,
+      attachmentName,
     });
+
     document.getElementById('ann-message').value = '';
+    document.getElementById('ann-video-input').value = '';
+    document.getElementById('video-selected-name').textContent = '';
+    document.getElementById('video-selected-name').classList.remove('show');
+    document.getElementById('file-selected-name').textContent = '';
+    document.getElementById('file-selected-name').classList.remove('show');
+    selectedVideo = null;
+    selectedAttachment = null;
     updateCharCount();
     renderBoard();
   }
@@ -148,6 +213,16 @@
     if (role === 'Manager') return 'background:var(--accent-light);color:var(--accent);';
     if (role === 'Community Support') return 'background:var(--accent-light);color:var(--accent);';
     return 'background:var(--surface2);color:var(--text2);';
+  }
+  let selectedAttachment = null;
+
+  function handleFileAttachment(input) {
+    if (input.files.length > 0) {
+      selectedAttachment = input.files[0];
+      const el = document.getElementById('file-selected-name');
+      el.textContent = '✓ ' + selectedAttachment.name;
+      el.classList.add('show');
+    }
   }
 
   function avatarColor(role) {
@@ -166,6 +241,16 @@
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return formatDate(isoString);
+  }
+  let selectedVideo = null;
+
+  function handleVideoSelect(input) {
+    if (input.files.length > 0) {
+      selectedVideo = input.files[0];
+      const el = document.getElementById('video-selected-name');
+      el.textContent = '✓ ' + selectedVideo.name;
+      el.classList.add('show');
+    }
   }
 
   function renderBoard() {
@@ -210,6 +295,18 @@
           ${deleteBtn}
         </div>
         <div class="ann-message">${a.message}</div>
+        ${a.videoName ? `
+          <div class="ann-video-attachment">
+            <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <span>${a.videoName}</span>
+            <button class="btn" disabled title="Video playback requires backend">Preview</button>
+          </div>` : ''}
+        ${a.attachmentName ? `
+          <div class="ann-file-attachment">
+            <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            <span>${a.attachmentName}</span>
+            <button class="btn" disabled title="File download requires backend">Download</button>
+          </div>` : ''}
       </div>`;
   }).join('');
 }

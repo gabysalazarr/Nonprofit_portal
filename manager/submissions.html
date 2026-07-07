@@ -129,7 +129,7 @@
     <header class="topbar">
       <div>
         <div class="page-title">Submissions</div>
-        <div class="page-sub">Template submissions uploaded by nonprofits</div>
+        <div class="page-sub">Template and Report submissions uploaded by organizations</div>
       </div>
       <div class="topbar-right">
         <button class="btn btn-icon" style="position:relative;">
@@ -158,33 +158,11 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Template</th><th>Organization</th><th>File</th><th>Submitted</th><th>Status</th><th>Action</th></tr>
+              <tr><th>Submission Name</th><th>Template or Report</th><th>Organization</th><th>Submitted</th><th>Status</th><th>Action</th></tr>
             </thead>
             <tbody id="np-submissions-tbody">
-              <tr data-status="pending">
-                <td style="font-weight:500;">June 2026 Template <span class="source-tag demo">DEMO</span></td>
-                <td style="color:var(--text2);">Nonprofit #1</td>
-                <td style="color:var(--text3);">june_submission.pdf</td>
-                <td style="color:var(--text3);">Jun 5, 2026</td>
-                <td><span class="pill pill-gray">Pending</span></td>
-                <td><button class="btn" style="font-size:11px;padding:4px 9px;" disabled>Open</button></td>
-              </tr>
-              <tr data-status="in review">
-                <td style="font-weight:500;">Quarterly 2026 <span class="source-tag demo">DEMO</span></td>
-                <td style="color:var(--text2);">Nonprofit #2</td>
-                <td style="color:var(--text3);">q2_report.pdf</td>
-                <td style="color:var(--text3);">Jun 4, 2026</td>
-                <td><span class="pill pill-amber">In Review</span></td>
-                <td><button class="btn" style="font-size:11px;padding:4px 9px;" disabled>Open</button></td>
-              </tr>
-              <tr data-status="approved">
-                <td style="font-weight:500;">Annual 2026 <span class="source-tag demo">DEMO</span></td>
-                <td style="color:var(--text2);">Nonprofit #3</td>
-                <td style="color:var(--text3);">annual_report.pdf</td>
-                <td style="color:var(--text3);">Jun 2, 2026</td>
-                <td><span class="pill pill-green">Approved</span></td>
-                <td><button class="btn" style="font-size:11px;padding:4px 9px;" disabled>Open</button></td>
-              </tr>
+              <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Essential submissions yet.</td></tr>
+            </tbody>
             </tbody>
           </table>
         </div>
@@ -207,7 +185,7 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Organization</th><th>File</th><th>Submitted</th><th>Status</th><th>Action</th></tr>
+              <tr><th>Report Name</th><th>Organization</th><th>Submitted</th><th>Status</th><th>Action</th></tr>
             </thead>
             <tbody id="cs-submissions-tbody">
               <tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Support submissions yet.</td></tr>
@@ -282,56 +260,72 @@
 <script>
   let activeSubId = null;
 
-  function renderLiveRows() {
-    const all = getSubmissions().sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+function renderLiveRows() {
+  const all = getSubmissions().sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
 
-    // Community Essential (nonprofits) — role is 'nonprofit' or not 'community-support'
-    const npSubs = all.filter(s => s.role !== 'community-support');
-    const npTbody = document.getElementById('np-submissions-tbody');
-    npTbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
+  // 1. Community Essential Section
+  const npSubs = all.filter(s => s.role !== 'community-support');
+  const npTbody = document.getElementById('np-submissions-tbody');
+  npTbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
+
+  if (npSubs.length === 0 && !npTbody.querySelector('tr:not([data-live])')) {
+    // Fixed colspan from 5 to 6 to match the actual column count
+    npTbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Essential submissions yet.</td></tr>`;
+  } else if (npSubs.length > 0) { // Fixed: changed undefined csSubs to npSubs
+    npTbody.innerHTML = '';
+
     npSubs.forEach(sub => {
       const template = getTemplateById(sub.templateId);
-      const tName = template ? template.name : '(deleted template)';
+      const tName = template ? template.name : (sub.reportName || '(deleted template)');
+      const status = sub.status || 'Pending';
+      const pillClass = getStatusPillClass(status);
+      const submissionName = sub.role === 'nonprofit-report' ? (sub.reportName || sub.fileName || '—') : tName;
+      const templateOrReport = sub.role === 'nonprofit-report' ? 'Report' : 'Template';
+      
+      const tr = document.createElement('tr');
+      tr.dataset.live = 'true';
+      tr.dataset.status = status.toLowerCase();
+      tr.innerHTML = `
+        <td style="font-weight:500;">${submissionName}</td>
+        <td style="color:var(--text2);">${templateOrReport}</td>
+        <td style="color:var(--text2);">${sub.orgName}</td>
+        <td style="color:var(--text3);">${formatDate(sub.submittedAt)}</td>
+        <td><span class="pill ${pillClass}">${status}</span></td>
+        <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openDrawer('${sub.id}')">Open</button></td>`;
+      
+      // Kept insertBefore to maintain your intended reverse chronological insertion order
+      npTbody.insertBefore(tr, npTbody.firstChild);
+    });
+  } // Fixed: Added missing closing bracket for the else-if block
+
+  // 2. Community Support Section
+  const csSubs = all.filter(s => s.role === 'community-support');
+  const csTbody = document.getElementById('cs-submissions-tbody');
+  csTbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
+
+  if (csSubs.length === 0 && !csTbody.querySelector('tr:not([data-live])')) {
+    // Fixed colspan from 5 to 6 to match the actual column count
+    csTbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Support submissions yet.</td></tr>`;
+  } else if (csSubs.length > 0) {
+    csTbody.innerHTML = '';
+    
+    csSubs.forEach(sub => {
       const status = sub.status || 'Pending';
       const pillClass = getStatusPillClass(status);
       const tr = document.createElement('tr');
       tr.dataset.live = 'true';
       tr.dataset.status = status.toLowerCase();
       tr.innerHTML = `
-        <td style="font-weight:500;">${tName} <span class="source-tag live">LIVE</span></td>
+        <td style="font-weight:500;">${sub.reportName || sub.fileName || '—'}</td>
         <td style="color:var(--text2);">${sub.orgName}</td>
-        <td style="color:var(--text3);">${sub.fileName}</td>
         <td style="color:var(--text3);">${formatDate(sub.submittedAt)}</td>
         <td><span class="pill ${pillClass}">${status}</span></td>
         <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openDrawer('${sub.id}')">Open</button></td>`;
-      npTbody.insertBefore(tr, npTbody.firstChild);
+      
+      csTbody.insertBefore(tr, csTbody.firstChild);
     });
-
-    // Community Support — role is 'community-support'
-    const csSubs = all.filter(s => s.role === 'community-support');
-    const csTbody = document.getElementById('cs-submissions-tbody');
-    csTbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
-
-    if (csSubs.length === 0 && !csTbody.querySelector('tr:not([data-live])')) {
-      csTbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Support submissions yet.</td></tr>`;
-    } else if (csSubs.length > 0) {
-      csTbody.innerHTML = '';
-      csSubs.forEach(sub => {
-        const status = sub.status || 'Pending';
-        const pillClass = getStatusPillClass(status);
-        const tr = document.createElement('tr');
-        tr.dataset.live = 'true';
-        tr.dataset.status = status.toLowerCase();
-        tr.innerHTML = `
-          <td style="font-weight:500;">${sub.orgName}</td>
-          <td style="color:var(--text3);">${sub.fileName}</td>
-          <td style="color:var(--text3);">${formatDate(sub.submittedAt)}</td>
-          <td><span class="pill ${pillClass}">${status}</span></td>
-          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openDrawer('${sub.id}')">Open</button></td>`;
-        csTbody.insertBefore(tr, csTbody.firstChild);
-      });
-    }
   }
+}
 
   function openDrawer(id) {
     activeSubId = id;

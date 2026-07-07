@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Reports — Community Essential</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<style>
+  .tooltip-wrapper { position: relative; display: inline-block; }
+  .tooltip-trigger { cursor: default; }
+  .global-tooltip {
+    display: none; position: fixed; background: var(--red); color: white;
+    font-size: 11.5px; line-height: 1.5; padding: 8px 12px; border-radius: var(--radius);
+    width: 260px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    pointer-events: none;
+  }
+  .global-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 16px;
+    border: 5px solid transparent; border-top-color: var(--red);
+  }
+</style>
 </head>
 <body>
 <div class="app">
@@ -75,57 +89,297 @@
       </div>
     </header>
     <div class="content">
-      <div class="section-label">Reports from your manager</div>
-      <div class="report-grid" id="reports-grid">
-        <!-- populated by JS -->
-      </div>
-      <div id="reports-empty" style="display:none;text-align:center;padding:60px 20px;color:var(--text3);font-size:13px;">
-        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5" style="width:36px;height:36px;stroke:var(--text3);margin-bottom:12px;display:block;margin-inline:auto;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        No reports have been shared with your organization yet.
+      <div class="two-col-narrow">
+
+        <!-- LEFT: reports list -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              Reports
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Report Name</th><th>Uploaded</th><th>Status</th><th></th></tr></thead>
+              <tbody id="np-reports-tbody">
+                <tr><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;font-size:12.5px;">No reports uploaded yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Manager shared reports section -->
+          <div style="padding:14px 16px;border-top:1px solid var(--border);">
+            <div class="section-label" style="margin-bottom:10px;">Shared by Manager</div>
+            <div id="manager-reports-area">
+              <div style="text-align:center;color:var(--text3);font-size:12.5px;padding:16px 0;">No reports shared with your organization yet.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: upload form -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Upload a Report</div></div>
+          <div class="card-body">
+
+            <div style="background:var(--accent-light);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--accent);margin-bottom:16px;">
+              Upload your Community Essential reports here. The manager will be able to review and download them.
+            </div>
+
+            
+
+            <div class="upload-zone" onclick="document.getElementById('np-report-file').click()">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              <p>Click to upload your report</p>
+              <span>PDF, DOCX, XLSX · Max ~2MB</span>
+              <input type="file" id="np-report-file" accept=".pdf,.docx,.xlsx,.doc" style="display:none;" onchange="handleFileSelect(this)" />
+            </div>
+            <div id="file-name-display" style="font-size:12px;color:var(--accent);margin-top:6px;font-weight:500;display:none;"></div>
+
+            <div class="form-group" style="margin-top:14px;">
+              <label class="form-label">Report name</label>
+              <input class="form-input" id="np-report-name" placeholder="e.g. Q2 CE Report" />
+            </div>
+
+            <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="uploadReport()">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              Upload Report
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </div>
+
 <script src="../js/storage.js"></script>
 <script>
-  // In production this comes from the authenticated session
   const MY_ORG = 'Nonprofit #1';
+  let selectedFile = null;
 
-  function renderReports() {
+  function handleFileSelect(input) {
+    if (input.files.length > 0) {
+      selectedFile = input.files[0];
+      const el = document.getElementById('file-name-display');
+      el.textContent = '✓ ' + selectedFile.name;
+      el.style.display = 'block';
+    }
+  }
+
+  async function uploadReport() {
+    const name = document.getElementById('np-report-name').value.trim();
+    if (!name || !selectedFile) {
+      document.getElementById('validation-modal').classList.add('open');
+      return;
+    }
+
+    const btn = document.querySelector('button[onclick="uploadReport()"]');
+    btn.textContent = 'Uploading…';
+    btn.disabled = true;
+
+    const result = await addSubmission({
+      templateId: 'np-report',
+      orgName: MY_ORG,
+      role: 'nonprofit-report',
+      file: selectedFile,
+      reportName: name,
+    });
+
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Upload Report`;
+
+    if (!result) return;
+    document.getElementById('upload-success-modal').classList.add('open');
+    renderNPReports();
+
+    document.getElementById('report-name').value = '';
+    document.getElementById('report-file-name').classList.remove('show');
+    document.getElementById('report-file').value = '';
+    selectedReportFile = null;
+
+    document.getElementById('upload-success-modal').classList.add('open');
+    const banner = document.getElementById('saved-banner');
+    banner.style.display = 'flex';
+    setTimeout(() => banner.style.display = 'none', 4000);
+
+    renderNPReports();
+  }
+
+  function renderNPReports() {
+    const reports = getSubmissions()
+      .filter(s => s.orgName === MY_ORG && s.role === 'nonprofit-report')
+      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+    const tbody = document.getElementById('np-reports-tbody');
+
+    if (reports.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;font-size:12.5px;">No reports uploaded yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = reports.map(r => {
+      const status = r.status || 'Pending';
+      const pillClass = getStatusPillClass(status);
+      const isRejected = status === 'Rejected';
+      return `
+        <tr>
+          <td style="font-weight:500;">${r.reportName || '—'}</td>
+          <td style="color:var(--text3);">${formatDate(r.submittedAt)}</td>
+          <td>
+            ${status === 'Rejected'
+              ? `<span class="pill pill-red tooltip-trigger"
+                  onmouseenter="showTooltip(this, '${(r.rejectionComment || '').replace(/'/g, '&#39;')}')"
+                  onmouseleave="hideTooltip()">
+                  Rejected
+                </span>`
+              : `<span class="pill ${pillClass}">${status}</span>`}
+          </td>
+          <td>
+            <button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openViewModal('${r.id}')">View</button>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderManagerReports() {
     const reports = getReportsVisibleTo(MY_ORG)
       .sort((a,b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
 
-    const grid  = document.getElementById('reports-grid');
-    const empty = document.getElementById('reports-empty');
-    const ICON_COLORS = ['green','purple','amber','blue'];
+    const area = document.getElementById('manager-reports-area');
 
     if (reports.length === 0) {
-      grid.innerHTML = '';
-      empty.style.display = 'block';
+      area.innerHTML = `<div style="text-align:center;color:var(--text3);font-size:12.5px;padding:16px 0;">No reports shared with your organization yet.</div>`;
       return;
     }
-    empty.style.display = 'none';
 
-    grid.innerHTML = reports.map((r, i) => `
-      <div class="report-card">
-        <div class="rc-header">
-          <div class="rc-icon ${ICON_COLORS[i % ICON_COLORS.length]}">
-            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          </div>
-          <span class="pill pill-green">Visible</span>
+    area.innerHTML = reports.map(r => `
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:14px;height:14px;color:var(--accent);flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}</div>
+          <div style="font-size:11px;color:var(--text3);">${formatDate(r.uploadedAt)}</div>
         </div>
-        <div class="rc-name">${r.name}</div>
-        <div class="rc-meta">Shared ${formatDate(r.uploadedAt)}</div>
-        <div class="rc-footer">
-          <div class="dl-btn" onclick="downloadReport('${r.id}')">
-            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download
-          </div>
-        </div>
+        <button class="btn btn-primary" style="font-size:11px;padding:5px 10px;flex-shrink:0;" onclick="downloadReport('${r.id}')">Download</button>
       </div>`).join('');
   }
 
-  renderReports();
+  // View modal for nonprofit's own uploaded reports
+  function openViewModal(id) {
+    const r = getSubmissions().find(s => s.id === id);
+    if (!r) return;
+    const status = r.status || 'Pending';
+    const pillClass = getStatusPillClass(status);
+
+    document.getElementById('modal-report-title').textContent = r.reportName || r.fileName;
+    document.getElementById('modal-file-name').textContent = r.fileName;
+    document.getElementById('modal-file-meta').textContent = `Uploaded ${formatDate(r.submittedAt)}`;
+    document.getElementById('modal-download-btn').onclick = () => downloadSubmission(id);
+    document.getElementById('modal-status-pill').className = `pill ${pillClass}`;
+    document.getElementById('modal-status-pill').textContent = status;
+
+    const rejBlock = document.getElementById('modal-rejection-block');
+    if (status === 'Rejected') {
+      rejBlock.style.display = 'block';
+      document.getElementById('modal-rejection-text').textContent =
+        r.rejectionComment || 'No comment was left. Contact your manager for details.';
+    } else {
+      rejBlock.style.display = 'none';
+    }
+
+    document.getElementById('report-view-modal').classList.add('open');
+  }
+
+  function showTooltip(el, comment) {
+    const tooltip = document.getElementById('global-tooltip');
+    const rect = el.getBoundingClientRect();
+    tooltip.innerHTML = `<strong style="display:block;margin-bottom:3px;">Manager's comment</strong>${comment || 'No comment was left.'}`;
+    tooltip.style.display = 'block';
+    // Position above the pill, anchored to left edge
+    const top = rect.top + window.scrollY - tooltip.offsetHeight - 10;
+    const left = rect.left + window.scrollX;
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+  }
+
+  function hideTooltip() {
+    document.getElementById('global-tooltip').style.display = 'none';
+  }
+
+  function closeViewModal() {
+    document.getElementById('report-view-modal').classList.remove('open');
+  }
+
+  renderNPReports();
+  renderManagerReports();
 </script>
+<div class="modal-overlay" id="report-view-modal">
+  <div class="modal-box" style="width:440px;">
+    <div class="modal-header">
+      <h3 id="modal-report-title">Report Details</h3>
+      <button class="modal-close" onclick="closeViewModal()">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;">
+        <div style="width:38px;height:38px;background:var(--accent-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" stroke="var(--accent)" fill="none" stroke-width="2" style="width:18px;height:18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div id="modal-file-name" style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          <div id="modal-file-meta" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
+        </div>
+        <button class="btn btn-primary" style="font-size:11px;padding:6px 12px;flex-shrink:0;" id="modal-download-btn">Download</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+        <span style="color:var(--text2);font-weight:500;">Status:</span>
+        <span id="modal-status-pill" class="pill"></span>
+      </div>
+      <div id="modal-rejection-block" style="display:none;background:var(--red-light);border:1.5px solid var(--red);border-radius:var(--radius);padding:12px 14px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--red);margin-bottom:6px;">Manager's comment</div>
+        <div id="modal-rejection-text" style="font-size:12.5px;color:var(--red);line-height:1.5;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeViewModal()">Close</button>
+    </div>
+  </div>
+</div>
+<div class="global-tooltip" id="global-tooltip"></div>
+<div class="modal-overlay" id="upload-success-modal">
+  <div class="modal-box" style="width:380px;">
+    <div class="modal-header">
+      <h3>Report Uploaded</h3>
+      <button class="modal-close" onclick="document.getElementById('upload-success-modal').classList.remove('open')">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:24px 20px;">
+      <div style="width:50px;height:50px;background:var(--accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+        <svg viewBox="0 0 24 24" stroke="var(--accent)" fill="none" stroke-width="2.5" style="width:22px;height:22px;"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Upload successful</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;">The report has been uploaded and is now visible to the selected organizations.</div>
+    </div>
+    <div class="modal-footer" style="justify-content:center;">
+      <button class="btn btn-primary mgr" style="padding:9px 24px;" onclick="document.getElementById('upload-success-modal').classList.remove('open')">Done</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="validation-modal">
+  <div class="modal-box" style="width:360px;">
+    <div class="modal-header">
+      <h3>Missing Information</h3>
+      <button class="modal-close" onclick="document.getElementById('validation-modal').classList.remove('open')">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:24px 20px;">
+      <div style="width:50px;height:50px;background:var(--amber-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+        <svg viewBox="0 0 24 24" stroke="var(--amber)" fill="none" stroke-width="2.5" style="width:22px;height:22px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Required fields missing</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;">Please enter a report name and select a file before uploading.</div>
+    </div>
+    <div class="modal-footer" style="justify-content:center;">
+      <button class="btn btn-primary" style="padding:9px 24px;" onclick="document.getElementById('validation-modal').classList.remove('open')">OK</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

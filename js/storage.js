@@ -97,7 +97,7 @@ function getSubmissions() {
   return safeGet(STORAGE_KEYS.SUBMISSIONS);
 }
 
-async function addSubmission({ templateId, orgName, role, file }) {
+async function addSubmission({ templateId, orgName, role, file, reportName }) {
   const submissions = getSubmissions();
   const fileData = await readFileAsBase64(file);
   const submission = {
@@ -108,6 +108,7 @@ async function addSubmission({ templateId, orgName, role, file }) {
     fileName:    file.name,
     fileType:    file.type,
     fileData,
+    reportName:  reportName ||'',
     status:      'Pending',
     submittedAt: new Date().toISOString(),
   };
@@ -209,7 +210,7 @@ function getAnnouncements() {
   return safeGet(STORAGE_KEYS.ANNOUNCEMENTS);
 }
 
-function addAnnouncement({ authorName, authorRole, message, audience }) {
+function addAnnouncement({ authorName, authorRole, message, audience, videoName, attachmentName }) {
   const announcements = getAnnouncements();
   const announcement = {
     id:        'ann_' + Date.now(),
@@ -217,6 +218,8 @@ function addAnnouncement({ authorName, authorRole, message, audience }) {
     authorRole,
     message,
     audience,
+    videoName: videoName || null,
+    attachmentName: attachmentName || null,
     postedAt:  new Date().toISOString(),
   };
   announcements.unshift(announcement);

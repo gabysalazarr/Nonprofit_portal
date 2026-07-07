@@ -85,7 +85,7 @@
     <header class="topbar">
       <div>
         <div class="page-title">Reports</div>
-        <div class="page-sub">Community Support-uploaded reports + Manager-uploaded Community Essentential submissions</div>
+        <div class="page-sub">Organization-uploaded reports + Manager-uploaded Reports</div>
       </div>
       <div class="topbar-right">
         <button class="btn btn-icon" style="position:relative;">
@@ -97,33 +97,31 @@
     <div class="content">
       <div class="two-col-narrow">
         <div>
-
-          <!-- Section 1: Community Support reports (uploaded by CS orgs) -->
-          <div class="section-label">Community Support Reports <span class="source-tag live">LIVE</span></div>
+          <!-- Table 1: All org-uploaded reports (CS + CE) -->
+          <div class="section-label" style="margin-bottom:10px;">Organization Reports <span class="source-tag live">LIVE</span></div>
           <div class="card" style="margin-bottom:20px;">
             <div class="table-wrap">
               <table>
-                <thead><tr><th>File</th><th>From</th><th>Uploaded</th><th></th></tr></thead>
-                <tbody id="cs-reports-tbody">
-                  <tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Support reports yet.</td></tr>
+                <thead><tr><th>Report Name</th><th>From</th><th>Type</th><th>Uploaded</th><th></th></tr></thead>
+                <tbody id="org-reports-tbody">
+                  <tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No organization reports yet.</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          <!-- Section 2: Nonprofit reports uploaded by manager -->
-          <div class="section-label">Community Essential Reports <span class="source-tag live">LIVE</span></div>
+          <!-- Table 2: Manager-uploaded reports -->
+          <div class="section-label" style="margin-bottom:10px;">Manager Reports <span class="source-tag live">LIVE</span></div>
           <div class="card">
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Report name</th><th>File</th><th>Visible to</th><th>Uploaded</th><th></th></tr></thead>
+                <thead><tr><th>Report Name</th><th>Visible to</th><th>Uploaded</th><th></th></tr></thead>
                 <tbody id="np-reports-tbody">
-                  <tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No nonprofit reports uploaded yet.</td></tr>
+                  <tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No reports uploaded yet.</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
-
         </div>
 
         <!-- RIGHT: upload panel (manager uploads nonprofit reports only) -->
@@ -207,7 +205,10 @@
 
   async function uploadReport() {
     const name = document.getElementById('report-name').value.trim();
-    if (!name || !selectedReportFile) { alert('Please enter a name and select a file.'); return; }
+    if (!name || !selectedReportFile) {
+      document.getElementById('validation-modal').classList.add('open');
+      return;
+    }
 
     const btn = document.querySelector('button[onclick="uploadReport()"]');
     btn.textContent = 'Uploading…';
@@ -233,33 +234,12 @@
   }
 
   // Section 1: Community Support reports (uploaded by CS orgs via their Reports page)
-  function renderCSReports() {
-    const submissions = getSubmissions()
-      .filter(s => s.role === 'community-support')
-      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
-
-    const tbody = document.getElementById('cs-reports-tbody');
-
-    if (submissions.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Support reports yet.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = submissions.map(s => `
-      <tr>
-        <td style="font-weight:500;">${s.fileName}</td>
-        <td style="color:var(--text2);">${s.orgName}</td>
-        <td style="color:var(--text3);">${formatDate(s.submittedAt)}</td>
-        <td>
-          <button class="btn btn-primary mgr" style="font-size:11px;padding:4px 9px;" onclick="downloadSubmission('${s.id}')">Download</button>
-        </td>
-      </tr>`).join('');
-  }
 
   // Section 2: Nonprofit reports uploaded by manager
   function renderNPReports() {
     const reports = getReports().sort((a,b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
     const tbody = document.getElementById('np-reports-tbody');
+    if (!tbody) return;
 
     if (reports.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No nonprofit reports uploaded yet.</td></tr>`;
@@ -271,13 +251,40 @@
       return `
         <tr>
           <td style="font-weight:500;">${r.name}</td>
-          <td style="color:var(--text3);">${r.fileName}</td>
+
           <td style="color:var(--text2);">${visLabel}</td>
           <td style="color:var(--text3);">${formatDate(r.uploadedAt)}</td>
           <td style="display:flex;gap:6px;">
             <button class="btn btn-primary mgr" style="font-size:11px;padding:4px 9px;" onclick="downloadReport('${r.id}')">Download</button>
             <button class="btn" style="font-size:11px;padding:4px 9px;color:var(--red);" onclick="removeReport('${r.id}')">Delete</button>
           </td>
+        </tr>`;
+    }).join('');
+  }
+  function renderOrgReports() {
+    const all = getSubmissions()
+      .filter(s => s.role === 'community-support' || s.role === 'nonprofit-report')
+      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+    const tbody = document.getElementById('org-reports-tbody');
+    if (!tbody) return;
+
+    if (all.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No organization reports yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = all.map(s => {
+      const type = s.role === 'community-support'
+        ? '<span class="pill" style="background:var(--purple-light);color:var(--purple);font-size:10px;">CS</span>'
+        : '<span class="pill pill-green" style="font-size:10px;">CE</span>';
+      return `
+        <tr>
+          <td style="font-weight:500;">${s.reportName || '—'}</td>
+          <td style="color:var(--text2);">${s.orgName}</td>
+          <td>${type}</td>
+          <td style="color:var(--text3);">${formatDate(s.submittedAt)}</td>
+          <td><button class="btn btn-primary mgr" style="font-size:11px;padding:4px 9px;" onclick="downloadSubmission('${s.id}')">Download</button></td>
         </tr>`;
     }).join('');
   }
@@ -288,8 +295,26 @@
     renderNPReports();
   }
 
-  renderCSReports();
+  renderOrgReports();
   renderNPReports();
 </script>
+<div class="modal-overlay" id="validation-modal">
+  <div class="modal-box" style="width:360px;">
+    <div class="modal-header">
+      <h3>Missing Information</h3>
+      <button class="modal-close" onclick="document.getElementById('validation-modal').classList.remove('open')">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:24px 20px;">
+      <div style="width:50px;height:50px;background:var(--amber-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+        <svg viewBox="0 0 24 24" stroke="var(--amber)" fill="none" stroke-width="2.5" style="width:22px;height:22px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Required fields missing</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;">Please enter a report name and select a file before uploading.</div>
+    </div>
+    <div class="modal-footer" style="justify-content:center;">
+      <button class="btn btn-primary" style="padding:9px 24px;" onclick="document.getElementById('validation-modal').classList.remove('open')">OK</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

@@ -128,9 +128,20 @@
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>Template name</th><th>Assigned to</th><th>Due date</th><th>Submissions</th><th></th></tr>
+                <tr>
+                  <th>Template name</th>
+                  <th>Assigned to</th>
+                  <th>Due date</th>
+                  <th>Submissions</th>
+                  <th></th>
+                </tr>
               </thead>
               <tbody id="templates-table-body">
+                <tr data-live="true">
+                  <td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">
+                    No Templates Essential submissions yet.
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -402,34 +413,51 @@
   }
 
   function renderLiveRows() {
-    const templates = getTemplates();
-    const tbody = document.getElementById('templates-table-body');
-    tbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
+      const templates = getTemplates();
+      const tbody = document.getElementById('templates-table-body');
+      
+      // 1. Instantly clears previous templates AND your static HTML placeholder!
+      tbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
 
-    templates.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      // 2. If localStorage is empty, regenerate the placeholder dynamically
+      if (!templates || templates.length === 0) {
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr data-live="true">
+            <td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">
+              No Templates Essential submissions yet.
+            </td>
+          </tr>
+        `);
+        return; // Stop running early
+      }
 
-    const rows = templates.map(t => {
-      const subs = getSubmissionsForTemplate(t.id).length;
-      const assigned = t.assignedOrgs.length === 6 ? 'All Orgs' : t.assignedOrgs.join(', ');
-      return `
-        <tr data-live="true">
-          <td style="font-weight:500;">${t.name} <span class="source-tag live">LIVE</span></td>
-          <td style="color:var(--text2);">${assigned}</td>
-          <td style="color:var(--text3);">${t.dueDate || '—'}</td>
-          <td><span class="pill pill-purple">${subs} / ${t.assignedOrgs.length}</span></td>
-          <td style="display:flex;gap:4px;">
-            <button class="btn" style="font-size:11px;padding:4px 8px;" onclick="downloadTemplate('${t.id}')">
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:11px;height:11px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </button>
-            <button class="btn" style="font-size:11px;padding:4px 8px;color:var(--red);" onclick="removeTemplate('${t.id}')">
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:11px;height:11px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-            </button>
-          </td>
-        </tr>`;
-    }).join('');
+      templates.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    tbody.insertAdjacentHTML('afterbegin', rows);
+      // 3. Render array into rows
+      const rows = templates.map(t => {
+        const subs = getSubmissionsForTemplate ? getSubmissionsForTemplate(t.id).length : 0;
+        const assigned = t.assignedOrgs.length === 6 ? 'All Orgs' : t.assignedOrgs.join(', ');
+        return `
+          <tr data-live="true">
+            <td style="font-weight:500;">${t.name} <span class="source-tag live">LIVE</span></td>
+            <td style="color:var(--text2);">${assigned}</td>
+            <td style="color:var(--text3);">${t.dueDate || '—'}</td>
+            <td><span class="pill pill-purple">${subs} / ${t.assignedOrgs.length}</span></td>
+            <td style="display:flex;gap:4px;">
+              <button class="btn" style="font-size:11px;padding:4px 8px;" onclick="downloadTemplate('${t.id}')">
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:11px;height:11px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+              <button class="btn" style="font-size:11px;padding:4px 8px;color:var(--red);" onclick="removeTemplate('${t.id}')">
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:11px;height:11px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              </button>
+            </td>
+          </tr>`;
+      }).join('');
+
+      // 4. Inject rows cleanly into empty body container
+      tbody.insertAdjacentHTML('beforeend', rows);
   }
+
 
   function removeTemplate(id) {
     if (!confirm('Delete this template? Nonprofits will no longer be able to download it.')) return;

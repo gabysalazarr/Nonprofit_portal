@@ -276,25 +276,36 @@
   async function uploadTemplate() {
     const name = document.getElementById('template-name').value.trim();
     const due  = document.getElementById('template-due').value;
-    const orgs = Array.from(document.querySelectorAll('#assign-list input:checked')).map(cb => cb.value);
+    const orgNames = Array.from(document.querySelectorAll('#assign-list input:checked')).map(cb => cb.value);
 
-    if (!name || !due || !selectedFile || orgs.length === 0) {
+    if (!name || !due || !selectedFile || orgNames.length === 0) {
       document.getElementById('validation-modal').classList.add('open');
       return;
     }
+
+    // Get org IDs from names
+    const allOrgs = await getOrganizationsByRole('nonprofit');
+    const assignedOrgIds = allOrgs
+      .filter(o => orgNames.includes(o.name))
+      .map(o => o.id);
 
     const btn = document.querySelector('button[onclick="uploadTemplate()"]');
     btn.textContent = 'Uploading…';
     btn.disabled = true;
 
-    const result = await addTemplate({ name, dueDate: due, assignedOrgs: orgs, file: selectedFile });
+    const result = await addTemplate({
+      name,
+      dueDate: due,
+      assignedOrgIds,
+      file: selectedFile,
+      method: 'upload',
+    });
 
     btn.disabled = false;
     btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Upload Template`;
 
     if (!result) return;
 
-    // Reset form
     document.getElementById('template-name').value = '';
     document.getElementById('template-due').value = '';
     document.getElementById('file-name-display').classList.remove('show');
@@ -310,7 +321,7 @@
 
     renderLiveRows();
   }
-  // ── Tab switcher ──
+
   function switchTab(tab) {
     document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
     document.getElementById('tab-build').classList.toggle('active', tab === 'build');
@@ -318,7 +329,6 @@
     document.getElementById('panel-build').classList.toggle('active', tab === 'build');
   }
 
-  // ── Build Form ──
   let fieldCount = 0;
 
   function addField() {
@@ -367,9 +377,9 @@
     const name = document.getElementById('build-name').value.trim();
     const due  = document.getElementById('build-due').value;
     const fieldRows = document.querySelectorAll('#field-list .field-row');
-    const orgs = Array.from(document.querySelectorAll('#build-assign-list input:checked')).map(cb => cb.value);
+    const orgNames = Array.from(document.querySelectorAll('#build-assign-list input:checked')).map(cb => cb.value);
 
-    if (!name || !due || fieldRows.length === 0 || orgs.length === 0) {
+    if (!name || !due || fieldRows.length === 0 || orgNames.length === 0) {
       document.getElementById('validation-modal').classList.add('open');
       return;
     }
@@ -381,21 +391,21 @@
       required: row.querySelector('.field-required-toggle').classList.contains('on'),
     }));
 
-    // Save form-builder template directly to localStorage (no file needed)
-    const templates = getTemplates();
-    const template = {
-      id:           'tpl_' + Date.now(),
-      name,
-      dueDate:      due,
-      assignedOrgs: orgs,
-      fields,
-      method:       'form-builder',
-      createdAt:    new Date().toISOString(),
-    };
-    templates.push(template);
-    safeSet(STORAGE_KEYS.TEMPLATES, templates);
+    const allOrgs = await getOrganizationsByRole('nonprofit');
+    const assignedOrgIds = allOrgs
+      .filter(o => orgNames.includes(o.name))
+      .map(o => o.id);
 
-    // Reset
+    const result = await addTemplate({
+      name,
+      dueDate: due,
+      assignedOrgIds,
+      fields,
+      method: 'form-builder',
+    });
+
+    if (!result) return;
+
     document.getElementById('build-name').value = '';
     document.getElementById('build-due').value = '';
     document.getElementById('field-list').innerHTML = '';
@@ -412,61 +422,49 @@
     renderLiveRows();
   }
 
-  function renderLiveRows() {
-      const templates = getTemplates();
-      const tbody = document.getElementById('templates-table-body');
-      
-      // 1. Instantly clears previous templates AND your static HTML placeholder!
-      tbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
+  async function renderLiveRows() {
+    const templates = await getTemplates();
+    const tbody = document.getElementById('templates-table-body');
+    tbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
 
-      // 2. If localStorage is empty, regenerate the placeholder dynamically
-      if (!templates || templates.length === 0) {
-        tbody.insertAdjacentHTML('beforeend', `
-          <tr data-live="true">
-            <td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">
-              No Templates Essential submissions yet.
-            </td>
-          </tr>
-        `);
-        return; // Stop running early
-      }
+    if (!templates || templates.length === 0) {
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr data-live="true">
+          <td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No templates yet.</td>
+        </tr>`);
+      return;
+    }
 
-      templates.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    templates.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-      // 3. Render array into rows
-      const rows = templates.map(t => {
-        const subs = getSubmissionsForTemplate ? getSubmissionsForTemplate(t.id).length : 0;
-        const assigned = t.assignedOrgs.length === 6 ? 'All Orgs' : t.assignedOrgs.join(', ');
-        return `
-          <tr data-live="true">
-            <td style="font-weight:500;">${t.name} <span class="source-tag live">LIVE</span></td>
-            <td style="color:var(--text2);">${assigned}</td>
-            <td style="color:var(--text3);">${t.dueDate || '—'}</td>
-            <td><span class="pill pill-purple">${subs} / ${t.assignedOrgs.length}</span></td>
-            <td style="display:flex;gap:4px;">
-              <button class="btn" style="font-size:11px;padding:4px 8px;" onclick="downloadTemplate('${t.id}')">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:11px;height:11px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              </button>
-              <button class="btn" style="font-size:11px;padding:4px 8px;color:var(--red);" onclick="removeTemplate('${t.id}')">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:11px;height:11px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-              </button>
-            </td>
-          </tr>`;
-      }).join('');
+    const rows = templates.map(t => {
+      return `
+        <tr data-live="true">
+          <td style="font-weight:500;">${t.name} <span class="source-tag live">LIVE</span></td>
+          <td style="color:var(--text2);">—</td>
+          <td style="color:var(--text3);">${t.due_date || '—'}</td>
+          <td><span class="pill pill-purple">—</span></td>
+          <td style="display:flex;gap:4px;">
+            <button class="btn" style="font-size:11px;padding:4px 8px;" onclick="downloadTemplate(${t.id})">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:11px;height:11px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button class="btn" style="font-size:11px;padding:4px 8px;color:var(--red);" onclick="removeTemplate(${t.id})">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:11px;height:11px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            </button>
+          </td>
+        </tr>`;
+    }).join('');
 
-      // 4. Inject rows cleanly into empty body container
-      tbody.insertAdjacentHTML('beforeend', rows);
+    tbody.insertAdjacentHTML('beforeend', rows);
   }
 
-
-  function removeTemplate(id) {
-    if (!confirm('Delete this template? Nonprofits will no longer be able to download it.')) return;
-    deleteTemplate(id);
+  async function removeTemplate(id) {
+    if (!confirm('Delete this template?')) return;
+    await deleteTemplate(id);
     renderLiveRows();
   }
 
   renderLiveRows();
-
 </script>
 <div class="modal-overlay" id="validation-modal">
   <div class="modal-box" style="width:360px;">

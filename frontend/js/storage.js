@@ -1,3 +1,34 @@
+const API = 'http://localhost:3000/api';
+
+function getToken() {
+  return localStorage.getItem('token');
+}
+
+function getUser() {
+  try { return JSON.parse(localStorage.getItem('user')); }
+  catch(e) { return null; }
+}
+
+async function apiFetch(path, options = {}) {
+  const token = getToken();
+  const res = await fetch(`${API}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
+  });
+  if (res.status === 401) {
+    // Token expired — redirect to login
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '../index.html';
+    return null;
+  }
+  return res.json();
+}
+
 const STORAGE_KEYS = {
   TEMPLATES:     'impacthub_templates',
   SUBMISSIONS:   'impacthub_submissions',
@@ -45,104 +76,103 @@ function safeGet(key) {
   }
 }
 
-// ── Templates ─────────────────────────────────────────────
-// Stored by manager. Nonprofits download and fill out offline, then upload as submissions.
-// Shape: { id, name, dueDate, assignedOrgs, fileName, fileType, fileData, createdAt }
-
-function getTemplates() {
-  return safeGet(STORAGE_KEYS.TEMPLATES);
+// ── Templates ──
+async function getTemplates() {
+  return await apiFetch('/templates');
 }
 
-async function addTemplate({ name, dueDate, assignedOrgs, file }) {
-  const templates = getTemplates();
-  const fileData = await readFileAsBase64(file);
-  const template = {
-    id:           'tpl_' + Date.now(),
-    name,
-    dueDate,
-    assignedOrgs: assignedOrgs || [],
-    fileName:     file.name,
-    fileType:     file.type,
-    fileData,
-    createdAt:    new Date().toISOString(),
-  };
-  templates.push(template);
-  const ok = safeSet(STORAGE_KEYS.TEMPLATES, templates);
-  return ok ? template : null;
+async function getTemplateById(id) {
+  return await apiFetch(`/templates/${id}`);
 }
 
-function getTemplateById(id) {
-  return getTemplates().find(t => t.id === id) || null;
+async function getTemplatesForOrg(orgId) {
+  return await apiFetch('/templates');
 }
 
-function getTemplatesForOrg(orgName) {
-  return getTemplates().filter(t => t.assignedOrgs.includes(orgName));
+async function addTemplate(data) {
+  const fileData = data.file ? await fileToBase64(data.file) : null;
+  return await apiFetch('/templates', {
+    method: 'POST',
+    body: JSON.stringify({
+      name:             data.name,
+      due_date:         data.dueDate,
+      file_name:        data.file ? data.file.name : null,
+      file_data:        fileData,
+      file_type:        data.file ? data.file.type : null,
+      method:           data.method || 'upload',
+      fields:           data.fields || null,
+      assigned_org_ids: data.assignedOrgIds || [],
+    }),
+  });
 }
 
-function deleteTemplate(id) {
-  safeSet(STORAGE_KEYS.TEMPLATES, getTemplates().filter(t => t.id !== id));
+async function deleteTemplate(id) {
+  return await apiFetch(`/templates/${id}`, { method: 'DELETE' });
 }
 
-function downloadTemplate(id) {
-  const t = getTemplateById(id);
-  if (!t) return alert('Template not found.');
-  downloadBase64File(t.fileData, t.fileName);
+async function downloadTemplate(id) {
+  const t = await getTemplateById(id);
+  if (!t || !t.file_data) return;
+  downloadBase64File(t.file_data, t.file_name);
 }
 
-// ── Submissions ───────────────────────────────────────────
-// Uploaded by nonprofits after filling out a template offline.
-// Shape: { id, templateId, orgName, role, fileName, fileType, fileData, status, submittedAt }
-
-function getSubmissions() {
-  return safeGet(STORAGE_KEYS.SUBMISSIONS);
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
-async function addSubmission({ templateId, orgName, role, file, reportName }) {
-  const submissions = getSubmissions();
-  const fileData = await readFileAsBase64(file);
-  const submission = {
-    id:          'sub_' + Date.now(),
-    templateId,
-    orgName,
-    role:        role || 'nonprofit',
-    fileName:    file.name,
-    fileType:    file.type,
-    fileData,
-    reportName:  reportName ||'',
-    status:      'Pending',
-    submittedAt: new Date().toISOString(),
-  };
-  submissions.push(submission);
-  const ok = safeSet(STORAGE_KEYS.SUBMISSIONS, submissions);
-  return ok ? submission : null;
+// ── Submissions ──
+async function getSubmissions() {
+  return await apiFetch('/submissions');
 }
 
-function getSubmissionsForTemplate(templateId) {
-  return getSubmissions().filter(s => s.templateId === templateId);
+async function getSubmissionsForOrg(orgId) {
+  const all = await getSubmissions();
+  return all.filter(s => s.org_id === orgId);
 }
 
-function getSubmissionForOrg(templateId, orgName) {
-  return getSubmissions().find(s => s.templateId === templateId && s.orgName === orgName) || null;
+async function getSubmissionsForTemplate(templateId) {
+  const all = await getSubmissions();
+  return all.filter(s => s.template_id === templateId);
 }
 
-function getSubmissionsForOrg(orgName) {
-  return getSubmissions().filter(s => s.orgName === orgName);
+async function getSubmissionForOrg(templateId, orgId) {
+  const all = await getSubmissions();
+  return all.find(s => s.template_id === templateId && s.org_id === orgId) || null;
 }
 
-function updateSubmissionStatus(submissionId, status) {
-  const submissions = getSubmissions();
-  const sub = submissions.find(s => s.id === submissionId);
-  if (sub) {
-    sub.status = status;
-    safeSet(STORAGE_KEYS.SUBMISSIONS, submissions);
-  }
-  return sub;
+async function addSubmission(data) {
+  const fileData = data.file ? await fileToBase64(data.file) : null;
+  return await apiFetch('/submissions', {
+    method: 'POST',
+    body: JSON.stringify({
+      template_id:  data.templateId,
+      role:         data.role,
+      file_name:    data.file ? data.file.name : null,
+      file_data:    fileData,
+      file_type:    data.file ? data.file.type : null,
+      report_name:  data.reportName || null,
+      answers:      data.answers || null,
+    }),
+  });
 }
 
-function downloadSubmission(id) {
-  const sub = getSubmissions().find(s => s.id === id);
-  if (!sub) return alert('Submission not found.');
-  downloadBase64File(sub.fileData, sub.fileName);
+async function updateSubmissionStatus(id, status, rejectionComment) {
+  return await apiFetch(`/submissions/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, rejection_comment: rejectionComment || null }),
+  });
+}
+
+async function downloadSubmission(id) {
+  const all = await getSubmissions();
+  const s = all.find(s => s.id === id);
+  if (!s || !s.file_data) return;
+  downloadBase64File(s.file_data, s.file_name);
 }
 
 // ── Reports ───────────────────────────────────────────────
@@ -253,4 +283,33 @@ function getStatusPillClass(status) {
 function clearAllImpactHubData() {
   Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
   alert('All demo data cleared.');
+}
+
+// ── Organizations ──
+async function getOrganizations() {
+  return await apiFetch('/organizations');
+}
+
+async function getOrganizationsByRole(role) {
+  return await apiFetch(`/organizations/role/${role}`);
+}
+
+async function createOrganization(data) {
+  return await apiFetch('/organizations', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+async function updateOrgStatus(id, status) {
+  return await apiFetch(`/organizations/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+}
+
+async function deleteOrganization(id) {
+  return await apiFetch(`/organizations/${id}`, {
+    method: 'DELETE',
+  });
 }

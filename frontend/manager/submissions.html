@@ -259,91 +259,85 @@
 <script src="../js/storage.js"></script>
 <script>
   let activeSubId = null;
+  let activeSub = null;
 
-function renderLiveRows() {
-  const all = getSubmissions().sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  async function renderLiveRows() {
+    const all = await getSubmissions();
+    all.sort((a,b) => new Date(b.submitted_at) - new Date(a.submitted_at));
 
-  // 1. Community Essential Section
-  const npSubs = all.filter(s => s.role !== 'community-support');
-  const npTbody = document.getElementById('np-submissions-tbody');
-  npTbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
-
-  if (npSubs.length === 0 && !npTbody.querySelector('tr:not([data-live])')) {
-    // Fixed colspan from 5 to 6 to match the actual column count
-    npTbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Essential submissions yet.</td></tr>`;
-  } else if (npSubs.length > 0) { // Fixed: changed undefined csSubs to npSubs
+    // Community Essential
+    const npSubs = all.filter(s => s.role !== 'community-support');
+    const npTbody = document.getElementById('np-submissions-tbody');
     npTbody.innerHTML = '';
 
-    npSubs.forEach(sub => {
-      const template = getTemplateById(sub.templateId);
-      const tName = template ? template.name : (sub.reportName || '(deleted template)');
-      const status = sub.status || 'Pending';
-      const pillClass = getStatusPillClass(status);
-      const submissionName = sub.role === 'nonprofit-report' ? (sub.reportName || sub.fileName || '—') : tName;
-      const templateOrReport = sub.role === 'nonprofit-report' ? 'Report' : 'Template';
-      
-      const tr = document.createElement('tr');
-      tr.dataset.live = 'true';
-      tr.dataset.status = status.toLowerCase();
-      tr.innerHTML = `
-        <td style="font-weight:500;">${submissionName}</td>
-        <td style="color:var(--text2);">${templateOrReport}</td>
-        <td style="color:var(--text2);">${sub.orgName}</td>
-        <td style="color:var(--text3);">${formatDate(sub.submittedAt)}</td>
-        <td><span class="pill ${pillClass}">${status}</span></td>
-        <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openDrawer('${sub.id}')">Open</button></td>`;
-      
-      // Kept insertBefore to maintain your intended reverse chronological insertion order
-      npTbody.insertBefore(tr, npTbody.firstChild);
-    });
-  } 
+    if (npSubs.length === 0) {
+      npTbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Essential submissions yet.</td></tr>`;
+    } else {
+      npSubs.forEach(sub => {
+        const status = sub.status || 'Pending';
+        const pillClass = getStatusPillClass(status);
+        const submissionName = sub.role === 'nonprofit-report' ? (sub.report_name || sub.file_name || '—') : (sub.report_name || sub.file_name || '—');
+        const templateOrReport = sub.role === 'nonprofit-report' ? 'Report' : 'Template';
+        const tr = document.createElement('tr');
+        tr.dataset.live = 'true';
+        tr.dataset.status = status.toLowerCase();
+        tr.innerHTML = `
+          <td style="font-weight:500;">${submissionName}</td>
+          <td style="color:var(--text2);">${templateOrReport}</td>
+          <td style="color:var(--text2);">${sub.org_name || '—'}</td>
+          <td style="color:var(--text3);">${formatDate(sub.submitted_at)}</td>
+          <td><span class="pill ${pillClass}">${status}</span></td>
+          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openDrawer(${sub.id})">Open</button></td>`;
+        npTbody.appendChild(tr);
+      });
+    }
 
-  // 2. Community Support Section
-  const csSubs = all.filter(s => s.role === 'community-support');
-  const csTbody = document.getElementById('cs-submissions-tbody');
-  csTbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
-
-  if (csSubs.length === 0 && !csTbody.querySelector('tr:not([data-live])')) {
-    // Fixed colspan from 5 to 6 to match the actual column count
-    csTbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Support submissions yet.</td></tr>`;
-  } else if (csSubs.length > 0) {
+    // Community Support
+    const csSubs = all.filter(s => s.role === 'community-support');
+    const csTbody = document.getElementById('cs-submissions-tbody');
     csTbody.innerHTML = '';
-    
-    csSubs.forEach(sub => {
-      const status = sub.status || 'Pending';
-      const pillClass = getStatusPillClass(status);
-      const tr = document.createElement('tr');
-      tr.dataset.live = 'true';
-      tr.dataset.status = status.toLowerCase();
-      tr.innerHTML = `
-        <td style="font-weight:500;">${sub.reportName || sub.fileName || '—'}</td>
-        <td style="color:var(--text2);">${sub.orgName}</td>
-        <td style="color:var(--text3);">${formatDate(sub.submittedAt)}</td>
-        <td><span class="pill ${pillClass}">${status}</span></td>
-        <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openDrawer('${sub.id}')">Open</button></td>`;
-      
-      csTbody.insertBefore(tr, csTbody.firstChild);
-    });
-  }
-}
 
-  function openDrawer(id) {
-    activeSubId = id;
-    const sub = getSubmissions().find(s => s.id === id);
+    if (csSubs.length === 0) {
+      csTbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Support submissions yet.</td></tr>`;
+    } else {
+      csSubs.forEach(sub => {
+        const status = sub.status || 'Pending';
+        const pillClass = getStatusPillClass(status);
+        const tr = document.createElement('tr');
+        tr.dataset.live = 'true';
+        tr.dataset.status = status.toLowerCase();
+        tr.innerHTML = `
+          <td style="font-weight:500;">${sub.report_name || sub.file_name || '—'}</td>
+          <td style="color:var(--text2);">${sub.org_name || '—'}</td>
+          <td style="color:var(--text3);">${formatDate(sub.submitted_at)}</td>
+          <td><span class="pill ${pillClass}">${status}</span></td>
+          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openDrawer(${sub.id})">Open</button></td>`;
+        csTbody.appendChild(tr);
+      });
+    }
+  }
+
+  async function openDrawer(id) {
+    activeSubId = id;  // ← move here, before await
+    activeSub = null;
+    const all = await getSubmissions();
+    const sub = all.find(s => s.id == id);
     if (!sub) return;
-    const template = getTemplateById(sub.templateId);
-    document.getElementById('drawer-template-name').textContent = template ? template.name : '(deleted)';
-    document.getElementById('drawer-org-name').textContent = sub.orgName;
-    document.getElementById('drawer-file-name').textContent = sub.fileName;
-    document.getElementById('drawer-file-meta').textContent = `Submitted ${formatDate(sub.submittedAt)}`;
+    activeSub = sub;
+
+    document.getElementById('drawer-template-name').textContent = sub.report_name || sub.file_name || '—';
+    document.getElementById('drawer-org-name').textContent = sub.org_name || '—';
+    document.getElementById('drawer-file-name').textContent = sub.file_name || '—';
+    document.getElementById('drawer-file-meta').textContent = `Submitted ${formatDate(sub.submitted_at)}`;
     document.getElementById('drawer-download-btn').onclick = () => downloadSubmission(id);
-    renderDrawerActions(sub.status || 'Pending', sub.rejectionComment || '');
+    renderDrawerActions(sub.status || 'Pending', sub.rejection_comment || '');
     document.getElementById('review-drawer').classList.add('open');
   }
 
   function closeDrawer() {
     document.getElementById('review-drawer').classList.remove('open');
     activeSubId = null;
+    activeSub = null;
   }
 
   function renderDrawerActions(status, rejectionComment) {
@@ -351,7 +345,6 @@ function renderLiveRows() {
     pill.className = 'pill ' + getStatusPillClass(status);
     pill.textContent = status;
 
-    // Show/hide rejection comment box
     const commentBox = document.getElementById('drawer-rejection-comment');
     if (status === 'Rejected') {
       commentBox.style.display = 'block';
@@ -367,7 +360,6 @@ function renderLiveRows() {
     }
 
     const actions = document.getElementById('drawer-actions');
-
     if (status === 'Pending') {
       actions.innerHTML = `
         <div class="action-divider">Review actions</div>
@@ -375,7 +367,6 @@ function renderLiveRows() {
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           Start Review
         </button>`;
-
     } else if (status === 'In Review') {
       actions.innerHTML = `
         <div class="action-divider">Review actions</div>
@@ -387,7 +378,6 @@ function renderLiveRows() {
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           Reject
         </button>`;
-
     } else if (status === 'Approved') {
       actions.innerHTML = `
         <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--accent-light);border-radius:var(--radius);font-size:12.5px;color:var(--accent);">
@@ -399,7 +389,6 @@ function renderLiveRows() {
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.65"/></svg>
           Undo Approval
         </button>`;
-
     } else if (status === 'Rejected') {
       actions.innerHTML = `
         <div class="action-divider">Re-open</div>
@@ -410,29 +399,17 @@ function renderLiveRows() {
     }
   }
 
-  function setStatus(newStatus) {
+  async function setStatus(newStatus) {
     if (!activeSubId) return;
-    // Clear rejection comment when re-opening
-    if (newStatus === 'Pending' || newStatus === 'In Review' || newStatus === 'Approved') {
-      const subs = getSubmissions();
-      const sub = subs.find(s => s.id === activeSubId);
-      if (sub) {
-        sub.rejectionComment = '';
-        safeSet(STORAGE_KEYS.SUBMISSIONS, subs);
-      }
-    }
-    updateSubmissionStatus(activeSubId, newStatus);
+    await updateSubmissionStatus(activeSubId, newStatus, '');
     renderDrawerActions(newStatus, '');
     renderLiveRows();
   }
 
   function triggerReject() {
-    if (!activeSubId) return;
-    const sub = getSubmissions().find(s => s.id === activeSubId);
-    if (sub) {
-      document.getElementById('reject-org-name').textContent = sub.orgName;
-      document.getElementById('reject-comment-input').value = '';
-    }
+    if (!activeSub) return;
+    document.getElementById('reject-org-name').textContent = activeSub.org_name || '—';
+    document.getElementById('reject-comment-input').value = '';
     document.getElementById('reject-modal').classList.add('open');
   }
 
@@ -440,26 +417,16 @@ function renderLiveRows() {
     document.getElementById('reject-modal').classList.remove('open');
   }
 
-  function confirmReject() {
+  async function confirmReject() {
     if (!activeSubId) return;
     const comment = document.getElementById('reject-comment-input').value.trim();
-
-    // Save status + optional comment together
-    const subs = getSubmissions();
-    const sub = subs.find(s => s.id === activeSubId);
-    if (sub) {
-      sub.status = 'Rejected';
-      sub.rejectionComment = comment;
-      safeSet(STORAGE_KEYS.SUBMISSIONS, subs);
-    }
-
+    await updateSubmissionStatus(activeSubId, 'Rejected', comment);
     closeRejectModal();
     renderDrawerActions('Rejected', comment);
     renderLiveRows();
   }
 
   function filterTable(tablePrefix, filter, el) {
-    // Only deactivate pills within the same tab-bar
     el.closest('.tab-bar').querySelectorAll('.tab-pill').forEach(p => p.classList.remove('active'));
     el.classList.add('active');
     const tbodyId = tablePrefix === 'np' ? 'np-submissions-tbody' : 'cs-submissions-tbody';
@@ -468,6 +435,7 @@ function renderLiveRows() {
       row.style.display = (filter === 'all' || status === filter) ? '' : 'none';
     });
   }
+
   renderLiveRows();
 </script>
 </body>

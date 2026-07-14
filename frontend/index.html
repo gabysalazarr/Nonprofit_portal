@@ -23,7 +23,6 @@
   .role-btn.active.manager { color: var(--accent); }
   .role-btn.active.community { color: var(--accent); }
 
-  .demo-note { background: var(--accent-light); color: var(--accent); font-size: 11px; padding: 8px 12px; border-radius: var(--radius); margin-bottom: 18px; line-height: 1.5; }
 
   .btn-login { width: 100%; padding: 11px; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px; transition: background 0.15s; }
   .btn-login:hover { background: var(--accent-hover); }
@@ -44,10 +43,8 @@
   <div class="login-heading">Welcome back</div>
   <div class="login-sub">Sign in to your portal</div>
 
-  <div class="demo-note">Demo mode — enter any email & password and select your role to continue.</div>
-
   <div class="role-toggle">
-    <button class="role-btn active nonprofit" id="role-nonprofit" onclick="setRole('nonprofit')">
+    <button class="role-btn active nonprofit" id="role-essential" onclick="setRole('essential')">
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
       Essential
     </button>
@@ -55,7 +52,7 @@
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       Manager
     </button>
-    <button class="role-btn community" id="role-community" onclick="setRole('community')">
+    <button class="role-btn community" id="role-support" onclick="setRole('support')">
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Support
     </button>
@@ -78,28 +75,63 @@
 </div>
 
 <script>
-  let selectedRole = 'nonprofit';
+  const API = 'http://localhost:3000/api';
+  let selectedRole = 'essential';
 
   function setRole(role) {
     selectedRole = role;
-    ['nonprofit','manager','community'].forEach(r => {
+    ['essential','manager','support'].forEach(r => {
       document.getElementById(`role-${r}`).classList.toggle('active', r === role);
     });
     const btn = document.getElementById('login-btn');
-    btn.className = 'btn-login' + (role === 'community' ? ' community' : '');
+    btn.className = 'btn-login' + (role === 'support' ? ' support' : '');
   }
 
-  function doLogin() {
+  async function doLogin() {
     const email = document.getElementById('email-input').value.trim();
     const pw    = document.getElementById('pw-input').value;
     if (!email || !pw) { alert('Please enter your email and password.'); return; }
 
-    if (selectedRole === 'manager') {
-      window.location.href = 'manager/dashboard.html';
-    } else if (selectedRole === 'community') {
-      window.location.href = 'community/dashboard.html';
-    } else {
-      window.location.href = 'nonprofit/dashboard.html';
+    const btn = document.getElementById('login-btn');
+    btn.textContent = 'Signing in...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pw })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || 'Invalid email or password.');
+        btn.textContent = 'Sign in';
+        btn.disabled = false;
+        return;
+      }
+
+      // Save token and user info
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      // Redirect based on role
+      const role = data.user.role;
+      if (role === 'manager') {
+        window.location.href = 'manager/dashboard.html';
+      } else if (role === 'community-support') {
+        window.location.href = 'community/dashboard.html';
+      } else if (role === 'nonprofit' || role === 'community-essential') {
+        window.location.href = 'nonprofit/dashboard.html';
+      } else {
+        alert('Unknown role: ' + role);
+      }
+
+    } catch (err) {
+      alert('Could not connect to server. Make sure the backend is running.');
+      btn.textContent = 'Sign in';
+      btn.disabled = false;
     }
   }
 

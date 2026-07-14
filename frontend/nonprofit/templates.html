@@ -186,67 +186,11 @@
 
 <script src="../js/storage.js"></script>
 <script>
-  const MY_ORG = 'Nonprofit #1';
   const DOWNLOADED_KEY = 'np_downloaded_templates';
-
-  function openDetailsModal(templateId) {
-  const t = getTemplateById(templateId);
-  const sub = getSubmissionForOrg(templateId, MY_ORG);
-  const hasDownloaded = getDownloaded().includes(templateId);
-
-  document.getElementById('details-modal-title').textContent = t.name;
-  document.getElementById('details-template-filename').textContent = t.fileName;
-  document.getElementById('details-template-due').textContent = `Due ${t.dueDate || '—'}`;
-  document.getElementById('details-download-template-btn').onclick = () => {
-    handleDownload(templateId);
-    // enable upload btn after download
-    document.getElementById('details-upload-btn').removeAttribute('disabled');
-    document.getElementById('details-upload-btn').style.opacity = '';
-  };
-
-  // Submission area
-  const subArea = document.getElementById('details-submission-area');
-  if (sub) {
-    const statusColor = sub.status === 'Approved' ? 'var(--accent)' : sub.status === 'Rejected' ? 'var(--red)' : 'var(--text3)';
-    subArea.innerHTML = `
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;">
-        <div style="width:36px;height:36px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg viewBox="0 0 24 24" stroke="var(--text2)" fill="none" stroke-width="2" style="width:16px;height:16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sub.fileName}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px;">Submitted ${formatDate(sub.submittedAt)} · <span style="color:${statusColor};font-weight:500;">${sub.status || 'Pending'}</span></div>
-        </div>
-      </div>`;
-  } else {
-    subArea.innerHTML = `
-      <div style="background:var(--surface2);border:1.5px dashed var(--border2);border-radius:var(--radius);padding:20px;text-align:center;color:var(--text3);font-size:12.5px;">
-        No submission yet. Download the template, complete it, then upload it below.
-      </div>`;
-  }
-
-  // Upload button state
-  const uploadBtn = document.getElementById('details-upload-btn');
-  uploadBtn.textContent = sub ? 'Re-upload' : 'Upload Submission';
-  uploadBtn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> ${sub ? 'Re-upload' : 'Upload Submission'}`;
-  uploadBtn.onclick = () => { closeDetailsModal(); triggerUpload(templateId); };
-
-  if (!hasDownloaded && !sub) {
-    uploadBtn.setAttribute('disabled', '');
-    uploadBtn.style.opacity = '0.4';
-    uploadBtn.title = 'Download the template first';
-  } else {
-    uploadBtn.removeAttribute('disabled');
-    uploadBtn.style.opacity = '';
-    uploadBtn.title = '';
-  }
-
-  document.getElementById('details-modal').classList.add('open');
-}
-
-function closeDetailsModal() {
-  document.getElementById('details-modal').classList.remove('open');
-}
+  let activeUploadId = null;
+  let activeFillTemplateId = null;
+  let currentUser = getUser();
+  let currentOrgId = currentUser ? currentUser.org_id : null;
 
   function getDownloaded() {
     try { return JSON.parse(sessionStorage.getItem(DOWNLOADED_KEY)) || []; }
@@ -257,8 +201,6 @@ function closeDetailsModal() {
     const dl = getDownloaded();
     if (!dl.includes(id)) { dl.push(id); sessionStorage.setItem(DOWNLOADED_KEY, JSON.stringify(dl)); }
   }
-
-  let activeUploadId = null;
 
   function statusClass(sub) {
     if (!sub) return 'status-pending';
@@ -275,102 +217,133 @@ function closeDetailsModal() {
     const cls = s === 'Approved' ? 'pill-green' : s === 'Rejected' ? 'pill-red' : s === 'In Review' ? 'pill-amber' : 'pill-gray';
     return `<span class="pill ${cls}" style="font-size:11px;white-space:nowrap;">${s}</span>`;
   }
-  let activeFillTemplateId = null;
 
-function openFillModal(templateId) {
-  const t = getTemplateById(templateId);
-  const existing = getSubmissionForOrg(templateId, MY_ORG);
-  activeFillTemplateId = templateId;
+  async function openDetailsModal(templateId) {
+    const t = await getTemplateById(templateId);
+    const allSubs = await getSubmissions();
+    const sub = allSubs.find(s => s.template_id === templateId && s.org_id === currentOrgId) || null;
+    const hasDownloaded = getDownloaded().includes(templateId);
 
-  document.getElementById('fill-form-title').textContent = t.name;
+    document.getElementById('details-modal-title').textContent = t.name;
+    document.getElementById('details-template-filename').textContent = t.file_name || '—';
+    document.getElementById('details-template-due').textContent = `Due ${t.due_date || '—'}`;
+    document.getElementById('details-download-template-btn').onclick = () => {
+      handleDownload(templateId);
+      document.getElementById('details-upload-btn').removeAttribute('disabled');
+      document.getElementById('details-upload-btn').style.opacity = '';
+    };
 
-  const banner = document.getElementById('fill-form-submitted-banner');
-  banner.style.display = existing ? 'flex' : 'none';
-
-  const fieldsEl = document.getElementById('fill-form-fields');
-  fieldsEl.innerHTML = t.fields.map(f => {
-    const val = existing ? (existing.answers[f.id] || '') : '';
-    if (f.type === 'textarea') {
-      return `
-        <div class="fill-field">
-          <label>${f.label}${f.required ? '<span class="req">*</span>' : ''}</label>
-          <textarea class="form-input" data-field-id="${f.id}" data-required="${f.required}">${val}</textarea>
+    const subArea = document.getElementById('details-submission-area');
+    if (sub) {
+      const statusColor = sub.status === 'Approved' ? 'var(--accent)' : sub.status === 'Rejected' ? 'var(--red)' : 'var(--text3)';
+      subArea.innerHTML = `
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" stroke="var(--text2)" fill="none" stroke-width="2" style="width:16px;height:16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sub.file_name}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Submitted ${formatDate(sub.submitted_at)} · <span style="color:${statusColor};font-weight:500;">${sub.status || 'Pending'}</span></div>
+          </div>
+        </div>`;
+    } else {
+      subArea.innerHTML = `
+        <div style="background:var(--surface2);border:1.5px dashed var(--border2);border-radius:var(--radius);padding:20px;text-align:center;color:var(--text3);font-size:12.5px;">
+          No submission yet. Download the template, complete it, then upload it below.
         </div>`;
     }
-    return `
-      <div class="fill-field">
-        <label>${f.label}${f.required ? '<span class="req">*</span>' : ''}</label>
-        <input class="form-input" type="${f.type}" data-field-id="${f.id}" data-required="${f.required}" value="${val}" />
-      </div>`;
-  }).join('');
 
-  document.getElementById('fill-form-submit-btn').textContent = existing ? 'Update Submission' : 'Submit';
-  document.getElementById('fill-form-modal').classList.add('open');
-}
+    const uploadBtn = document.getElementById('details-upload-btn');
+    uploadBtn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> ${sub ? 'Re-upload' : 'Upload Submission'}`;
+    uploadBtn.onclick = () => { closeDetailsModal(); triggerUpload(templateId); };
 
-function closeFillModal() {
-  document.getElementById('fill-form-modal').classList.remove('open');
-  activeFillTemplateId = null;
-}
+    if (!hasDownloaded && !sub) {
+      uploadBtn.setAttribute('disabled', '');
+      uploadBtn.style.opacity = '0.4';
+      uploadBtn.title = 'Download the template first';
+    } else {
+      uploadBtn.removeAttribute('disabled');
+      uploadBtn.style.opacity = '';
+      uploadBtn.title = '';
+    }
 
-function submitFilledForm() {
-  const inputs = document.querySelectorAll('#fill-form-fields [data-field-id]');
-  const answers = {};
-  let missingRequired = false;
-
-  inputs.forEach(input => {
-    const id = input.dataset.fieldId;
-    const required = input.dataset.required === 'true';
-    const value = input.value.trim();
-    if (required && !value) missingRequired = true;
-    answers[id] = value;
-  });
-
-  if (missingRequired) {
-    document.getElementById('validation-modal').classList.add('open');
-    return;
+    document.getElementById('details-modal').classList.add('open');
   }
 
-  // Remove existing submission for this template+org if any
-  const existing = getSubmissionForOrg(activeFillTemplateId, MY_ORG);
-  if (existing) {
-    const subs = getSubmissions().filter(s => s.id !== existing.id);
-    safeSet(STORAGE_KEYS.SUBMISSIONS, subs);
+  function closeDetailsModal() {
+    document.getElementById('details-modal').classList.remove('open');
   }
 
-  // Save as submission with answers instead of file
-  const submissions = getSubmissions();
-  const submission = {
-    id:          'sub_' + Date.now(),
-    templateId:  activeFillTemplateId,
-    orgName:     MY_ORG,
-    role:        'nonprofit',
-    method:      'form-builder',
-    answers,
-    fileName:    'Form submission',
-    status:      'Pending',
-    submittedAt: new Date().toISOString(),
-  };
-  submissions.push(submission);
-  safeSet(STORAGE_KEYS.SUBMISSIONS, submissions);
+  async function openFillModal(templateId) {
+    const t = await getTemplateById(templateId);
+    const allSubs = await getSubmissions();
+    const existing = allSubs.find(s => s.template_id === templateId && s.org_id === currentOrgId) || null;
+    activeFillTemplateId = templateId;
 
-  closeFillModal();
-  document.getElementById('upload-success-modal').classList.add('open');
-  render();
-}
+    document.getElementById('fill-form-title').textContent = t.name;
+    const banner = document.getElementById('fill-form-submitted-banner');
+    banner.style.display = existing ? 'flex' : 'none';
 
-  function render() {
-    const templates = getTemplatesForOrg(MY_ORG);
+    const fieldsEl = document.getElementById('fill-form-fields');
+    const fields = t.fields || [];
+    fieldsEl.innerHTML = fields.map(f => {
+      const val = existing && existing.answers ? (existing.answers[f.id] || '') : '';
+      if (f.type === 'textarea') {
+        return `<div class="fill-field"><label>${f.label}${f.required ? '<span class="req">*</span>' : ''}</label><textarea class="form-input" data-field-id="${f.id}" data-required="${f.required}">${val}</textarea></div>`;
+      }
+      return `<div class="fill-field"><label>${f.label}${f.required ? '<span class="req">*</span>' : ''}</label><input class="form-input" type="${f.type}" data-field-id="${f.id}" data-required="${f.required}" value="${val}" /></div>`;
+    }).join('');
+
+    document.getElementById('fill-form-submit-btn').textContent = existing ? 'Update Submission' : 'Submit';
+    document.getElementById('fill-form-modal').classList.add('open');
+  }
+
+  function closeFillModal() {
+    document.getElementById('fill-form-modal').classList.remove('open');
+    activeFillTemplateId = null;
+  }
+
+  async function submitFilledForm() {
+    const inputs = document.querySelectorAll('#fill-form-fields [data-field-id]');
+    const answers = {};
+    let missingRequired = false;
+    inputs.forEach(input => {
+      const id = input.dataset.fieldId;
+      const required = input.dataset.required === 'true';
+      const value = input.value.trim();
+      if (required && !value) missingRequired = true;
+      answers[id] = value;
+    });
+
+    if (missingRequired) {
+      document.getElementById('validation-modal').classList.add('open');
+      return;
+    }
+
+    await addSubmission({
+      templateId: activeFillTemplateId,
+      role: 'community-essential',
+      answers,
+    });
+
+    closeFillModal();
+    document.getElementById('upload-success-modal').classList.add('open');
+    render();
+  }
+
+  async function render() {
+    const templates = await getTemplates();
+    const allSubs = await getSubmissions();
     const grid = document.getElementById('templates-grid');
     const downloaded = getDownloaded();
 
     const pending = templates.filter(t => {
-      const sub = getSubmissionForOrg(t.id, MY_ORG);
+      const sub = allSubs.find(s => s.template_id === t.id && s.org_id === currentOrgId);
       return !sub || sub.status === 'Rejected';
     }).length;
+
     const badge = document.getElementById('pending-badge');
-    badge.textContent = pending;
-    badge.style.display = pending > 0 ? '' : 'none';
+    if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? '' : 'none'; }
 
     if (templates.length === 0) {
       grid.innerHTML = `
@@ -383,63 +356,60 @@ function submitFilledForm() {
     }
 
     grid.innerHTML = templates.map(t => {
-      const sub = getSubmissionForOrg(t.id, MY_ORG);
+      const sub = allSubs.find(s => s.template_id === t.id && s.org_id === currentOrgId) || null;
       const hasDownloaded = downloaded.includes(t.id);
       const sc = statusClass(sub);
-      const isRejected = sub && (sub.status || '') === 'Rejected';
+      const isRejected = sub && sub.status === 'Rejected';
 
-      // Rejection callout
       const rejectionBlock = isRejected ? `
         <div class="tc-rejection">
           <div class="tc-rejection-label">
             <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             Rejected — action required
           </div>
-          ${sub.rejectionComment
-            ? `<div class="tc-rejection-comment">${sub.rejectionComment}</div>`
+          ${sub.rejection_comment
+            ? `<div class="tc-rejection-comment">${sub.rejection_comment}</div>`
             : `<div class="tc-rejection-no-comment">No comment was left. Contact your manager for details.</div>`}
         </div>` : '';
 
-      const uploadLabel = sub ? (isRejected ? 'Re-upload' : 'Re-upload') : 'Upload';
       const uploadDisabled = !hasDownloaded ? 'disabled' : '';
       const uploadTip = !hasDownloaded ? 'title="Download the template first"' : '';
+      const isFormBuilder = t.method === 'form-builder';
 
-const isFormBuilder = t.method === 'form-builder';
+      const actions = isFormBuilder ? `
+        <div class="tc-actions">
+          <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="openFillModal(${t.id})">
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            ${sub ? 'Update Form' : 'Fill Out'}
+          </button>
+        </div>` : `
+        <div class="tc-actions">
+          <button class="btn" onclick="handleDownload(${t.id})">
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+          <button class="btn btn-primary" id="upload-btn-${t.id}" onclick="triggerUpload(${t.id})" ${uploadDisabled} ${uploadTip}>
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            ${sub ? 'Re-upload' : 'Upload'}
+          </button>
+          <button class="btn" onclick="openDetailsModal(${t.id})" style="flex:0 0 auto;padding:9px 12px;">
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            View
+          </button>
+        </div>`;
 
-const actions = isFormBuilder ? `
-  <div class="tc-actions">
-    <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="openFillModal('${t.id}')">
-      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      ${sub ? 'Update Form' : 'Fill Out'}
-    </button>
-  </div>` : `
-  <div class="tc-actions">
-    <button class="btn" onclick="handleDownload('${t.id}')">
-      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Download
-    </button>
-    <button class="btn btn-primary" id="upload-btn-${t.id}" onclick="triggerUpload('${t.id}')" ${uploadDisabled} ${uploadTip}>
-      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-      ${uploadLabel}
-    </button>
-    <button class="btn" onclick="openDetailsModal('${t.id}')" style="flex:0 0 auto;padding:9px 12px;">
-      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-      View
-    </button>
-  </div>`;
-
-return `
-  <div class="tc ${sc}">
-    <div class="tc-header">
-      <div>
-        <div class="tc-name">${t.name}</div>
-        <div class="tc-due">Due ${t.dueDate || '—'}</div>
-      </div>
-      ${statusPill(sub)}
-    </div>
-    ${rejectionBlock}
-    ${actions}
-  </div>`;
+      return `
+        <div class="tc ${sc}">
+          <div class="tc-header">
+            <div>
+              <div class="tc-name">${t.name}</div>
+              <div class="tc-due">Due ${t.due_date || '—'}</div>
+            </div>
+            ${statusPill(sub)}
+          </div>
+          ${rejectionBlock}
+          ${actions}
+        </div>`;
     }).join('');
   }
 
@@ -458,12 +428,13 @@ return `
   async function handleUpload(input) {
     if (!input.files.length || !activeUploadId) return;
     const file = input.files[0];
-    const existing = getSubmissionForOrg(activeUploadId, MY_ORG);
-    if (existing) {
-      const subs = getSubmissions().filter(s => s.id !== existing.id);
-      safeSet(STORAGE_KEYS.SUBMISSIONS, subs);
-    }
-    const result = await addSubmission({ templateId: activeUploadId, orgName: MY_ORG, role: 'nonprofit', file });
+    const t = await getTemplateById(activeUploadId);
+    const result = await addSubmission({
+      templateId: activeUploadId,
+      role: 'community-essential',
+      file,
+      reportName: t ? t.name : '',
+    });
     input.value = '';
     activeUploadId = null;
     if (!result) return;

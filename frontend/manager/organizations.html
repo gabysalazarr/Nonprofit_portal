@@ -93,8 +93,8 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
         <!-- Role tabs -->
         <div class="tab-bar" style="margin-bottom:0;">
-          <span class="tab-pill active" id="role-tab-np" onclick="switchRole('nonprofits', this)">Community Essential</span>
-          <span class="tab-pill" id="role-tab-cs" onclick="switchRole('community', this)">Community Support</span>
+          <span class="tab-pill active" id="role-tab-np" onclick="switchRole('community-essential', this)">Community Essential</span>
+          <span class="tab-pill" id="role-tab-cs" onclick="switchRole('community-support', this)">Community Support</span>
         </div>
         <!-- Status filter -->
         <div class="tab-bar" style="margin-bottom:0;">
@@ -147,63 +147,51 @@
 <script src="../js/storage.js"></script>
 <script>
   const AVATAR_COLORS = ['#3D2B6B','#2D5016','#B45309','#9B1C1C','#1e40af','#065f46','#7c3aed','#b45309'];
-
-  const NONPROFITS = [
-    { name: 'Community Essenital #1', email: 'test@organization.org', contact: 'Jane Doe',    status: 'active',   color: '#3D2B6B' },
-    { name: 'Community Essenital #2', email: 'test@organization.org', contact: 'John Smith',  status: 'active',   color: '#2D5016' },
-    { name: 'Community Essenital #3', email: 'test@organization.org', contact: 'Maria Lopez', status: 'active',   color: '#B45309' },
-    { name: 'Community Essenital #4', email: 'test@organization.org', contact: 'Tom Brown',   status: 'active',   color: '#9B1C1C' },
-    { name: 'Community Essenital #5', email: 'test@organization.org', contact: 'Sara Kim',    status: 'active',   color: '#2D5016' },
-    { name: 'Community Essenital #6', email: 'test@organization.org', contact: 'Alex Chen',   status: 'inactive', color: '#3D2B6B' },
-  ];
-
-  const COMMUNITY_SUPPORT = [
-    { name: 'Community Support #1', email: 'cs1@organization.org', contact: 'Dana Hill',  status: 'active',   color: '#7c3aed' },
-    { name: 'Community Support #2', email: 'cs2@organization.org', contact: 'Rey Garza',  status: 'active',   color: '#1e40af' },
-    { name: 'Community Support #3', email: 'cs3@organization.org', contact: 'Pat Monroe', status: 'inactive', color: '#065f46' },
-  ];
-
-  let currentRole   = 'nonprofits';
+  let currentRole   = 'community-essential';
   let currentStatus = 'all';
+  let allOrgs       = [];
 
   function initials(name) {
     return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   }
 
-  function buildCard(org) {
-    const isNP     = currentRole === 'nonprofits';
-    const pending  = isNP ? getSubmissionsForOrg(org.name).filter(s => (s.status || 'Pending') === 'Pending').length : 0;
-    const total    = isNP ? getSubmissionsForOrg(org.name).length : getSubmissions().filter(s => s.orgName === org.name).length;
-    const statLabel = isNP ? 'submitted' : 'reports';
-    const isActive  = org.status === 'active';
+  function getColor(index) {
+    return AVATAR_COLORS[index % AVATAR_COLORS.length];
+  }
 
+  function buildCard(org, index) {
+    const isActive = org.status === 'active';
     return `
       <div class="org-card" data-status="${org.status}">
         <div class="org-card-top">
-          <div class="org-avi" style="background:${org.color};">${initials(org.name)}</div>
+          <div class="org-avi" style="background:${getColor(index)};">${initials(org.name)}</div>
           <div>
             <div class="org-name">${org.name}</div>
             <div class="org-contact">${org.email}</div>
           </div>
           ${isActive
             ? `<span class="pill pill-green" style="margin-left:auto;">Active</span>`
-            : `<span class="pill pill-gray"  style="margin-left:auto;">Inactive</span>`}
+            : `<span class="pill pill-gray" style="margin-left:auto;">Inactive</span>`}
         </div>
         <div class="org-stats">
-          ${isNP ? `<div class="org-stat"><span>${pending}</span> pending</div><div class="org-stat">· </div>` : ''}
-          <div class="org-stat"><span>${total}</span> ${statLabel}</div>
-          <button class="btn" style="margin-left:auto;font-size:11px;padding:3px 9px;" onclick="toggleStatus('${org.name}')">
+          <div class="org-stat"><span>${org.contact || '—'}</span></div>
+          <button class="btn" style="margin-left:auto;font-size:11px;padding:3px 9px;" onclick="toggleStatus(${org.id}, '${org.status}')">
             ${isActive ? 'Deactivate' : 'Activate'}
           </button>
         </div>
       </div>`;
   }
 
+  async function loadOrgs() {
+    const role = currentRole === 'community-essential' ? 'community-essential' : 'community-support';
+    allOrgs = await getOrganizationsByRole(role);
+    renderOrgs();
+  }
+
   function renderOrgs() {
-    const list   = currentRole === 'nonprofits' ? NONPROFITS : COMMUNITY_SUPPORT;
-    const grid   = document.getElementById('org-grid');
-    const empty  = document.getElementById('org-empty');
-    const filtered = currentStatus === 'all' ? list : list.filter(o => o.status === currentStatus);
+    const grid    = document.getElementById('org-grid');
+    const empty   = document.getElementById('org-empty');
+    const filtered = currentStatus === 'all' ? allOrgs : allOrgs.filter(o => o.status === currentStatus);
 
     if (filtered.length === 0) {
       grid.innerHTML = '';
@@ -211,20 +199,19 @@
       return;
     }
     empty.style.display = 'none';
-    grid.innerHTML = filtered.map(buildCard).join('');
+    grid.innerHTML = filtered.map((org, i) => buildCard(org, i)).join('');
   }
 
   function switchRole(role, el) {
     currentRole = role;
-    document.getElementById('role-tab-np').classList.toggle('active', role === 'nonprofits');
-    document.getElementById('role-tab-cs').classList.toggle('active', role === 'community');
-    // Reset status filter
+    document.getElementById('role-tab-np').classList.toggle('active', role === 'community-essential');
+    document.getElementById('role-tab-cs').classList.toggle('active', role === 'community-support');
     currentStatus = 'all';
     document.querySelectorAll('#status-tab-all, #status-tab-active, #status-tab-inactive')
       .forEach(t => t.classList.remove('active'));
     document.getElementById('status-tab-all').classList.add('active');
-    renderOrgs();
-    document.getElementById('add-btn').childNodes[2].textContent = role === 'nonprofits' ? ' Add Community Essential' : ' Add Community Support';
+    document.getElementById('add-btn').childNodes[2].textContent = role === 'community-essential' ? ' Add Community Essential' : ' Add Community Support';
+    loadOrgs();
   }
 
   function filterStatus(status, el) {
@@ -235,12 +222,10 @@
     renderOrgs();
   }
 
-  function toggleStatus(name) {
-    const list = currentRole === 'nonprofits' ? NONPROFITS : COMMUNITY_SUPPORT;
-    const org  = list.find(o => o.name === name);
-    if (!org) return;
-    org.status = org.status === 'active' ? 'inactive' : 'active';
-    renderOrgs();
+  async function toggleStatus(id, currentStatus) {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    await updateOrgStatus(id, newStatus);
+    loadOrgs();
   }
 
   function openAddOrgModal() {
@@ -254,20 +239,19 @@
     document.getElementById('org-contact-input').value = '';
   }
 
-  function submitAddOrg() {
+  async function submitAddOrg() {
     const name    = document.getElementById('org-name-input').value.trim();
     const email   = document.getElementById('org-email-input').value.trim();
     const contact = document.getElementById('org-contact-input').value.trim();
     if (!name || !email || !contact) { alert('Please fill in all fields.'); return; }
 
-    const list  = currentRole === 'nonprofits' ? NONPROFITS : COMMUNITY_SUPPORT;
-    const color = AVATAR_COLORS[list.length % AVATAR_COLORS.length];
-    list.push({ name, email, contact, status: 'active', color });
+    const role = currentRole === 'community-essential' ? 'community-essential' : 'community-support';
+    await createOrganization({ name, email, contact, role });
     closeAddOrgModal();
-    renderOrgs();
+    loadOrgs();
   }
 
-  renderOrgs();
+  loadOrgs();
 </script>
 </body>
 </html>

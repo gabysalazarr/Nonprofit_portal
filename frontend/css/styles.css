@@ -182,7 +182,7 @@ a { text-decoration: none; color: inherit; }
 .card-header { padding: 14px 18px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .card-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
 .card-title svg { width: 14px; height: 14px; stroke: var(--text3); fill: none; stroke-width: 2; }
-.card-body { padding: 8px 16px; }
+.card-body { padding: 8px 8px; }
 
 /* Scrollable */
 .vis-list {

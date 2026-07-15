@@ -4,7 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard — Community Support</title>
-<link rel="stylesheet" href="../css/styles.css" />
+<link rel="stylesheet" href="../css/styles.css" />\
+<style>
+  .ann-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .ann-item:last-child { border-bottom: none; }
+  .ann-item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .ann-mini-avi { width: 24px; height: 24px; border-radius: 50%; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
+  .ann-item-author { font-size: 12px; font-weight: 600; }
+  .ann-item-time { font-size: 10.5px; color: var(--text3); margin-left: auto; }
+  .ann-item-message { font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+</style>
 </head>
 <body>
 <div class="app">
@@ -120,8 +129,8 @@
               <a class="btn" href="announcements.html" style="font-size:11px;padding:5px 10px;">View all</a>
             </div>
             <!-- Max height set to 300px with scrollbar fallback -->
-            <div class="card-body" id="dashboard-announcements" style="max-height: 300px; overflow-y: auto;">
-              <div style="text-align:center;padding:20px;color:var(--text3);font-size:12.5px;">No announcements yet.</div>
+            <div class="card-body" id="dashboard-announcements" style="max-height: 205px; overflow-y: auto;">
+              <div style="text-align:center;padding:200px;color:var(--text3);font-size:12.5px;">No announcements yet.</div>
             </div>
           </div>
 
@@ -135,7 +144,7 @@
               <a class="btn" href="messages.html" style="font-size:11px;padding:5px 10px;">View all</a>
             </div>
             <!-- Max height set to 250px with scrollbar fallback -->
-            <div class="card-body" id="dashboard-messages" style="max-height: 250px; overflow-y: auto;">
+            <div class="card-body" id="dashboard-messages" style="max-height: 205px; overflow-y: auto;">
               <div style="text-align:center;padding:20px;color:var(--text3);font-size:12.5px;">No recent messages.</div>
             </div>
           </div>
@@ -149,39 +158,96 @@
 
 <script src="../js/storage.js"></script>
 <script>
-  const CS_ORG = 'Community Support';
+  const currentUser = getUser();
+  const currentOrgId = currentUser ? currentUser.org_id : null;
 
-  function init() {
-    const submissions = getSubmissions().filter(s => s.orgName === CS_ORG);
-    const announcements = getAnnouncements();
+  function timeAgo(isoString) {
+    const diff = Math.floor((Date.now() - new Date(isoString)) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return formatDate(isoString);
+  }
 
-    document.getElementById('stat-reports').textContent = submissions.length;
+  function avatarColor(role) {
+    if (role === 'Manager') return '#2D5016';
+    if (role === 'Community Support') return '#3D2B6B';
+    return '#B45309';
+  }
+
+  async function init() {
+    const [allSubs, allAnns] = await Promise.all([
+      getSubmissions(),
+      getAnnouncements(),
+    ]);
+
+    const submissions = allSubs.filter(s => s.org_id === currentOrgId);
+    const announcements = allAnns.filter(a => {
+      if (a.author_role === 'Community Support') return true;
+      const audience = a.audience;
+      if (!audience) return false;
+      return audience.type === 'community' || audience.type === 'both';
+    });
+
+    document.getElementById('stat-reports').textContent       = submissions.length;
     document.getElementById('stat-announcements').textContent = announcements.length;
 
+    // Reports
     const reportsEl = document.getElementById('dashboard-reports');
     if (submissions.length === 0) {
-      reportsEl.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);font-size:12.5px;">No reports uploaded yet. Go to Reports to upload your first one.</div>`;
+      reportsEl.innerHTML = `<div class="dash-empty">No reports uploaded yet. <a href="reports.html" style="color:var(--purple);">Upload one →</a></div>`;
     } else {
-      reportsEl.innerHTML = submissions.slice(0, 4).map(s => `
-        <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:15px;height:15px;color:var(--purple);flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.reportName || s.fileName || '—'}</div>
-            <div style="font-size:11px;color:var(--text3);">${formatDate(s.submittedAt)}</div>
+      reportsEl.innerHTML = submissions.map(r => {
+        const status = r.status || 'Pending';
+        const pillClass = getStatusPillClass(status);
+        return `
+          <div class="ann-item">
+            <div class="ann-item-header">
+              <div class="ann-mini-avi" style="background:var(--purple);">
+                <svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2" style="width:11px;height:11px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              </div>
+              <span class="ann-item-author">${r.report_name || r.file_name || '—'}</span>
+              <span class="pill ${pillClass}" style="font-size:10px;margin-left:auto;">${status}</span>
+            </div>
+            <div class="ann-item-message">${formatDate(r.submitted_at)}</div>
+          </div>`;
+      }).join('');
+    }
+
+    // Announcements
+    const annEl = document.getElementById('dashboard-announcements');
+    if (announcements.length === 0) {
+      annEl.innerHTML = `<div class="dash-empty">No announcements yet.</div>`;
+    } else {
+      annEl.innerHTML = announcements.map(a => `
+        <div class="ann-item">
+          <div class="ann-item-header">
+            <div class="ann-mini-avi" style="background:${avatarColor(a.author_role)};">${a.author_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+            <span class="ann-item-author">${a.author_name}</span>
+            <span class="ann-item-time">${timeAgo(a.posted_at)}</span>
           </div>
+          <div class="ann-item-message">${a.message || '(attachment)'}</div>
         </div>`).join('');
     }
 
-    const annEl = document.getElementById('dashboard-announcements');
-    if (announcements.length === 0) {
-      annEl.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);font-size:12.5px;">No announcements yet.</div>`;
-    } else {
-      annEl.innerHTML = announcements.slice(0, 3).map(a => `
-        <div style="padding:10px 0;border-bottom:1px solid var(--border);">
-          <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">${a.authorName} · ${formatDate(a.postedAt)}</div>
-          <div style="font-size:12.5px;">${a.message}</div>
-        </div>`).join('');
-    }
+    // Messages (demo)
+    document.getElementById('dashboard-messages').innerHTML = `
+      <div class="ann-item">
+        <div class="ann-item-header">
+          <div class="ann-mini-avi" style="background:#2D5016;">TA</div>
+          <span class="ann-item-author">Taylor Andry</span>
+          <span class="ann-item-time">2h ago</span>
+        </div>
+        <div class="ann-item-message">Please upload your Q2 report when ready.</div>
+      </div>
+      <div class="ann-item">
+        <div class="ann-item-header">
+          <div class="ann-mini-avi" style="background:#2D5016;">TA</div>
+          <span class="ann-item-author">Taylor Andry</span>
+          <span class="ann-item-time">Yesterday</span>
+        </div>
+        <div class="ann-item-message">Welcome to the Community Support portal!</div>
+      </div>`;
   }
 
   init();

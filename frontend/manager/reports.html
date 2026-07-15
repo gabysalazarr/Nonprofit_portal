@@ -165,7 +165,7 @@
               </div>
             </div>
 
-            <button class="btn btn-primary mgr" style="width:100%;justify-content:center;" onclick="uploadReport()">
+            <button id="upload-report-btn" class="btn btn-primary mgr" style="width:100%;justify-content:center;" onclick="uploadReport()">
               <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
               Upload Report
             </button>
@@ -210,7 +210,7 @@
       return;
     }
 
-    const btn = document.querySelector('button[onclick="uploadReport()"]');
+    const btn = document.getElementById('upload-report-btn');
     btn.textContent = 'Uploading…';
     btn.disabled = true;
 
@@ -226,72 +226,68 @@
     document.getElementById('report-file').value = '';
     selectedReportFile = null;
 
-    const banner = document.getElementById('report-saved-banner');
-    banner.classList.add('show');
-    setTimeout(() => banner.classList.remove('show'), 4000);
-
+    document.getElementById('upload-success-modal').classList.add('open');
     renderNPReports();
   }
 
-  // Section 1: Community Support reports (uploaded by CS orgs via their Reports page)
-
-  // Section 2: Nonprofit reports uploaded by manager
-  function renderNPReports() {
-    const reports = getReports().sort((a,b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-    const tbody = document.getElementById('np-reports-tbody');
-    if (!tbody) return;
-
-    if (reports.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No nonprofit reports uploaded yet.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = reports.map(r => {
-      const visLabel = r.visibleTo.includes('all') ? 'All Nonprofits' : r.visibleTo.join(', ');
-      return `
-        <tr>
-          <td style="font-weight:500;">${r.name}</td>
-
-          <td style="color:var(--text2);">${visLabel}</td>
-          <td style="color:var(--text3);">${formatDate(r.uploadedAt)}</td>
-          <td style="display:flex;gap:6px;">
-            <button class="btn btn-primary mgr" style="font-size:11px;padding:4px 9px;" onclick="downloadReport('${r.id}')">Download</button>
-            <button class="btn" style="font-size:11px;padding:4px 9px;color:var(--red);" onclick="removeReport('${r.id}')">Delete</button>
-          </td>
-        </tr>`;
-    }).join('');
-  }
-  function renderOrgReports() {
-    const all = getSubmissions()
+  async function renderOrgReports() {
+    const all = await getSubmissions();
+    const filtered = all
       .filter(s => s.role === 'community-support' || s.role === 'nonprofit-report')
-      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+      .sort((a,b) => new Date(b.submitted_at) - new Date(a.submitted_at));
 
     const tbody = document.getElementById('org-reports-tbody');
     if (!tbody) return;
 
-    if (all.length === 0) {
+    if (filtered.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No organization reports yet.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = all.map(s => {
+    tbody.innerHTML = filtered.map(s => {
       const type = s.role === 'community-support'
         ? '<span class="pill" style="background:var(--purple-light);color:var(--purple);font-size:10px;">CS</span>'
         : '<span class="pill pill-green" style="font-size:10px;">CE</span>';
       return `
         <tr>
-          <td style="font-weight:500;">${s.reportName || '—'}</td>
-          <td style="color:var(--text2);">${s.orgName}</td>
+          <td style="font-weight:500;">${s.report_name || '—'}</td>
+          <td style="color:var(--text2);">${s.org_name || '—'}</td>
           <td>${type}</td>
-          <td style="color:var(--text3);">${formatDate(s.submittedAt)}</td>
-          <td><button class="btn btn-primary mgr" style="font-size:11px;padding:4px 9px;" onclick="downloadSubmission('${s.id}')">Download</button></td>
+          <td style="color:var(--text3);">${formatDate(s.submitted_at)}</td>
+          <td><button class="btn btn-primary mgr" style="font-size:11px;padding:4px 9px;" onclick="downloadSubmission(${s.id})">Download</button></td>
         </tr>`;
     }).join('');
   }
 
-  function removeReport(id) {
+  async function renderNPReports() {
+    const reports = await getReports();
+    reports.sort((a,b) => new Date(b.uploaded_at) - new Date(a.uploaded_at));
+    const tbody = document.getElementById('np-reports-tbody');
+    if (!tbody) return;
+
+    if (reports.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No reports uploaded yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = reports.map(r => {
+      const visLabel = r.visible_to.includes('all') ? 'All Nonprofits' : r.visible_to.join(', ');
+      return `
+        <tr>
+          <td style="font-weight:500;">${r.name}</td>
+          <td style="color:var(--text2);">${visLabel}</td>
+          <td style="color:var(--text3);">${formatDate(r.uploaded_at)}</td>
+          <td style="display:flex;gap:6px;">
+            <button class="btn btn-primary mgr" style="font-size:11px;padding:4px 9px;" onclick="downloadReport(${r.id})">Download</button>
+            <button class="btn" style="font-size:11px;padding:4px 9px;color:var(--red);" onclick="removeReport(${r.id})">Delete</button>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  async function removeReport(id) {
     if (!confirm('Delete this report?')) return;
-    deleteReport(id);
+    await deleteReport(id);
     renderNPReports();
   }
 

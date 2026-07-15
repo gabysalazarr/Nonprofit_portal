@@ -141,7 +141,7 @@
               <input class="form-input" id="np-report-name" placeholder="e.g. Q2 CE Report" />
             </div>
 
-            <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="uploadReport()">
+            <button id="submit-np-btn" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="uploadReport()">
               <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
               Upload Report
             </button>
@@ -155,7 +155,8 @@
 
 <script src="../js/storage.js"></script>
 <script>
-  const MY_ORG = 'Nonprofit #1';
+  const currentUser = getUser();
+  const currentOrgId = currentUser ? currentUser.org_id : null;
   let selectedFile = null;
 
   function handleFileSelect(input) {
@@ -174,13 +175,12 @@
       return;
     }
 
-    const btn = document.querySelector('button[onclick="uploadReport()"]');
+    const btn = document.getElementById('submit-np-btn');
     btn.textContent = 'Uploading…';
     btn.disabled = true;
 
     const result = await addSubmission({
-      templateId: 'np-report',
-      orgName: MY_ORG,
+      templateId: null,
       role: 'nonprofit-report',
       file: selectedFile,
       reportName: name,
@@ -190,29 +190,24 @@
     btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Upload Report`;
 
     if (!result) return;
-    document.getElementById('upload-success-modal').classList.add('open');
-    renderNPReports();
 
-    document.getElementById('report-name').value = '';
-    document.getElementById('report-file-name').classList.remove('show');
-    document.getElementById('report-file').value = '';
-    selectedReportFile = null;
+    document.getElementById('np-report-name').value = '';
+    document.getElementById('file-name-display').style.display = 'none';
+    document.getElementById('np-report-file').value = '';
+    selectedFile = null;
 
     document.getElementById('upload-success-modal').classList.add('open');
-    const banner = document.getElementById('saved-banner');
-    banner.style.display = 'flex';
-    setTimeout(() => banner.style.display = 'none', 4000);
-
     renderNPReports();
+    renderManagerReports();
   }
 
-  function renderNPReports() {
-    const reports = getSubmissions()
-      .filter(s => s.orgName === MY_ORG && s.role === 'nonprofit-report')
-      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  async function renderNPReports() {
+    const all = await getSubmissions();
+    const reports = all
+      .filter(s => s.org_id === currentOrgId && s.role === 'nonprofit-report')
+      .sort((a,b) => new Date(b.submitted_at) - new Date(a.submitted_at));
 
     const tbody = document.getElementById('np-reports-tbody');
-
     if (reports.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;font-size:12.5px;">No reports uploaded yet.</td></tr>`;
       return;
@@ -221,34 +216,27 @@
     tbody.innerHTML = reports.map(r => {
       const status = r.status || 'Pending';
       const pillClass = getStatusPillClass(status);
-      const isRejected = status === 'Rejected';
       return `
         <tr>
-          <td style="font-weight:500;">${r.reportName || '—'}</td>
-          <td style="color:var(--text3);">${formatDate(r.submittedAt)}</td>
+          <td style="font-weight:500;">${r.report_name || '—'}</td>
+          <td style="color:var(--text3);">${formatDate(r.submitted_at)}</td>
           <td>
             ${status === 'Rejected'
               ? `<span class="pill pill-red tooltip-trigger"
-                  onmouseenter="showTooltip(this, '${(r.rejectionComment || '').replace(/'/g, '&#39;')}')"
-                  onmouseleave="hideTooltip()">
-                  Rejected
-                </span>`
+                  onmouseenter="showTooltip(this, '${(r.rejection_comment || '').replace(/'/g, '&#39;')}')"
+                  onmouseleave="hideTooltip()">Rejected</span>`
               : `<span class="pill ${pillClass}">${status}</span>`}
           </td>
-          <td>
-            <button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openViewModal('${r.id}')">View</button>
-          </td>
+          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openViewModal(${r.id})">View</button></td>
         </tr>`;
     }).join('');
   }
 
-  function renderManagerReports() {
-    const reports = getReportsVisibleTo(MY_ORG)
-      .sort((a,b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-
+  async function renderManagerReports() {
+    const reports = await getReports();
     const area = document.getElementById('manager-reports-area');
 
-    if (reports.length === 0) {
+    if (!reports || reports.length === 0) {
       area.innerHTML = `<div style="text-align:center;color:var(--text3);font-size:12.5px;padding:16px 0;">No reports shared with your organization yet.</div>`;
       return;
     }
@@ -258,22 +246,22 @@
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:14px;height:14px;color:var(--accent);flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         <div style="flex:1;min-width:0;">
           <div style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}</div>
-          <div style="font-size:11px;color:var(--text3);">${formatDate(r.uploadedAt)}</div>
+          <div style="font-size:11px;color:var(--text3);">${formatDate(r.uploaded_at)}</div>
         </div>
-        <button class="btn btn-primary" style="font-size:11px;padding:5px 10px;flex-shrink:0;" onclick="downloadReport('${r.id}')">Download</button>
+        <button class="btn btn-primary" style="font-size:11px;padding:5px 10px;flex-shrink:0;" onclick="downloadReport(${r.id})">Download</button>
       </div>`).join('');
   }
 
-  // View modal for nonprofit's own uploaded reports
-  function openViewModal(id) {
-    const r = getSubmissions().find(s => s.id === id);
+  async function openViewModal(id) {
+    const all = await getSubmissions();
+    const r = all.find(s => s.id == id);
     if (!r) return;
     const status = r.status || 'Pending';
     const pillClass = getStatusPillClass(status);
 
-    document.getElementById('modal-report-title').textContent = r.reportName || r.fileName;
-    document.getElementById('modal-file-name').textContent = r.fileName;
-    document.getElementById('modal-file-meta').textContent = `Uploaded ${formatDate(r.submittedAt)}`;
+    document.getElementById('modal-report-title').textContent = r.report_name || r.file_name;
+    document.getElementById('modal-file-name').textContent = r.file_name;
+    document.getElementById('modal-file-meta').textContent = `Uploaded ${formatDate(r.submitted_at)}`;
     document.getElementById('modal-download-btn').onclick = () => downloadSubmission(id);
     document.getElementById('modal-status-pill').className = `pill ${pillClass}`;
     document.getElementById('modal-status-pill').textContent = status;
@@ -282,7 +270,7 @@
     if (status === 'Rejected') {
       rejBlock.style.display = 'block';
       document.getElementById('modal-rejection-text').textContent =
-        r.rejectionComment || 'No comment was left. Contact your manager for details.';
+        r.rejection_comment || 'No comment was left. Contact your manager for details.';
     } else {
       rejBlock.style.display = 'none';
     }
@@ -295,7 +283,6 @@
     const rect = el.getBoundingClientRect();
     tooltip.innerHTML = `<strong style="display:block;margin-bottom:3px;">Manager's comment</strong>${comment || 'No comment was left.'}`;
     tooltip.style.display = 'block';
-    // Position above the pill, anchored to left edge
     const top = rect.top + window.scrollY - tooltip.offsetHeight - 10;
     const left = rect.left + window.scrollX;
     tooltip.style.top = top + 'px';

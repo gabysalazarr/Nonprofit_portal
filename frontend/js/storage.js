@@ -175,90 +175,65 @@ async function downloadSubmission(id) {
   downloadBase64File(s.file_data, s.file_name);
 }
 
-// ── Reports ───────────────────────────────────────────────
-// Uploaded directly by the manager (standalone, not tied to a submission).
-// Nonprofit/community submissions also appear in Reports view but live in Submissions.
-// Shape: { id, name, fileName, fileType, fileData, visibleTo, uploadedAt }
-// visibleTo: array of org names or ['all']
-
-function getReports() {
-  return safeGet(STORAGE_KEYS.REPORTS);
+// ── Reports ──
+async function getReports() {
+  return await apiFetch('/reports');
 }
 
-async function addReport({ name, file, visibleTo }) {
-  const reports = getReports();
-  const fileData = await readFileAsBase64(file);
-  const report = {
-    id:         'rep_' + Date.now(),
-    name,
-    fileName:   file.name,
-    fileType:   file.type,
-    fileData,
-    visibleTo:  visibleTo || ['all'],
-    uploadedAt: new Date().toISOString(),
-  };
-  reports.push(report);
-  const ok = safeSet(STORAGE_KEYS.REPORTS, reports);
-  return ok ? report : null;
+async function getReportById(id) {
+  const reports = await getReports();
+  return reports.find(r => r.id === id) || null;
 }
 
-function getReportById(id) {
-  return getReports().find(r => r.id === id) || null;
+async function getReportsVisibleTo(orgId) {
+  return await apiFetch('/reports');
 }
 
-function getReportsVisibleTo(orgName) {
-  return getReports().filter(r =>
-    r.visibleTo.includes('all') || r.visibleTo.includes(orgName)
-  );
+async function addReport(data) {
+  const fileData = data.file ? await fileToBase64(data.file) : null;
+  return await apiFetch('/reports', {
+    method: 'POST',
+    body: JSON.stringify({
+      name:       data.name,
+      file_name:  data.file ? data.file.name : null,
+      file_data:  fileData,
+      file_type:  data.file ? data.file.type : null,
+      visible_to: data.visibleTo || ['all'],
+    }),
+  });
 }
 
-function updateReportVisibility(reportId, visibleTo) {
-  const reports = getReports();
-  const report = reports.find(r => r.id === reportId);
-  if (report) {
-    report.visibleTo = visibleTo;
-    safeSet(STORAGE_KEYS.REPORTS, reports);
-  }
-  return report;
+async function deleteReport(id) {
+  return await apiFetch(`/reports/${id}`, { method: 'DELETE' });
 }
 
-function deleteReport(id) {
-  safeSet(STORAGE_KEYS.REPORTS, getReports().filter(r => r.id !== id));
+async function downloadReport(id) {
+  const r = await getReportById(id);
+  if (!r || !r.file_data) return;
+  downloadBase64File(r.file_data, r.file_name);
 }
 
-function downloadReport(id) {
-  const r = getReportById(id);
-  if (!r) return alert('Report not found.');
-  downloadBase64File(r.fileData, r.fileName);
+// ── Announcements ──
+async function getAnnouncements() {
+  return await apiFetch('/announcements');
 }
 
-// ── Announcements ─────────────────────────────────────────
-// Shared board visible to all roles. Anyone can post.
-// Shape: { id, authorName, authorRole, message, postedAt }
-
-function getAnnouncements() {
-  return safeGet(STORAGE_KEYS.ANNOUNCEMENTS);
+async function addAnnouncement(data) {
+  return await apiFetch('/announcements', {
+    method: 'POST',
+    body: JSON.stringify({
+      author_name:     data.authorName,
+      author_role:     data.authorRole,
+      message:         data.message,
+      audience:        data.audience,
+      video_name:      data.videoName || null,
+      attachment_name: data.attachmentName || null,
+    }),
+  });
 }
 
-function addAnnouncement({ authorName, authorRole, message, audience, videoName, attachmentName }) {
-  const announcements = getAnnouncements();
-  const announcement = {
-    id:        'ann_' + Date.now(),
-    authorName,
-    authorRole,
-    message,
-    audience,
-    videoName: videoName || null,
-    attachmentName: attachmentName || null,
-    postedAt:  new Date().toISOString(),
-  };
-  announcements.unshift(announcement);
-  safeSet(STORAGE_KEYS.ANNOUNCEMENTS, announcements);
-  return announcement;
-}
-
-function deleteAnnouncement(id) {
-  safeSet(STORAGE_KEYS.ANNOUNCEMENTS, getAnnouncements().filter(a => a.id !== id));
+async function deleteAnnouncement(id) {
+  return await apiFetch(`/announcements/${id}`, { method: 'DELETE' });
 }
 
 // ── Shared helpers ────────────────────────────────────────

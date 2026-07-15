@@ -5,6 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard - Manager</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<style>
+  .welcome-banner {
+    background:  var(--accent); color: white;
+    border-radius: var(--radius-lg); padding: 24px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px; margin-bottom: 20px; color: white;
+  }
+  .welcome-banner h2 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+  .welcome-banner p { font-size: 12.5px; opacity: 0.8; }
+  .ann-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .ann-item:last-child { border-bottom: none; }
+  .ann-item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .ann-mini-avi { width: 24px; height: 24px; border-radius: 50%; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
+  .ann-item-author { font-size: 12px; font-weight: 600; }
+  .ann-item-time { font-size: 10.5px; color: var(--text3); margin-left: auto; }
+  .ann-item-message { font-size: 12px; color: var(--text2); line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .stat-chips { display: flex; gap: 20px; flex-wrap: wrap; }
+  .stat-chip { text-align: center; }
+  .stat-chip-num { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  .stat-chip-lbl { font-size: 10px; opacity: 0.75; margin-top: 1px; }
+
+  
+</style>
 </head>
 <body>
 <div class="app">
@@ -75,70 +99,58 @@
         <div class="page-title">Dashboard</div>
         <div class="page-sub">Manager Overview · 2026</div>
       </div>
-      <div class="topbar-right">
-        <div class="notif-wrap">
-          <button class="btn btn-icon" style="position:relative;" onclick="toggleNotifDropdown(event)">
-            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            <span class="notif-dot" id="notif-dot"></span>
-          </button>
-          <div class="notif-dropdown" id="notif-dropdown">
-            <div class="notif-dropdown-header">
-              <h4>Notifications</h4>
-              <span class="notif-mark-read" onclick="markAllRead()">Mark all read</span>
-            </div>
-            <div class="notif-list" id="notif-list">
-              <div class="notif-item unread">
-                <div class="notif-icon msg"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-                <div class="notif-text">
-                  <div class="notif-title">New message from Nonprofit #2</div>
-                  <div class="notif-desc">Annual Report: Clarification Needed</div>
-                  <div class="notif-time">2 hours ago</div>
-                </div>
-              </div>
-              <div class="notif-item">
-                <div class="notif-icon deadline"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-                <div class="notif-text">
-                  <div class="notif-title">Template Submitted!</div>
-                  <div class="notif-desc">Nonprofit #3 submitted June 2026 Template</div>
-                  <div class="notif-time">1 day ago</div>
-                </div>
-              </div>
-            </div>
-            <div class="notif-dropdown-footer">
-              <a href="#">View all notifications</a>
-            </div>
+    </header>
+    <div class="content">
+      <div class="welcome-banner">
+        <div>
+          <h2>Welcome back! </h2>
+          <p>Here's what's happening with the organizations today.</p>
+        </div>
+        <div class="stat-chips">
+          <div class="stat-chip">
+            <div class="stat-chip-num" id="stat-templates">0</div>
+            <div class="stat-chip-lbl">Templates</div>
+          </div>
+  
+          <div class="stat-chip">
+            <div class="stat-chip-num" id="stat-reports">0</div>
+            <div class="stat-chip-lbl">REPORTS</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-chip-num" id="stat-announcements">0</div>
+            <div class="stat-chip-lbl">Announcements</div>
           </div>
         </div>
       </div>
-    </header>
-    <div class="content">
-      <div class="banner purple">
-        <div><h2>Manager Overview </h2><p>1 submissions pending review · 5 unread messages · 2026 </p></div>
-        <div class="banner-stats">
-          <div class="bs"><div class="bs-num">6</div><div class="bs-lbl">Orgs</div></div>
-          <div class="bs"><div class="bs-num">7</div><div class="bs-lbl">Submitted</div></div>
-          <div class="bs"><div class="bs-num">1</div><div class="bs-lbl">Pending</div></div>
-        </div>
-      </div>
+
+
       <div class="stats-grid cols-4">
         <div class="stat-card green">
           <div class="stat-ico green"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-          <div class="stat-num">6</div><div class="stat-lbl">Active Nonprofits</div>
+          <div class="stat-num" id="stat-orgs">0</div> 
+          <div class="stat-lbl">Active Nonprofits</div>
+
           <div class="stat-trend trend-pos">+3 this month</div>
         </div>
         <div class="stat-card purple">
           <div class="stat-ico purple"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>
-          <div class="stat-num">7</div><div class="stat-lbl">Templates Submitted</div>
+          <div class="stat-num" id="stat-submissions">0</div> 
+          <div class="stat-lbl">Submissions</div>
+
           <div class="stat-trend trend-pos">8 this week</div>
         </div>
         <div class="stat-card amber">
           <div class="stat-ico amber"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>
-          <div class="stat-num">1</div><div class="stat-lbl">Pending Review</div>
+          <div class="stat-num" id="stat-pending">0</div> 
+          <div class="stat-lbl">Pending Review</div>
+
           <div class="stat-trend trend-warn">2 overdue</div>
         </div>
         <div class="stat-card red">
           <div class="stat-ico red"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-          <div class="stat-num">5</div><div class="stat-lbl">Unread Messages</div>
+          <div class="stat-num" id="stat-orgs">0</div> 
+          <div class="stat-lbl">Unread Messages</div>
+
           <div class="stat-trend trend-neg">From 5 orgs</div>
         </div>
       </div>
@@ -153,7 +165,7 @@
       </div>
     </div>
     <!-- Height adjusts to content dynamically up to 700px -->
-    <div class="card-body" style="padding-bottom:20px; max-height: 700px; overflow-y: auto;">
+    <div class="card-body" style="padding-bottom:20px; padding-top:10px; max-height: 700px; overflow-y: auto;">
       <div class="prog-item">
         <div class="prog-hdr"><span>Community Essential #1</span><span>0/ 4</span></div>
         <div class="prog-track"><div class="prog-fill" style="width:0%;background:#ee0808;"></div></div>
@@ -184,19 +196,25 @@
   <!-- RIGHT COLUMN: Stacked Container (Announcements on TOP of Messages) -->
   <div style="display: flex; flex-direction: column; gap: 14px;">
     
-    <!-- Announcements Card (Placed on Top) -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-           Announcements
-        </div>
-        <a class="btn" href="announcements.html" style="font-size:11px;padding:4px 9px;">View all</a>
-      </div>
-      <!-- Height adjusts to content dynamically up to 300px -->
-      <div class="card-body" id="dashboard-announcements" style="max-height: 300px; overflow-y: auto;">
-        <div style="text-align:center;padding:20px;color:var(--text3);font-size:12.5px;">No announcements yet.</div>
-      </div>
+    <!-- Announcements Card (Placed on Top) --> 
+    <div class="card"> 
+      <!-- Added padding-bottom: 0; here -->
+      <div class="card-header" style="padding-bottom: 0;"> 
+        <div class="card-title"> 
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+            <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg> 
+          Announcements 
+        </div> 
+        <a class="btn" href="announcements.html" style="font-size:11px;padding:4px 9px;">View all</a> 
+      </div> 
+    <div class="card-body" id="dash-announcements" style="max-height: 200px; overflow-y: auto; padding-top: 4px; padding-left: 15px; padding-right: 0;"> 
+        <div style="text-align:center; padding: 4px 0px; color:var(--text3); font-size:12.5px;">
+            No announcements yet.
+        </div> 
+    </div>
+
     </div>
 
     <!-- Recent Messages Card (Placed on Bottom) -->
@@ -208,7 +226,6 @@
         </div>
         <a class="btn" href="messages.html" style="font-size:11px;padding:4px 9px;">View all</a>
       </div>
-      <!-- Height adjusts to content dynamically up to 350px -->
       <div class="msg-list" style="padding:0 14px; max-height: 350px; overflow-y: auto;">
         <a class="msg-row unread" href="messages.html">
           <div class="msg-avi" style="background:var(--red);">N1</div>
@@ -236,23 +253,116 @@
     </div>
   </div>
 </div>
+<script src="../js/storage.js"></script>
 <script>
   function toggleNotifDropdown(e) {
     e.stopPropagation();
     document.getElementById('notif-dropdown').classList.toggle('open');
   }
+
   function markAllRead() {
     document.querySelectorAll('.notif-item.unread').forEach(item => item.classList.remove('unread'));
     document.getElementById('notif-dot').style.display = 'none';
   }
-  // Close dropdown when clicking outside it
+
   document.addEventListener('click', (e) => {
     const dropdown = document.getElementById('notif-dropdown');
     const wrap = document.querySelector('.notif-wrap');
-    if (dropdown.classList.contains('open') && !wrap.contains(e.target)) {
+    if (dropdown && dropdown.classList.contains('open') && !wrap.contains(e.target)) {
       dropdown.classList.remove('open');
     }
   });
+
+  function timeAgo(isoString) {
+    const diff = Math.floor((Date.now() - new Date(isoString)) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return formatDate(isoString);
+  }
+
+  function avatarColor(role) {
+    if (role === 'Manager') return '#2D5016';
+    if (role === 'Community Support') return '#3D2B6B';
+    return '#B45309';
+  }
+
+  async function init() {
+    const [templates, allSubs, allAnns] = await Promise.all([
+      getTemplates(),
+      getSubmissions(),
+      getAnnouncements(),
+    ]);
+
+    const pending = allSubs.filter(s => (s.status || 'Pending') === 'Pending').length;
+
+    const orgs = await getOrganizationsByRole('community-essential');
+    const activeOrgs = orgs.filter(o => o.status === 'active').length;
+    const allReports = await getReports();
+
+    // 1. Update elements directly by ID (safely using optional chaining if they might be missing)
+    document.getElementById('stat-templates').textContent     = templates.length;
+    document.getElementById('stat-pending').textContent       = pending;
+    document.getElementById('stat-reports').textContent       = allReports.length;
+    document.getElementById('stat-announcements').textContent = allAnns.length;
+    document.getElementById('stat-submissions').textContent   = allSubs.length; // Fixed missing textContent assignment
+
+    // 2. Safely fetch and update elements that might be optional on the page
+    const statOrgs = document.getElementById('stat-orgs');
+    if (statOrgs) statOrgs.textContent = activeOrgs;
+
+    const statSubs = document.getElementById('stat-submissions');
+    if (statSubs) statSubs.textContent = allSubs.length;
+
+    const statPending = document.getElementById('stat-pending');
+    if (statPending) statPending.textContent = pending;
+
+    const statAnns = document.getElementById('stat-announcements');
+    if (statAnns) statAnns.textContent = allAnns.length;
+
+
+    // Announcements
+    const annEl = document.getElementById('dash-announcements');
+    if (annEl) {
+      if (allAnns.length === 0) {
+        annEl.innerHTML = `<div class="dash-empty">No announcements yet.</div>`;
+      } else {
+        annEl.innerHTML = allAnns.map(a => `
+          <div class="ann-item">
+            <div class="ann-item-header">
+              <div class="ann-mini-avi" style="background:${avatarColor(a.author_role)};">${a.author_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+              <span class="ann-item-author">${a.author_name}</span>
+              <span class="ann-item-time">${timeAgo(a.posted_at)}</span>
+            </div>
+            <div class="ann-item-message">${a.message || '(attachment)'}</div>
+          </div>`).join('');
+      }
+    }
+
+    // Messages (demo)
+    const messagesEl = document.getElementById('dash-messages');
+    if (messagesEl) {
+      messagesEl.innerHTML = `
+        <div class="ann-item">
+          <div class="ann-item-header">
+            <div class="ann-mini-avi" style="background:#3D2B6B;">N1</div>
+            <span class="ann-item-author">Nonprofit #1</span>
+            <span class="ann-item-time">2h ago</span>
+          </div>
+          <div class="ann-item-message">When will the Q2 template be available?</div>
+        </div>
+        <div class="ann-item">
+          <div class="ann-item-header">
+            <div class="ann-mini-avi" style="background:#7c3aed;">CS</div>
+            <span class="ann-item-author">Community Support #1</span>
+            <span class="ann-item-time">Yesterday</span>
+          </div>
+          <div class="ann-item-message">Report for Q2 has been uploaded.</div>
+        </div>`;
+    }
+  }
+
+  init();
 </script>
 </body>
 </html>

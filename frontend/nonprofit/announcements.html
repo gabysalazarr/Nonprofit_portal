@@ -167,73 +167,15 @@
     </div>
   </div>
 </div>
-
 <script src="../js/storage.js"></script>
 <script>
-  // Each session gets a unique post key so the nonprofit can delete their own posts
-  // from this session. Since there's no real login, we use sessionStorage to track
-  // which announcement IDs were posted in this browser session.
-  const SESSION_KEY = 'np_session_posts';
-
-  function getSessionPosts() {
-    try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)) || []; }
-    catch(e) { return []; }
-  }
-
-  function addSessionPost(id) {
-    const posts = getSessionPosts();
-    posts.push(id);
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(posts));
-  }
+  const currentUser = getUser();
+  let selectedVideo = null;
+  let selectedAttachment = null;
 
   function updateCharCount() {
     document.getElementById('char-count').textContent = document.getElementById('ann-message').value.length;
   }
-  // In nonprofit/announcements.html
-  function postAnnouncement() {
-    const message = document.getElementById('ann-message').value.trim();
-    const videoName = selectedVideo ? selectedVideo.name : null;
-    const attachmentName = selectedAttachment ? selectedAttachment.name : null;
-
-    if (!message && !videoName) {
-      alert('Please write a message or attach a video before posting.');
-      return;
-    }
-    const ann = addAnnouncement({
-      authorName: 'Jane Doe',
-      authorRole: 'Community Essential',
-      message,
-      audience: { type: 'nonprofits', orgs: [], csOrgs: [] },
-      videoName,
-      attachmentName,
-    });
-    document.getElementById('ann-message').value = '';
-    document.getElementById('ann-video-input').value = '';
-    document.getElementById('video-selected-name').textContent = '';
-    document.getElementById('video-selected-name').classList.remove('show');
-    document.getElementById('file-selected-name').textContent = '';
-    document.getElementById('file-selected-name').classList.remove('show');
-    selectedVideo = null;
-    selectedAttachment = null;
-    updateCharCount();
-    renderBoard();
-  }
-
-  function removeAnnouncement(id) {
-    if (!confirm('Delete your announcement?')) return;
-    deleteAnnouncement(id);
-    const posts = getSessionPosts().filter(p => p !== id);
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(posts));
-    renderBoard();
-  }
-
-  function roleStyle(role) {
-    if (role === 'Manager') return 'background:var(--accent-light);color:var(--accent);';
-    if (role === 'Community Support') return 'background:var(--purple-light);color:var(--purple);';
-    return 'background:var(--surface2);color:var(--text2);';
-  }
-
-  let selectedVideo = null;
 
   function handleVideoSelect(input) {
     if (input.files.length > 0) {
@@ -244,13 +186,6 @@
     }
   }
 
-  function avatarColor(role) {
-    if (role === 'Manager') return '#2D5016';
-    if (role === 'Community Support') return '#3D2B6B';
-    return '#B45309';
-  }
-  let selectedAttachment = null;
-
   function handleFileAttachment(input) {
     if (input.files.length > 0) {
       selectedAttachment = input.files[0];
@@ -258,6 +193,56 @@
       el.textContent = '✓ ' + selectedAttachment.name;
       el.classList.add('show');
     }
+  }
+
+  async function postAnnouncement() {
+    const message = document.getElementById('ann-message').value.trim();
+    const videoName = selectedVideo ? selectedVideo.name : null;
+    const attachmentName = selectedAttachment ? selectedAttachment.name : null;
+
+    if (!message && !videoName && !attachmentName) {
+      alert('Please write a message or attach something before posting.');
+      return;
+    }
+
+    await addAnnouncement({
+      authorName: currentUser ? currentUser.name : 'CE User',
+      authorRole: 'Community Essential',
+      message,
+      audience: { type: 'nonprofits', orgs: [], csOrgs: [] },
+      videoName,
+      attachmentName,
+    });
+
+    document.getElementById('ann-message').value = '';
+    document.getElementById('ann-video-input').value = '';
+    document.getElementById('ann-file-input').value = '';
+    document.getElementById('video-selected-name').textContent = '';
+    document.getElementById('video-selected-name').classList.remove('show');
+    document.getElementById('file-selected-name').textContent = '';
+    document.getElementById('file-selected-name').classList.remove('show');
+    selectedVideo = null;
+    selectedAttachment = null;
+    updateCharCount();
+    renderBoard();
+  }
+
+  async function removeAnnouncement(id) {
+    if (!confirm('Delete your announcement?')) return;
+    await deleteAnnouncement(id);
+    renderBoard();
+  }
+
+  function roleStyle(role) {
+    if (role === 'Manager') return 'background:var(--accent-light);color:var(--accent);';
+    if (role === 'Community Support') return 'background:var(--purple-light);color:var(--purple);';
+    return 'background:var(--surface2);color:var(--text2);';
+  }
+
+  function avatarColor(role) {
+    if (role === 'Manager') return '#2D5016';
+    if (role === 'Community Support') return '#3D2B6B';
+    return '#B45309';
   }
 
   function initials(name) {
@@ -271,35 +256,17 @@
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return formatDate(isoString);
   }
-  function roleStyle(role) {
-    if (role === 'Manager') return 'background:var(--accent-light);color:var(--accent);';
-    if (role === 'Community Support') return 'background:var(--purple-light);color:var(--accent);';
-    if (role === 'Community Essential') return 'background:var(--accent-light);color:var(--accent);';
-    return 'background:var(--surface2);color:var(--text2);';
-  }
 
-  function avatarColor(role) {
-    if (role === 'Manager') return '#2D5016';
-    if (role === 'Community Support') return '#3D2B6B';
-    if (role === 'Community Essential') return '#B45309';
-    return '#B45309';
-  }
-
-  function renderBoard() {
-    const MY_ORG = 'Nonprofit #1'; // in production comes from session
-    const all = getAnnouncements();
-    const sessionPosts = getSessionPosts();
+  async function renderBoard() {
+    const all = await getAnnouncements();
     const board = document.getElementById('ann-board');
 
     const announcements = all.filter(a => {
-      if (a.authorRole === 'Community Essential') return true;
+      if (a.author_role === 'Community Essential') return true;
       const audience = a.audience;
       if (!audience) return false;
       if (audience.type === 'community') return false;
-      if (audience.type === 'nonprofits' || audience.type === 'both') {
-        // show if all 6 selected, or this org is specifically included
-        return audience.orgs.includes(MY_ORG) || audience.orgs.length === 6;
-      }
+      if (audience.type === 'nonprofits' || audience.type === 'both') return true;
       return false;
     });
 
@@ -307,46 +274,46 @@
       board.innerHTML = `
         <div class="ann-empty">
           <svg viewBox="0 0 24 24"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <p>No announcements yet.<br>Be the first to post something.</p>
+          <p>No announcements yet.</p>
         </div>`;
       return;
     }
 
     board.innerHTML = announcements.map(a => {
-      const canDelete = sessionPosts.includes(a.id);
+      const canDelete = currentUser && a.author_name === currentUser.name;
       const deleteBtn = canDelete
-        ? `<button class="ann-delete" onclick="removeAnnouncement('${a.id}')">
+        ? `<button class="ann-delete" onclick="removeAnnouncement(${a.id})">
             <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
             Delete
-          </button>`
-        : '';
+          </button>` : '';
+
       return `
         <div class="ann-post">
           <div class="ann-post-header">
-            <div class="ann-avatar" style="background:${avatarColor(a.authorRole)};">${initials(a.authorName)}</div>
+            <div class="ann-avatar" style="background:${avatarColor(a.author_role)};">${initials(a.author_name)}</div>
             <div>
-              <div class="ann-author">${a.authorName}</div>
-              <span class="ann-role-tag" style="${roleStyle(a.authorRole)}">${a.authorRole}</span>
+              <div class="ann-author">${a.author_name}</div>
+              <span class="ann-role-tag" style="${roleStyle(a.author_role)}">${a.author_role}</span>
             </div>
-            <div class="ann-time">${timeAgo(a.postedAt)}</div>
+            <div class="ann-time">${timeAgo(a.posted_at)}</div>
             ${deleteBtn}
           </div>
-          <div class="ann-message">${a.message}</div>
-          ${a.videoName ? `
+          <div class="ann-message">${a.message || ''}</div>
+          ${a.video_name ? `
             <div class="ann-video-attachment">
               <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-              <span>${a.videoName}</span>
-              <button class="btn" disabled title="Video playback requires backend">Preview</button>
+              <span>${a.video_name}</span>
+              <button class="btn" disabled>Preview</button>
             </div>` : ''}
-          ${a.attachmentName ? `
+          ${a.attachment_name ? `
             <div class="ann-file-attachment">
               <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-              <span>${a.attachmentName}</span>
-              <button class="btn" disabled title="File download requires backend">Download</button>
+              <span>${a.attachment_name}</span>
+              <button class="btn" disabled>Download</button>
             </div>` : ''}
         </div>`;
     }).join('');
-}
+  }
 
   renderBoard();
 </script>

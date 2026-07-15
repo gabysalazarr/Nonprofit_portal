@@ -27,7 +27,7 @@
   .dash-card-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
   .dash-card-title svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
   .dash-card-body { 
-    padding: 12px 16px;     
+    padding: 0px 16px;     
     max-height: 300px;
     overflow-y: auto; } 
 
@@ -146,78 +146,84 @@
           </div>
         </div>
       </div>
-      <!-- Row 1: Templates + Announcements -->
-      <div class="dash-grid-wide" style="margin-bottom:14px;">
+      <!-- Dashboard Container -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px; align-items: start;"> 
 
-        <!-- Templates (Uses default 300px max-height from CSS) -->
-        <div class="dash-card">
-          <div class="dash-card-header">
-            <div class="dash-card-title">
-              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-              My Templates
+        <!-- COLUMN 1: Left Side Cards (2fr) -->
+        <div style="display: grid; gap: 14px;">
+          
+          <!-- Templates -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <div class="dash-card-title">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                My Templates
+              </div>
+              <a class="btn" href="templates.html" style="font-size:11px;padding:5px 10px;">View all</a>
             </div>
-            <a class="btn" href="templates.html" style="font-size:11px;padding:5px 10px;">View all</a>
+            <div class="dash-card-body" id="dash-templates">
+              <div class="dash-empty">No templates assigned yet.</div>
+            </div>
           </div>
-          <div class="dash-card-body" id="dash-templates">
-            <div class="dash-empty">No templates assigned yet.</div>
+
+          <!-- Reports --> 
+          <div class="dash-card"> 
+            <div class="dash-card-header"> 
+              <div class="dash-card-title"> 
+                <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> My Reports 
+              </div> 
+              <a class="btn" href="reports.html" style="font-size:11px;padding:5px 10px;">View all</a> 
+            </div> 
+            <div class="dash-card-body" id="dash-reports" style="max-height:700px; overflow-y: auto;"> 
+              <div class="dash-empty">No reports uploaded yet.</div> 
+            </div> 
           </div>
+
         </div>
 
-        <!-- Announcements (Uses default 300px max-height from CSS) -->
-        <div class="dash-card">
-          <div class="dash-card-header">
-            <div class="dash-card-title">
-              <svg viewBox="0 0 24 24"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              Announcements
+        <!-- COLUMN 2: Right Side Cards (1fr) -->
+        <div style="display: grid; gap: 14px;">
+          
+          <!-- Announcements -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <div class="dash-card-title">
+                <svg viewBox="0 0 24 24"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Announcements
+              </div>
+              <a class="btn" href="announcements.html" style="font-size:11px;padding:5px 10px;">View all</a>
             </div>
-            <a class="btn" href="announcements.html" style="font-size:11px;padding:5px 10px;">View all</a>
+            <div class="card-body" id="dash-announcements" style="max-height: 200px; overflow-y: auto;">
+              <div style="text-align:center;padding:20px;color:var(--text3);font-size:12.5px;">No announcements yet.</div>
+            </div>
           </div>
-          <div class="dash-card-body" id="dash-announcements">
-            <div class="dash-empty">No announcements yet.</div>
+
+          <!-- Messages --> 
+          <div class="dash-card"> 
+            <div class="dash-card-header"> 
+              <div class="dash-card-title"> 
+                <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Messages 
+              </div> 
+              <a class="btn" href="messages.html" style="font-size:11px;padding:5px 10px;">View all</a> 
+            </div> 
+            <div class="dash-card-body" id="dash-messages" style="max-height:150px; overflow-y: auto;"> 
+              <div class="dash-empty">No recent messages.</div> 
+            </div> 
           </div>
+
         </div>
 
       </div>
 
-      <!-- Row 2: Reports (tall) + Messages (independent heights) --> 
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;align-items:start;"> 
-        
-        <!-- Reports — expands up to 700px --> 
-        <div class="dash-card"> 
-          <div class="dash-card-header"> 
-            <div class="dash-card-title"> 
-              <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> My Reports 
-            </div> 
-            <a class="btn" href="reports.html" style="font-size:11px;padding:5px 10px;">View all</a> 
-          </div> 
-          <!-- Changed height to max-height -->
-          <div class="dash-card-body" id="dash-reports" style="max-height:700px;"> 
-            <div class="dash-empty">No reports uploaded yet.</div> 
-          </div> 
-        </div> 
-
-        <!-- Messages — expands up to 150px --> 
-        <div class="dash-card"> 
-          <div class="dash-card-header"> 
-            <div class="dash-card-title"> 
-              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Messages 
-            </div> 
-            <a class="btn" href="messages.html" style="font-size:11px;padding:5px 10px;">View all</a> 
-          </div> 
-          <!-- Changed height to max-height -->
-          <div class="dash-card-body" id="dash-messages" style="max-height:150px;"> 
-            <div class="dash-empty">No recent messages.</div> 
-          </div> 
-        </div> 
 
       </div>
     </div>
   </div>
 </div>
-
 <script src="../js/storage.js"></script>
 <script>
-  const MY_ORG = 'Nonprofit #1';
+  const currentUser = getUser();
+  const currentOrgId = currentUser ? currentUser.org_id : null;
 
   function timeAgo(isoString) {
     const diff = Math.floor((Date.now() - new Date(isoString)) / 1000);
@@ -233,24 +239,25 @@
     return '#B45309';
   }
 
-  function init() {
-    const templates     = getTemplatesForOrg(MY_ORG);
-    const submissions   = getSubmissionsForOrg(MY_ORG);
-    const reports       = submissions.filter(s => s.role === 'nonprofit-report');
-    const pending       = templates.filter(t => {
-      const sub = getSubmissionForOrg(t.id, MY_ORG);
+  async function init() {
+    const [templates, allSubs, allAnns] = await Promise.all([
+      getTemplates(),
+      getSubmissions(),
+      getAnnouncements(),
+    ]);
+
+    const reports = allSubs.filter(s => s.org_id === currentOrgId && s.role === 'nonprofit-report');
+    const pending = templates.filter(t => {
+      const sub = allSubs.find(s => s.template_id === t.id && s.org_id === currentOrgId);
       return !sub || sub.status === 'Rejected';
     }).length;
 
-    // Filter announcements visible to this org
-    const allAnns = getAnnouncements().filter(a => {
-      if (a.authorRole === 'Community Essential') return true;
+    const announcements = allAnns.filter(a => {
+      if (a.author_role === 'Community Essential') return true;
       const audience = a.audience;
       if (!audience) return false;
       if (audience.type === 'community') return false;
-      if (audience.type === 'nonprofits' || audience.type === 'both') {
-        return audience.orgs.length === 0 || audience.orgs.length === 6 || audience.orgs.includes(MY_ORG);
-      }
+      if (audience.type === 'nonprofits' || audience.type === 'both') return true;
       return false;
     });
 
@@ -258,12 +265,10 @@
     document.getElementById('stat-templates').textContent     = templates.length;
     document.getElementById('stat-pending').textContent       = pending;
     document.getElementById('stat-reports').textContent       = reports.length;
-    document.getElementById('stat-announcements').textContent = allAnns.length;
+    document.getElementById('stat-announcements').textContent = announcements.length;
 
-    // Pending badge
     const badge = document.getElementById('pending-badge');
-    badge.textContent = pending;
-    badge.style.display = pending > 0 ? '' : 'none';
+    if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? '' : 'none'; }
 
     // Templates
     const templatesEl = document.getElementById('dash-templates');
@@ -271,22 +276,22 @@
       templatesEl.innerHTML = `<div class="dash-empty">No templates assigned yet.</div>`;
     } else {
       templatesEl.innerHTML = templates.map(t => {
-        const sub = getSubmissionForOrg(t.id, MY_ORG);
+        const sub = allSubs.find(s => s.template_id === t.id && s.org_id === currentOrgId);
         const status = sub ? (sub.status || 'Pending') : 'Not submitted';
         const pillClass = !sub ? 'pill-gray'
           : status === 'Approved' ? 'pill-green'
           : status === 'Rejected' ? 'pill-red'
           : status === 'In Review' ? 'pill-amber' : 'pill-gray';
         return `
-          <div class="dash-item">
-            <div class="dash-item-icon" style="background:var(--accent-light);">
-              <svg viewBox="0 0 24 24" style="stroke:var(--accent);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          <div class="ann-item">
+            <div class="ann-item-header">
+              <div class="ann-mini-avi" style="background:var(--accent);">
+                <svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2" style="width:11px;height:11px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+              </div>
+              <span class="ann-item-author">${t.name}</span>
+              <span class="pill ${pillClass}" style="font-size:10px;margin-left:auto;">${status}</span>
             </div>
-            <div style="flex:1;min-width:0;">
-              <div class="dash-item-name">${t.name}</div>
-              <div class="dash-item-meta">Due ${t.dueDate || '—'}</div>
-            </div>
-            <span class="pill ${pillClass}" style="font-size:10px;white-space:nowrap;">${status}</span>
+            <div class="ann-item-message">Due ${t.due_date || '—'}</div>
           </div>`;
       }).join('');
     }
@@ -296,57 +301,60 @@
     if (reports.length === 0) {
       reportsEl.innerHTML = `<div class="dash-empty">No reports uploaded yet.</div>`;
     } else {
-      reportsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">` +
-        reports.slice(0, 6).map(r => {
-          const status = r.status || 'Pending';
-          const pillClass = getStatusPillClass(status);
-          return `
-            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                <div style="width:28px;height:28px;background:var(--accent-light);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <svg viewBox="0 0 24 24" stroke="var(--accent)" fill="none" stroke-width="2" style="width:13px;height:13px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                </div>
-                <span class="pill ${pillClass}" style="font-size:10px;">${status}</span>
+      reportsEl.innerHTML = reports.map(r => {
+        const status = r.status || 'Pending';
+        const pillClass = getStatusPillClass(status);
+        return `
+          <div class="ann-item">
+            <div class="ann-item-header">
+              <div class="ann-mini-avi" style="background:var(--accent);">
+                <svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2" style="width:11px;height:11px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
               </div>
-              <div style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.reportName || '—'}</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px;">${formatDate(r.submittedAt)}</div>
-            </div>`;
-        }).join('') + `</div>`;
+              <span class="ann-item-author">${r.report_name || '—'}</span>
+              <span class="pill ${pillClass}" style="font-size:10px;margin-left:auto;">${status}</span>
+            </div>
+            <div class="ann-item-message">${formatDate(r.submitted_at)}</div>
+          </div>`;
+      }).join('');
     }
 
     // Announcements
     const annEl = document.getElementById('dash-announcements');
-    if (allAnns.length === 0) {
+    if (announcements.length === 0) {
       annEl.innerHTML = `<div class="dash-empty">No announcements yet.</div>`;
     } else {
-      annEl.innerHTML = allAnns.slice(0, 4).map(a => `
+      annEl.innerHTML = announcements.map(a => `
         <div class="ann-item">
           <div class="ann-item-header">
-            <div class="ann-mini-avi" style="background:${avatarColor(a.authorRole)};">${a.authorName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-            <span class="ann-item-author">${a.authorName}</span>
-            <span class="ann-item-time">${timeAgo(a.postedAt)}</span>
+            <div class="ann-mini-avi" style="background:${avatarColor(a.author_role)};">${a.author_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+            <span class="ann-item-author">${a.author_name}</span>
+            <span class="ann-item-time">${timeAgo(a.posted_at)}</span>
           </div>
-          <div class="ann-item-message">${a.message || '(video/file attachment)'}</div>
+          <div class="ann-item-message">${a.message || '(attachment)'}</div>
         </div>`).join('');
     }
+
     // Messages (demo)
-    document.getElementById('dash-messages').innerHTML = `
-      <div class="ann-item">
-        <div class="ann-item-header">
-          <div class="ann-mini-avi" style="background:#2D5016;">TA</div>
-          <span class="ann-item-author">Taylor Andry</span>
-          <span class="ann-item-time">2h ago</span>
+    const messagesEl = document.getElementById('dash-messages');
+    if (messagesEl) {
+      messagesEl.innerHTML = `
+        <div class="ann-item">
+          <div class="ann-item-header">
+            <div class="ann-mini-avi" style="background:#2D5016;">TA</div>
+            <span class="ann-item-author">Taylor Andry</span>
+            <span class="ann-item-time">2h ago</span>
+          </div>
+          <div class="ann-item-message">Please submit your Q2 template by end of week.</div>
         </div>
-        <div class="ann-item-message">Please submit your Q2 template by end of week.</div>
-      </div>
-      <div class="ann-item">
-        <div class="ann-item-header">
-          <div class="ann-mini-avi" style="background:#2D5016;">TA</div>
-          <span class="ann-item-author">Taylor Andry</span>
-          <span class="ann-item-time">Yesterday</span>
-        </div>
-        <div class="ann-item-message">Reminder: annual report is due next month.</div>
-      </div>`;
+        <div class="ann-item">
+          <div class="ann-item-header">
+            <div class="ann-mini-avi" style="background:#2D5016;">TA</div>
+            <span class="ann-item-author">Taylor Andry</span>
+            <span class="ann-item-time">Yesterday</span>
+          </div>
+          <div class="ann-item-message">Reminder: annual report is due next month.</div>
+        </div>`;
+    }
   }
 
   init();

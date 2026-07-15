@@ -251,10 +251,11 @@
     </div>
   </div>
 </div>
-
 <script src="../js/storage.js"></script>
 <script>
   const AUTHOR = { name: 'Taylor Andry', role: 'Manager' };
+  let selectedVideo = null;
+  let selectedAttachment = null;
 
   function onAudienceChange() {
     const val = document.querySelector('input[name="audience"]:checked').value;
@@ -266,44 +267,9 @@
     const boxes = document.querySelectorAll(`#${listId} input[type="checkbox"]`);
     const allChecked = Array.from(boxes).every(b => b.checked);
     boxes.forEach(b => b.checked = !allChecked);
-    // Update the toggle label
     const label = document.querySelector(`#${listId} .select-all-row span:last-child`);
     label.textContent = allChecked ? 'Select all' : 'Deselect all';
   }
-  let selectedAttachment = null;
-
-  function handleFileAttachment(input) {
-    if (input.files.length > 0) {
-      selectedAttachment = input.files[0];
-      const el = document.getElementById('file-selected-name');
-      el.textContent = '✓ ' + selectedAttachment.name;
-      el.classList.add('show');
-    }
-  }
-
-  function getAudience() {
-    const val = document.querySelector('input[name="audience"]:checked').value;
-    const npOrgs = Array.from(document.querySelectorAll('#np-checklist input:checked')).map(b => b.value);
-    const csOrgs = Array.from(document.querySelectorAll('#cs-checklist input:checked')).map(b => b.value);
-
-    if (val === 'nonprofits') return { type: 'nonprofits', orgs: npOrgs, csOrgs: [] };
-    if (val === 'community')  return { type: 'community',  orgs: [],     csOrgs };
-    return { type: 'both', orgs: npOrgs, csOrgs };
-  }
-
-  function audienceLabel(audience) {
-    const npPart = audience.orgs && audience.orgs.length > 0
-      ? (audience.orgs.length >= 6 ? 'All Essential' : audience.orgs.join(', '))
-      : null;
-    const csPart = audience.csOrgs && audience.csOrgs.length > 0
-      ? (audience.csOrgs.length >= 3 ? 'All Support' : audience.csOrgs.join(', '))
-      : null;
-
-    if (audience.type === 'community') return csPart || 'All Support';
-    if (audience.type === 'nonprofits') return npPart || 'All Essential';
-    return [npPart, csPart].filter(Boolean).join(' + ') || 'Everyone';
-  }
-  let selectedVideo = null;
 
   function handleVideoSelect(input) {
     if (input.files.length > 0) {
@@ -314,11 +280,39 @@
     }
   }
 
+  function handleFileAttachment(input) {
+    if (input.files.length > 0) {
+      selectedAttachment = input.files[0];
+      const el = document.getElementById('file-selected-name');
+      el.textContent = '✓ ' + selectedAttachment.name;
+      el.classList.add('show');
+    }
+  }
+
+  function getAudienceSelection() {
+    const val = document.querySelector('input[name="audience"]:checked').value;
+    const npOrgs = Array.from(document.querySelectorAll('#np-checklist input:checked')).map(b => b.value);
+    const csOrgs = Array.from(document.querySelectorAll('#cs-checklist input:checked')).map(b => b.value);
+    if (val === 'nonprofits') return { type: 'nonprofits', orgs: npOrgs, csOrgs: [] };
+    if (val === 'community')  return { type: 'community',  orgs: [],     csOrgs };
+    return { type: 'both', orgs: npOrgs, csOrgs };
+  }
+
+  function audienceLabel(audience) {
+    const npPart = audience.orgs && audience.orgs.length > 0
+      ? (audience.orgs.length >= 6 ? 'All Essential' : audience.orgs.join(', ')) : null;
+    const csPart = audience.csOrgs && audience.csOrgs.length > 0
+      ? (audience.csOrgs.length >= 3 ? 'All Support' : audience.csOrgs.join(', ')) : null;
+    if (audience.type === 'community') return csPart || 'All Support';
+    if (audience.type === 'nonprofits') return npPart || 'All Essential';
+    return [npPart, csPart].filter(Boolean).join(' + ') || 'Everyone';
+  }
+
   function updateCharCount() {
     document.getElementById('char-count').textContent = document.getElementById('ann-message').value.length;
   }
 
-  function postAnnouncement() {
+  async function postAnnouncement() {
     const message = document.getElementById('ann-message').value.trim();
     const videoName = selectedVideo ? selectedVideo.name : null;
     const attachmentName = selectedAttachment ? selectedAttachment.name : null;
@@ -328,7 +322,7 @@
       return;
     }
 
-    const audience = getAudience();
+    const audience = getAudienceSelection();
     if (audience.type === 'nonprofits' && audience.orgs.length === 0) {
       alert('Please select at least one Essential organization.'); return;
     }
@@ -339,7 +333,7 @@
       alert('Please select at least one organization.'); return;
     }
 
-    addAnnouncement({
+    await addAnnouncement({
       authorName: AUTHOR.name,
       authorRole: AUTHOR.role,
       message,
@@ -361,9 +355,9 @@
     renderBoard();
   }
 
-  function removePost(id) {
+  async function removePost(id) {
     if (!confirm('Delete this announcement?')) return;
-    deleteAnnouncement(id);
+    await deleteAnnouncement(id);
     renderBoard();
   }
 
@@ -375,8 +369,8 @@
     return formatDate(isoString);
   }
 
-  function renderBoard() {
-    const posts = getAnnouncements();
+  async function renderBoard() {
+    const posts = await getAnnouncements();
     const board = document.getElementById('ann-board');
 
     if (posts.length === 0) {
@@ -391,40 +385,35 @@
     board.innerHTML = posts.map(a => {
       const audience = a.audience || { type: 'both', orgs: [] };
       const audLabel = audienceLabel(audience);
-      const roleColor = a.authorRole === 'Manager' ? '#2D5016' : a.authorRole === 'Community Support' ? '#3D2B6B' : '#B45309';
-      const roleTagStyle = a.authorRole === 'Manager'
-        ? 'background:var(--accent-light);color:var(--accent);'
-        : a.authorRole === 'Community Support'
-          ? 'background:var(--accent-light);color:var(--accent);'
-          : 'background:var(--accent-light);color:var(--accent);';
-      const init = a.authorName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      const roleColor = a.author_role === 'Manager' ? '#2D5016' : a.author_role === 'Community Support' ? '#3D2B6B' : '#B45309';
+      const init = a.author_name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
 
       return `
         <div class="ann-post">
           <div class="ann-post-header">
             <div class="ann-avatar" style="background:${roleColor};">${init}</div>
             <div>
-              <div class="ann-author">${a.authorName}</div>
-              <span class="ann-role-tag" style="${roleTagStyle}">${a.authorRole}</span>
+              <div class="ann-author">${a.author_name}</div>
+              <span class="ann-role-tag" style="background:var(--accent-light);color:var(--accent);">${a.author_role}</span>
               <span class="ann-audience-tag">→ ${audLabel}</span>
             </div>
-            <div class="ann-time">${timeAgo(a.postedAt)}</div>
-            <button class="ann-delete" onclick="removePost('${a.id}')">
+            <div class="ann-time">${timeAgo(a.posted_at)}</div>
+            <button class="ann-delete" onclick="removePost(${a.id})">
               <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
               Delete
             </button>
           </div>
-          <div class="ann-message">${a.message}</div>
-          ${a.videoName ? `
+          <div class="ann-message">${a.message || ''}</div>
+          ${a.video_name ? `
             <div class="ann-video-attachment">
               <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-              <span>${a.videoName}</span>
+              <span>${a.video_name}</span>
               <button class="btn" disabled title="Video playback requires backend">Preview</button>
             </div>` : ''}
-          ${a.attachmentName ? `
+          ${a.attachment_name ? `
             <div class="ann-file-attachment">
               <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-              <span>${a.attachmentName}</span>
+              <span>${a.attachment_name}</span>
               <button class="btn" disabled title="File download requires backend">Download</button>
             </div>` : ''}
         </div>`;

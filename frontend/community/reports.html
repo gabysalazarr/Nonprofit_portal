@@ -67,7 +67,7 @@
         <div class="user-name">John Doe</div>
         <div class="user-role" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Cmty Support #1</div>
       </div>
-      <a class="sign-out" href="../index.html" title="Sign out">
+      <a class="sign-out" href="#" onclick="signOut()" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </a>
     </div>
@@ -197,144 +197,146 @@
 
 <!-- Global tooltip -->
 <div class="global-tooltip" id="global-tooltip"></div>
-
 <script src="../js/storage.js"></script>
 <script>
-  const CS_ORG = 'Community Support';
-  let selectedFile = null;
+  if (!requireRole('community-support')) throw new Error('Not authorized');
 
-  function handleCSUpload(input) {
-    if (input.files.length > 0) {
-      selectedFile = input.files[0];
-      const el = document.getElementById('file-name-display');
-      el.textContent = '✓ ' + selectedFile.name;
-      el.classList.add('show');
-    }
+const currentUser = getUser();
+const currentOrgId = currentUser ? currentUser.org_id : null;
+let selectedFile = null;
+
+function handleCSUpload(input) {
+  if (input.files.length > 0) {
+    selectedFile = input.files[0];
+    const el = document.getElementById('file-name-display');
+    el.textContent = '✓ ' + selectedFile.name;
+    el.classList.add('show');
+  }
+}
+
+async function submitCSReport() {
+  const reportName = document.getElementById('cs-report-name').value.trim();
+  if (!reportName || !selectedFile) {
+    document.getElementById('validation-modal').classList.add('open');
+    return;
   }
 
-  async function submitCSReport() {
-    const reportName = document.getElementById('cs-report-name').value.trim();
-    if (!reportName || !selectedFile) {
-      document.getElementById('validation-modal').classList.add('open');
+  const btn = document.getElementById('submit-cs-btn');
+  btn.textContent = 'Uploading…';
+  btn.disabled = true;
+
+  try {
+    const result = await addSubmission({
+      templateId: null,
+      role: 'community-support',
+      file: selectedFile,
+      reportName,
+    });
+
+    if (!result) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Upload Report`;
       return;
     }
 
-    const btn = document.getElementById('submit-cs-btn');
-    btn.textContent = 'Uploading…';
-    btn.disabled = true;
+    document.getElementById('cs-file-input').value = '';
+    document.getElementById('cs-report-name').value = '';
+    document.getElementById('file-name-display').classList.remove('show');
+    selectedFile = null;
 
-    try {
-      const result = await addSubmission({
-        templateId: 'cs-report',
-        orgName: CS_ORG,
-        role: 'community-support',
-        file: selectedFile,
-        reportName,
-      });
+    document.getElementById('success-modal').classList.add('open');
+    renderCSReports();
 
-      if (!result) {
-        btn.disabled = false;
-        btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Upload Report`;
-        return;
-      }
-
-      document.getElementById('cs-file-input').value = '';
-      document.getElementById('cs-report-name').value = '';
-      document.getElementById('file-name-display').classList.remove('show');
-      selectedFile = null;
-
-      document.getElementById('success-modal').classList.add('open');
-      renderCSReports();
-
-    } catch(e) {
-      console.error('Upload failed:', e);
-      alert('Upload failed. Check console for details.');
-    }
-
-    btn.disabled = false;
-    btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Upload Report`;
+  } catch(e) {
+    console.error('Upload failed:', e);
+    alert('Upload failed. Check console for details.');
   }
 
-  function renderCSReports() {
-    const reports = getSubmissions()
-      .filter(s => s.orgName === CS_ORG)
-      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Upload Report`;
+}
 
-    const tbody = document.getElementById('cs-reports-tbody');
+async function renderCSReports() {
+  const all = await getSubmissions();
+  const reports = all
+    .filter(s => s.org_id === currentOrgId && s.role === 'community-support')
+    .sort((a,b) => new Date(b.submitted_at) - new Date(a.submitted_at));
 
-    if (reports.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;font-size:12.5px;">No reports uploaded yet.</td></tr>`;
-      return;
-    }
+  const tbody = document.getElementById('cs-reports-tbody');
 
-    tbody.innerHTML = reports.map(r => {
-      const status = r.status || 'Pending';
-      const pillClass = getStatusPillClass(status);
-      const isRejected = status === 'Rejected';
-      const comment = (r.rejectionComment || '').replace(/'/g, '&#39;');
-
-      return `
-        <tr>
-          <td style="font-weight:500;">${r.reportName || '—'}</td>
-          <td style="color:var(--text3);">${formatDate(r.submittedAt)}</td>
-          <td>
-            ${isRejected
-              ? `<span class="pill pill-red tooltip-trigger"
-                   onmouseenter="showTooltip(this, '${comment}')"
-                   onmouseleave="hideTooltip()"
-                   style="cursor:default;">${status}</span>`
-              : `<span class="pill ${pillClass}">${status}</span>`}
-          </td>
-          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openViewModal('${r.id}')">View</button></td>
-        </tr>`;
-    }).join('');
+  if (reports.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;font-size:12.5px;">No reports uploaded yet.</td></tr>`;
+    return;
   }
 
-  function showTooltip(el, comment) {
-    const tooltip = document.getElementById('global-tooltip');
-    const rect = el.getBoundingClientRect();
-    tooltip.innerHTML = `<strong style="display:block;margin-bottom:3px;">Manager's comment</strong>${comment || 'No comment was left.'}`;
-    tooltip.style.display = 'block';
-    const top = rect.top + window.scrollY - tooltip.offsetHeight - 10;
-    const left = rect.left + window.scrollX;
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
-  }
-
-  function hideTooltip() {
-    document.getElementById('global-tooltip').style.display = 'none';
-  }
-
-  function openViewModal(id) {
-    const r = getSubmissions().find(s => s.id === id);
-    if (!r) return;
+  tbody.innerHTML = reports.map(r => {
     const status = r.status || 'Pending';
     const pillClass = getStatusPillClass(status);
+    const comment = (r.rejection_comment || '').replace(/'/g, '&#39;');
 
-    document.getElementById('modal-report-title').textContent = r.reportName || r.fileName;
-    document.getElementById('modal-file-name').textContent = r.fileName;
-    document.getElementById('modal-file-meta').textContent = `Uploaded ${formatDate(r.submittedAt)}`;
-    document.getElementById('modal-download-btn').onclick = () => downloadSubmission(id);
-    document.getElementById('modal-status-pill').className = `pill ${pillClass}`;
-    document.getElementById('modal-status-pill').textContent = status;
+    return `
+      <tr>
+        <td style="font-weight:500;">${r.report_name || '—'}</td>
+        <td style="color:var(--text3);">${formatDate(r.submitted_at)}</td>
+        <td>
+          ${status === 'Rejected'
+            ? `<span class="pill pill-red tooltip-trigger"
+                 onmouseenter="showTooltip(this, '${comment}')"
+                 onmouseleave="hideTooltip()"
+                 style="cursor:default;">${status}</span>`
+            : `<span class="pill ${pillClass}">${status}</span>`}
+        </td>
+        <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openViewModal(${r.id})">View</button></td>
+      </tr>`;
+  }).join('');
+}
 
-    const rejBlock = document.getElementById('modal-rejection-block');
-    if (status === 'Rejected') {
-      rejBlock.style.display = 'block';
-      document.getElementById('modal-rejection-text').textContent =
-        r.rejectionComment || 'No comment was left. Contact your manager for details.';
-    } else {
-      rejBlock.style.display = 'none';
-    }
+function showTooltip(el, comment) {
+  const tooltip = document.getElementById('global-tooltip');
+  const rect = el.getBoundingClientRect();
+  tooltip.innerHTML = `<strong style="display:block;margin-bottom:3px;">Manager's comment</strong>${comment || 'No comment was left.'}`;
+  tooltip.style.display = 'block';
+  const top = rect.top + window.scrollY - tooltip.offsetHeight - 10;
+  const left = rect.left + window.scrollX;
+  tooltip.style.top = top + 'px';
+  tooltip.style.left = left + 'px';
+}
 
-    document.getElementById('report-view-modal').classList.add('open');
+function hideTooltip() {
+  document.getElementById('global-tooltip').style.display = 'none';
+}
+
+async function openViewModal(id) {
+  const all = await getSubmissions();
+  const r = all.find(s => s.id == id);
+  if (!r) return;
+  const status = r.status || 'Pending';
+  const pillClass = getStatusPillClass(status);
+
+  document.getElementById('modal-report-title').textContent = r.report_name || r.file_name;
+  document.getElementById('modal-file-name').textContent = r.file_name;
+  document.getElementById('modal-file-meta').textContent = `Uploaded ${formatDate(r.submitted_at)}`;
+  document.getElementById('modal-download-btn').onclick = () => downloadSubmission(id);
+  document.getElementById('modal-status-pill').className = `pill ${pillClass}`;
+  document.getElementById('modal-status-pill').textContent = status;
+
+  const rejBlock = document.getElementById('modal-rejection-block');
+  if (status === 'Rejected') {
+    rejBlock.style.display = 'block';
+    document.getElementById('modal-rejection-text').textContent =
+      r.rejection_comment || 'No comment was left. Contact your manager for details.';
+  } else {
+    rejBlock.style.display = 'none';
   }
 
-  function closeViewModal() {
-    document.getElementById('report-view-modal').classList.remove('open');
-  }
+  document.getElementById('report-view-modal').classList.add('open');
+}
 
-  renderCSReports();
+function closeViewModal() {
+  document.getElementById('report-view-modal').classList.remove('open');
+}
+
+renderCSReports();
 </script>
 <div class="modal-overlay" id="validation-modal">
   <div class="modal-box" style="width:360px;">

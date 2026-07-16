@@ -29,23 +29,8 @@ async function apiFetch(path, options = {}) {
   return res.json();
 }
 
-const STORAGE_KEYS = {
-  TEMPLATES:     'impacthub_templates',
-  SUBMISSIONS:   'impacthub_submissions',
-  REPORTS:       'impacthub_reports',
-  ANNOUNCEMENTS: 'impacthub_announcements',
-};
 
 // ── Utility ──────────────────────────────────────────────
-
-function readFileAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload  = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsDataURL(file);
-  });
-}
 
 function downloadBase64File(base64DataUrl, filename) {
   const a = document.createElement('a');
@@ -56,25 +41,7 @@ function downloadBase64File(base64DataUrl, filename) {
   document.body.removeChild(a);
 }
 
-function safeSet(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch (e) {
-    if (e.name === 'QuotaExceededError') {
-      alert('Storage limit reached. File is too large for this demo. Please use a file under 2MB.');
-    }
-    return false;
-  }
-}
 
-function safeGet(key) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) || [];
-  } catch (e) {
-    return [];
-  }
-}
 
 // ── Templates ──
 async function getTemplates() {
@@ -254,10 +221,32 @@ function getStatusPillClass(status) {
   }
 }
 
-// Demo reset — clears ALL stored data
-function clearAllImpactHubData() {
-  Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
-  alert('All demo data cleared.');
+// ── Route Protection ──
+function requireAuth() {
+  const token = getToken();
+  const user = getUser();
+  if (!token || !user) {
+    window.location.href = '../index.html';
+    return false;
+  }
+  return true;
+}
+
+function requireRole(...roles) {
+  const user = getUser();
+  if (!user || !roles.includes(user.role)) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '../index.html';
+    return false;
+  }
+  return true;
+}
+
+function signOut() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = '../index.html';
 }
 
 // ── Organizations ──
@@ -287,4 +276,33 @@ async function deleteOrganization(id) {
   return await apiFetch(`/organizations/${id}`, {
     method: 'DELETE',
   });
+}
+
+// ── Messages ──
+async function getMessages() {
+  return await apiFetch('/messages');
+}
+
+async function getUnreadCount() {
+  const data = await apiFetch('/messages/unread-count');
+  return data ? data.count : 0;
+}
+
+async function sendMessage(data) {
+  return await apiFetch('/messages', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+async function markMessageRead(id) {
+  return await apiFetch(`/messages/${id}/read`, { method: 'PATCH' });
+}
+
+async function deleteMessage(id) {
+  return await apiFetch(`/messages/${id}`, { method: 'DELETE' });
+}
+
+async function getContacts() {
+  return await apiFetch('/messages/contacts');
 }

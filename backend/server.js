@@ -13,6 +13,7 @@ app.use('/api/submissions',   require('./routes/submissions'));
 app.use('/api/reports',       require('./routes/reports'));
 app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/organizations', require('./routes/organizations'));
+app.use('/api/messages', require('./routes/messages'));
 
 app.listen(process.env.PORT, () => {
   console.log(`Server running on port ${process.env.PORT}`);

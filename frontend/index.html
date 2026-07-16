@@ -75,8 +75,50 @@
 </div>
 
 <script>
+  const existingToken = localStorage.getItem('token');
+  const existingUser = JSON.parse(localStorage.getItem('user') || 'null');
+  if (existingToken && existingUser) {
+    if (existingUser.role === 'manager') window.location.href = 'manager/dashboard.html';
+    else if (existingUser.role === 'community-support') window.location.href = 'community/dashboard.html';
+    else window.location.href = 'nonprofit/dashboard.html';
+  }
   const API = 'http://localhost:3000/api';
   let selectedRole = 'essential';
+
+  // Formal notification helper
+  function showFormMessage(message, type = 'error') {
+    let msgBox = document.getElementById('login-message-banner');
+    
+    // Create the banner if it doesn't exist yet
+    if (!msgBox) {
+      msgBox = document.createElement('div');
+      msgBox.id = 'login-message-banner';
+      // Insert it right before the email input container
+      const emailInput = document.getElementById('email-input');
+      emailInput.parentNode.insertBefore(msgBox, emailInput);
+    }
+    
+    msgBox.textContent = message;
+    // Apply clean structural styles (add your own CSS classes here if preferred)
+    msgBox.style.padding = '12px';
+    msgBox.style.marginBottom = '16px';
+    msgBox.style.borderRadius = '4px';
+    msgBox.style.fontSize = '14px';
+    msgBox.style.fontWeight = '500';
+    
+    if (type === 'error') {
+      msgBox.style.backgroundColor = '#fdf2f2';
+      msgBox.style.color = '#9b1c1c';
+      msgBox.style.border = '1px solid #f8b4b4';
+    }
+    
+    msgBox.style.display = 'block';
+  }
+
+  function clearFormMessage() {
+    const msgBox = document.getElementById('login-message-banner');
+    if (msgBox) msgBox.style.display = 'none';
+  }
 
   function setRole(role) {
     selectedRole = role;
@@ -88,12 +130,17 @@
   }
 
   async function doLogin() {
+    clearFormMessage();
     const email = document.getElementById('email-input').value.trim();
     const pw    = document.getElementById('pw-input').value;
-    if (!email || !pw) { alert('Please enter your email and password.'); return; }
+    
+    if (!email || !pw) { 
+      showFormMessage('Please enter your email and password.'); 
+      return; 
+    }
 
     const btn = document.getElementById('login-btn');
-    btn.textContent = 'Signing in...';
+    btn.textContent = 'Authenticating...';
     btn.disabled = true;
 
     try {
@@ -106,7 +153,7 @@
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || 'Invalid email or password.');
+        showFormMessage(data.error || 'Invalid email or password.');
         btn.textContent = 'Sign in';
         btn.disabled = false;
         return;
@@ -125,11 +172,13 @@
       } else if (role === 'nonprofit' || role === 'community-essential') {
         window.location.href = 'nonprofit/dashboard.html';
       } else {
-        alert('Unknown role: ' + role);
+        showFormMessage(`Access Denied: The role profile "${role}" is not recognized by the system.`);
+        btn.textContent = 'Sign in';
+        btn.disabled = false;
       }
 
     } catch (err) {
-      alert('Could not connect to server. Make sure the backend is running.');
+      showFormMessage('Server Unreachable: Connection could not be established. Please verify system status.');
       btn.textContent = 'Sign in';
       btn.disabled = false;
     }
@@ -139,5 +188,6 @@
     if (e.key === 'Enter') doLogin();
   });
 </script>
+
 </body>
 </html>

@@ -14,7 +14,7 @@
         <img src="../images/bastrop_logo.png" alt="Portal logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
         <span class="brand-name"></span>
       </div>
-      <span class="org-chip">Cmty Support #1</span>
+      <span class="org-chip" style="background:var(--purple-light);color:var(--purple);">Community Support</span>
     </div>
     <nav class="nav">
       <div class="nav-section">
@@ -31,10 +31,9 @@
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           Announcements
         </a>
-        <a class="nav-item active" href="messages.html">
+        <a class="nav-item active" href="messages.html" style="background:var(--purple-light);color:var(--purple);border-left-color:var(--purple);">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Messages
-          <span class="nav-badge purple" id="pending-badge" style="display:none;">2</span>
         </a>
       </div>
       <div class="nav-section">
@@ -46,12 +45,12 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi" style="background:#0953b4;">JD</div>
+      <div class="user-avi" style="background:var(--purple);">JD</div>
       <div style="min-width:0;">
-        <div class="user-name">John Doe</div>
-        <div class="user-role" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Cmty Support #1</div>
+        <div class="user-name" id="sidebar-name">John Doe</div>
+        <div class="user-role" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="sidebar-role">Community Support</div>
       </div>
-      <a class="sign-out" href="../index.html" title="Sign out">
+      <a class="sign-out" href="#" onclick="signOut()" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </a>
     </div>
@@ -61,7 +60,7 @@
     <header class="topbar">
       <div>
         <div class="page-title">Messages</div>
-        <div class="page-sub">Communication with manager</div>
+        <div class="page-sub">Communication with your manager</div>
       </div>
       <div class="topbar-right">
         <button class="btn btn-icon" style="position:relative;">
@@ -73,7 +72,9 @@
 
     <div class="content">
       <div class="two-col-narrow">
-        <div class="card">
+
+        <!-- Chat thread -->
+        <div class="card" style="display:flex;flex-direction:column;overflow:hidden;">
           <div class="card-header">
             <div class="card-title">
               <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -81,46 +82,32 @@
             </div>
             <span class="pill pill-green">Manager</span>
           </div>
-          <div class="chat-thread" id="cs-thread">
-            <div class="bubble">
-              <div class="b-avi" style="background:var(--accent);">TA</div>
-              <div class="b-content">
-                <div class="b-name">Taylor Andry</div>
-                <div class="b-text">Hi, welcome to the Community Support portal. Please upload your Annual Report as soon as you can.</div>
-                <div class="b-time">Yesterday 10:00 AM</div>
-              </div>
-            </div>
-            <div class="bubble me">
-              <div class="b-avi" style="background:#0953b4;">JD</div>
-              <div class="b-content">
-                <div class="b-name">You</div>
-                <div class="b-text">Thanks! Will have it uploaded by end of week.</div>
-                <div class="b-time">Yesterday 10:30 AM</div>
-              </div>
-            </div>
+          <div class="chat-thread" id="chat-thread" style="flex:1;overflow-y:auto;">
+            <div style="text-align:center;padding:40px;color:var(--text3);font-size:13px;">Loading messages...</div>
           </div>
           <div class="chat-input-row">
-            <input class="chat-input" id="cs-msg-input" placeholder="Message your manager…" onkeydown="if(event.key==='Enter')sendMsg()" />
-            <button class="send-btn" style="background:var(--accent);" onclick="sendMsg()">
+            <input class="chat-input" id="msg-input" placeholder="Message your manager…" onkeydown="if(event.key==='Enter')sendMessage()" />
+            <button class="send-btn" style="background:var(--purple);" onclick="sendMessage()">
               <svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
             </button>
           </div>
         </div>
 
+        <!-- Info panel -->
         <div class="card">
           <div class="card-header"><div class="card-title">Info</div></div>
           <div class="card-body">
             <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">Your manager</div>
             <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
-              <div class="user-avi mgr" style="width:36px;height:36px;font-size:13px;background:var(--accent);">TA</div>
+              <div class="user-avi mgr" style="width:36px;height:36px;font-size:13px;">TA</div>
               <div>
                 <div style="font-size:13px;font-weight:500;">Taylor Andry</div>
                 <div style="font-size:11px;color:var(--text3);">Manager</div>
               </div>
             </div>
-
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -128,25 +115,83 @@
 
 <script src="../js/storage.js"></script>
 <script>
-  function sendMsg() {
-    const input = document.getElementById('cs-msg-input');
-    const text = input.value.trim();
-    if (!text) return;
-    const thread = document.getElementById('cs-thread');
-    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble me';
-    bubble.innerHTML = `
-      <div class="b-avi" style="background:var(--accent);">CS</div>
-      <div class="b-content">
-        <div class="b-name">You</div>
-        <div class="b-text">${text}</div>
-        <div class="b-time">Today ${now}</div>
-      </div>`;
-    thread.appendChild(bubble);
-    input.value = '';
+  if (!requireRole('community-support')) throw new Error('Not authorized');
+
+  const currentUser = getUser();
+  const MANAGER_ID = 6;
+  let allMessages = [];
+
+  if (currentUser) {
+    document.getElementById('sidebar-name').textContent = currentUser.name;
+    document.getElementById('sidebar-role').textContent = currentUser.role;
+  }
+
+  function formatTime(isoString) {
+    const d = new Date(isoString);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    if (isToday) return 'Today ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function initials(name) {
+    return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  }
+
+  async function loadMessages() {
+    allMessages = await getMessages();
+    const unread = allMessages.filter(m => m.sender_id === MANAGER_ID && !m.is_read);
+    await Promise.all(unread.map(m => markMessageRead(m.id)));
+    renderThread();
+  }
+
+  function renderThread() {
+    const thread = document.getElementById('chat-thread');
+    const conversation = allMessages
+      .filter(m =>
+        (m.sender_id === MANAGER_ID && m.recipient_id === currentUser.id) ||
+        (m.sender_id === currentUser.id && m.recipient_id === MANAGER_ID)
+      )
+      .sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+
+    if (conversation.length === 0) {
+      thread.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px;">No messages yet. Say hello to your manager!</div>`;
+      return;
+    }
+
+    thread.innerHTML = conversation.map(m => {
+      const isMe = m.sender_id === currentUser.id;
+      return `
+        <div class="bubble ${isMe ? 'me' : ''}">
+          <div class="b-avi" style="background:${isMe ? 'var(--purple)' : '#2D5016'};">${isMe ? initials(currentUser.name) : 'TA'}</div>
+          <div class="b-content">
+            <div class="b-name">${isMe ? 'You' : 'Taylor Andry'}</div>
+            <div class="b-text">${m.body}</div>
+            <div class="b-time">${formatTime(m.created_at)}</div>
+          </div>
+        </div>`;
+    }).join('');
     thread.scrollTop = thread.scrollHeight;
   }
+
+  async function sendMessage() {
+    const input = document.getElementById('msg-input');
+    const body = input.value.trim();
+    if (!body) return;
+    input.value = '';
+    await apiFetch('/messages', {
+      method: 'POST',
+      body: JSON.stringify({ recipient_id: MANAGER_ID, body }),
+    });
+    allMessages = await getMessages();
+    renderThread();
+  }
+
+  loadMessages();
+  setInterval(async () => {
+    allMessages = await getMessages();
+    renderThread();
+  }, 10000);
 </script>
 </body>
 </html>

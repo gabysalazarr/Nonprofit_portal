@@ -60,7 +60,7 @@
         <div class="user-name">John Doe</div>
         <div class="user-role" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Cmty Support #1</div>
       </div>
-      <a class="sign-out" href="../index.html" title="Sign out">
+      <a class="sign-out" href="#" onclick="signOut()" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </a>
     </div>
@@ -158,6 +158,7 @@
 
 <script src="../js/storage.js"></script>
 <script>
+  if (!requireRole('community-support')) throw new Error('Not authorized');
   const currentUser = getUser();
   const currentOrgId = currentUser ? currentUser.org_id : null;
 
@@ -222,7 +223,7 @@
       annEl.innerHTML = announcements.map(a => `
         <div class="ann-item">
           <div class="ann-item-header">
-            <div class="ann-mini-avi" style="background:${avatarColor(a.author_role)};">${a.author_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+            <div class="ann-mini-avi" style="background:${avatarColor(a.author_role)};">${(a.author_name || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
             <span class="ann-item-author">${a.author_name}</span>
             <span class="ann-item-time">${timeAgo(a.posted_at)}</span>
           </div>

@@ -5,13 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Messages — Manager</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<style>
+  .contacts-list { overflow-y: auto; }
+  .contact-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  .contact-row:hover { background: var(--surface2); }
+  .contact-row.active { background: var(--accent-light); }
+  .contact-avi { width: 34px; height: 34px; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
+  .contact-name { font-size: 13px; font-weight: 500; }
+  .contact-role { font-size: 11px; color: var(--text3); }
+  .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-left: auto; flex-shrink: 0; }
+</style>
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-row" style="align-items:center; gap:12px;">
-        <img src="../images/bastrop_logo.png" alt="Bastrop Nonprofit logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
+        <img src="../images/bastrop_logo.png" alt="Portal logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
         <span class="brand-name"></span>
       </div>
       <span class="org-chip manager">Manager</span>
@@ -41,7 +51,6 @@
         <a class="nav-item" href="submissions.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
           Submissions
-          <span class="nav-badge red">7</span>
         </a>
         <a class="nav-item" href="reports.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -50,7 +59,6 @@
         <a class="nav-item active mgr" href="messages.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Messages
-          <span class="nav-badge purple" id="pending-badge" style="display:none;">5</span>
         </a>
       </div>
       <div class="nav-section">
@@ -64,7 +72,7 @@
     <div class="sidebar-footer">
       <div class="user-avi mgr">TA</div>
       <div><div class="user-name">Taylor Andry</div><div class="user-role">Manager</div></div>
-      <a class="sign-out" href="../index.html" title="Sign out">
+      <a class="sign-out" href="#" onclick="signOut()" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </a>
     </div>
@@ -73,7 +81,7 @@
     <header class="topbar">
       <div>
         <div class="page-title">Messages</div>
-        <div class="page-sub">Communications With All Organizations</div>
+        <div class="page-sub">Communications with all organizations</div>
       </div>
       <div class="topbar-right">
         <button class="btn btn-icon" style="position:relative;">
@@ -83,77 +91,157 @@
       </div>
     </header>
     <div class="content">
-      <div class="two-col-narrow" style="grid-template-columns:240px 1fr;">
-        <div class="card">
-          <div class="card-header"><div class="card-title">Inbox</div></div>
-          <div class="msg-list" style="padding:0 14px;">
-            <div class="msg-row unread">
-              <div class="msg-avi" style="background:#3D2B6B;">N1</div>
-              <div class="msg-body"><div class="msg-from">Cmty Essential #1</div><div class="msg-preview">Re: Template #1...</div></div>
-              <div class="msg-meta"><span class="msg-time">2h</span><div class="unread-dot"></div></div>
-            </div>
-            <div class="msg-row unread">
-              <div class="msg-avi" style="background:#2D5016;">N2</div>
-              <div class="msg-body"><div class="msg-from">Cmty Essential #2</div><div class="msg-preview">Temp #3 submitted...</div></div>
-              <div class="msg-meta"><span class="msg-time">5h</span><div class="unread-dot"></div></div>
-            </div>
-            <div class="msg-row">
-              <div class="msg-avi" style="background:#B45309;">N3</div>
-              <div class="msg-body"><div class="msg-from">Cmty Essential #3</div><div class="msg-preview">Question about...</div></div>
-              <div class="msg-meta"><span class="msg-time">1d</span></div>
-            </div>
-            <div class="msg-row">
-              <div class="msg-avi" style="background:#9B1C1C;">N4</div>
-              <div class="msg-body"><div class="msg-from">Cmty Essential #4</div><div class="msg-preview">Requesting extension...</div></div>
-              <div class="msg-meta"><span class="msg-time">2d</span></div>
-            </div>
-            <div class="msg-row">
-              <div class="msg-avi" style="background:#2D5016;">N5</div>
-              <div class="msg-body"><div class="msg-from">Cmty Support #1</div><div class="msg-preview">Finished Temp #2!</div></div>
-              <div class="msg-meta"><span class="msg-time">3d</span></div>
-            </div>
-          </div>
+      <div class="two-col-narrow" style="grid-template-columns:260px 1fr;height:calc(100vh - 120px);">
+
+        <!-- LEFT: contacts list -->
+        <div class="card" style="display:flex;flex-direction:column;overflow:hidden;">
+          <div class="card-header"><div class="card-title">Contacts</div></div>
+          <div class="contacts-list" id="contacts-list" style="flex:1;"></div>
         </div>
-        <div class="card">
-          <div class="card-header"><div class="card-title"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Nonprofits #1</div><span class="pill pill-amber">2 unread</span></div>
-          <div class="chat-thread" id="mgr-thread">
-            <div class="bubble">
-              <div class="b-avi" style="background:#3D2B6B;">N1</div>
-              <div class="b-content">
-                <div class="b-name">Nonprofit #1</div>
-                <div class="b-text">Hi Taylor, we have a question about Template #1 regarding field 2?</div>
-                <div class="b-time">Yesterday 3:10 PM</div>
-              </div>
-            </div>
-            <div class="bubble me">
-              <div class="b-avi" style="background:#2D5016;">TA</div>
-              <div class="b-content">
-                <div class="b-name">You</div>
-                <div class="b-text">Hi Nonprofit #1, it's self-explantory.</div>
-                <div class="b-time">Yesterday 4:00 PM</div>
-              </div>
-            </div>
-            <div class="bubble">
-              <div class="b-avi" style="background:#3D2B6B;">N1</div>
-              <div class="b-content">
-                <div class="b-name">Nonprofits #1</div>
-                <div class="b-text">:/ okay</div>
-                <div class="b-time">Today 9:15 AM</div>
-              </div>
-            </div>
+
+        <!-- RIGHT: chat thread -->
+        <div class="card" style="display:flex;flex-direction:column;overflow:hidden;">
+          <div class="card-header">
+            <div class="card-title" id="chat-title">Select a contact</div>
+            <span class="pill pill-gray" id="chat-role-pill" style="display:none;"></span>
           </div>
-          <div class="chat-input-row">
-            <input class="chat-input" id="mgr-msg-input" placeholder="Reply to HopeWorks…" data-send="mgr-msg-input|mgr-thread|JD|#2D5016" />
-            <button class="send-btn mgr" onclick="sendChatMessage('mgr-msg-input','mgr-thread','JD','#2D5016')">
+          <div class="chat-thread" id="chat-thread" style="flex:1;overflow-y:auto;">
+            <div style="text-align:center;padding:40px;color:var(--text3);font-size:13px;">Select a contact to start messaging.</div>
+          </div>
+          <div class="chat-input-row" id="chat-input-row" style="display:none;">
+            <input class="chat-input" id="msg-input" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendMessage()" />
+            <button class="send-btn mgr" onclick="sendMessage()">
               <svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
             </button>
           </div>
         </div>
+
       </div>
     </div>
   </div>
 </div>
 
-<script src="../js/shared.js"></script>
+<script src="../js/storage.js"></script>
+<script>
+  if (!requireRole('manager')) throw new Error('Not authorized');
+
+  const currentUser = getUser();
+  let activeContactId = null;
+  let allMessages = [];
+  const AVATAR_COLORS = ['#3D2B6B','#2D5016','#B45309','#9B1C1C','#1e40af','#065f46','#7c3aed','#b45309'];
+
+  function initials(name) {
+    return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  }
+
+  function avatarColor(id) {
+    return AVATAR_COLORS[id % AVATAR_COLORS.length];
+  }
+
+  function formatTime(isoString) {
+    const d = new Date(isoString);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    if (isToday) return 'Today ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  async function loadContacts() {
+    const contacts = await getContacts();
+    allMessages = await getMessages();
+
+    const list = document.getElementById('contacts-list');
+    if (contacts.length === 0) {
+      list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px;">No contacts yet.</div>`;
+      return;
+    }
+
+    list.innerHTML = contacts.map((c, i) => {
+      const unread = allMessages.filter(m => m.sender_id === c.id && !m.is_read).length;
+      return `
+        <div class="contact-row ${activeContactId === c.id ? 'active' : ''}" onclick="selectContact(${c.id}, '${c.name}', '${c.role}')">
+          <div class="contact-avi" style="background:${avatarColor(c.id)};">${initials(c.name)}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="contact-name">${c.name}</div>
+            <div class="contact-role">${c.org_name || c.role}</div>
+          </div>
+          ${unread > 0 ? `<div class="unread-dot"></div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  async function selectContact(id, name, role) {
+    activeContactId = id;
+    document.getElementById('chat-title').textContent = name;
+    const pill = document.getElementById('chat-role-pill');
+    pill.style.display = '';
+    pill.textContent = role;
+    pill.className = 'pill ' + (role === 'community-support' ? 'pill-purple' : 'pill-green');
+    document.getElementById('chat-input-row').style.display = '';
+    document.getElementById('msg-input').placeholder = `Message ${name}…`;
+
+    // Mark messages as read
+    const unread = allMessages.filter(m => m.sender_id === id && !m.is_read);
+    await Promise.all(unread.map(m => markMessageRead(m.id)));
+
+    renderThread();
+    loadContacts();
+  }
+
+  function renderThread() {
+    if (!activeContactId) return;
+    const thread = document.getElementById('chat-thread');
+    const conversation = allMessages.filter(m =>
+      (m.sender_id === activeContactId && m.recipient_id === currentUser.id) ||
+      (m.sender_id === currentUser.id && m.recipient_id === activeContactId)
+    ).sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+
+    if (conversation.length === 0) {
+      thread.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px;">No messages yet. Say hello!</div>`;
+      return;
+    }
+
+    thread.innerHTML = conversation.map(m => {
+      const isMe = m.sender_id === currentUser.id;
+      return `
+        <div class="bubble ${isMe ? 'me' : ''}">
+          <div class="b-avi" style="background:${isMe ? '#2D5016' : avatarColor(m.sender_id)};">${initials(isMe ? currentUser.name : m.sender_name)}</div>
+          <div class="b-content">
+            <div class="b-name">${isMe ? 'You' : m.sender_name}</div>
+            <div class="b-text">${m.body}</div>
+            <div class="b-time">${formatTime(m.created_at)}</div>
+          </div>
+        </div>`;
+    }).join('');
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  async function sendMessage() {
+    if (!activeContactId) return;
+    const input = document.getElementById('msg-input');
+    const body = input.value.trim();
+    if (!body) return;
+
+    input.value = '';
+    await sendMessage_api(activeContactId, body);
+    allMessages = await getMessages();
+    renderThread();
+  }
+
+  async function sendMessage_api(recipientId, body) {
+    return await apiFetch('/messages', {
+      method: 'POST',
+      body: JSON.stringify({ recipient_id: recipientId, body }),
+    });
+  }
+
+  loadContacts();
+  setInterval(async () => {
+    if (activeContactId) {
+      allMessages = await getMessages();
+      renderThread();
+    }
+  }, 10000);
+</script>
 </body>
 </html>

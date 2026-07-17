@@ -91,7 +91,7 @@
         <img src="../images/bastrop_logo.png" alt="Portal logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
         <span class="brand-name"></span>
       </div>
-      <span class="org-chip manager">Manager</span>
+      <span class="org-chip" id="sidebar-org-chip"></span>
     </div>
     <nav class="nav">
       <div class="nav-section">
@@ -118,7 +118,7 @@
         <a class="nav-item" href="submissions.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
           Submissions
-          <span class="nav-badge red">7</span>
+          <span class="nav-badge red">20</span>
         </a>
         <a class="nav-item" href="reports.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -139,8 +139,8 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi mgr">TA</div>
-      <div><div class="user-name">Taylor Andry</div><div class="user-role">Manager</div></div>
+      <div class="user-avi mgr"></div>
+      <div><div class="user-name"></div><div class="user-role"></div></div>
       <a class="sign-out" href="#" onclick="signOut()" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </a>
@@ -254,7 +254,7 @@
 <script src="../js/storage.js"></script>
 <script>
   if (!requireRole('manager')) throw new Error('Not authorized');;
-  const AUTHOR = { name: 'Taylor Andry', role: 'Manager' };
+  const AUTHOR = { name: 'Taylor Andry', role: 'Manager' }; // REMOVE THIS????
   let selectedVideo = null;
   let selectedAttachment = null;
 
@@ -420,8 +420,30 @@
         </div>`;
     }).join('');
   }
+  async function start() {
+      const _user = await refreshUser();
+      if (_user) {
+        const roleLabels = {
+          'manager': 'Manager',
+          'community-essential': 'Community Essential',
+          'community-support': 'Community Support',
+        };
+        const nameEl = document.querySelector('.user-name');
+        const roleEl = document.querySelector('.user-role');
+        const aviEl = document.querySelector('.user-avi');
+        if (nameEl) nameEl.textContent = _user.name;
+        if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
+        if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const chipEl = document.getElementById('sidebar-org-chip');
+        if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
+        // Update AUTHOR from real user data
+        AUTHOR.name = _user.name;
+        AUTHOR.role = roleLabels[_user.role] || _user.role;
+      }
+      renderBoard();
+    }
 
-  renderBoard();
+  start();
 </script>
 </body>
 </html>

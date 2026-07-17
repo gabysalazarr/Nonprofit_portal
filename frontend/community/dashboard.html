@@ -23,7 +23,7 @@
         <img src="../images/bastrop_logo.png" alt="Portal logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
         <span class="brand-name"></span>
       </div>
-      <span class="org-chip">Cmty Support #1</span>
+      <span class="org-chip" id="sidebar-org-chip"></span>
     </div>
     <nav class="nav">
       <div class="nav-section">
@@ -55,10 +55,10 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi" style="background:#0953b4;">JD</div>
+      <div class="user-avi" style="background:#0953b4;"></div>
       <div style="min-width:0;">
-        <div class="user-name">John Doe</div>
-        <div class="user-role" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Cmty Support #1</div>
+        <div class="user-name"></div>
+        <div class="user-org_name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
       </div>
       <a class="sign-out" href="#" onclick="signOut()" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -84,7 +84,7 @@
 
       <div class="banner" style="background:var(--accent);color:white;border-radius:var(--radius-lg);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
         <div>
-          <h2 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;margin-bottom:3px;">Welcome back, John! </h2>
+          <h2 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;margin-bottom:3px;">Welcome back, User! </h2>
           <p style="font-size:12px;opacity:0.75;">Upload reports and stay up to date with announcements.</p>
         </div>
         <div style="display:flex;gap:24px;">
@@ -177,6 +177,24 @@
   }
 
   async function init() {
+    const _user = await refreshUser();
+    if (_user) {
+      const roleLabels = {
+        'manager': 'Manager',
+        'community-essential': 'Community Essential',
+        'community-support': 'Community Support',
+      };
+      const nameEl = document.querySelector('.user-name');
+      const roleEl = document.querySelector('.user-role');
+      const orgEl = document.querySelector('.user-org_name');
+      const aviEl = document.querySelector('.user-avi');
+      const chipEl = document.getElementById('sidebar-org-chip');
+      if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
+      if (nameEl) nameEl.textContent = _user.name;
+      if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
+      if (orgEl) orgEl.textContent = _user.org_name || '';
+      if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    }
     const [allSubs, allAnns] = await Promise.all([
       getSubmissions(),
       getAnnouncements(),

@@ -112,6 +112,25 @@ async function getSubmissionForOrg(templateId, orgId) {
   return all.find(s => s.template_id === templateId && s.org_id === orgId) || null;
 }
 
+async function updateNavBadge() {
+  const count = await getUnreadCount();
+  const badges = document.querySelectorAll('.nav-badge.purple');
+  badges.forEach(b => {
+    if (count > 0) {
+      b.textContent = count;
+      b.style.display = '';
+    } else {
+      b.style.display = 'none';
+    }
+  });
+}
+
+async function refreshUser() {
+  const data = await apiFetch('/auth/me');
+  if (data) localStorage.setItem('user', JSON.stringify(data));
+  return data;
+}
+
 async function addSubmission(data) {
   const fileData = data.file ? await fileToBase64(data.file) : null;
   return await apiFetch('/submissions', {

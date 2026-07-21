@@ -3,6 +3,45 @@ const router = express.Router();
 const pool = require('../db');
 const authMiddleware = require('../middleware/auth');
 
+// GET /api/messages/users — get all users the current user can message
+router.get('/contacts', authMiddleware, async (req, res) => {
+  try {
+    let result;
+    if (req.user.role === 'manager') {
+      // Manager can see all non-manager users
+      result = await pool.query(
+        `SELECT u.id, u.name, u.role, o.name as org_name 
+         FROM users u 
+         LEFT JOIN organizations o ON o.id = u.org_id
+         WHERE u.role != 'manager'
+         ORDER BY u.role, o.name`
+      );
+    } else {
+      // Orgs can only message the manager
+      result = await pool.query(
+        `SELECT id, name, role FROM users WHERE role = 'manager'`
+      );
+    }
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.get('/unread-count', authMiddleware, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT COUNT(*) FROM messages WHERE recipient_id = $1 AND is_read = FALSE',
+      [req.user.id]
+    );
+    res.json({ count: parseInt(result.rows[0].count) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // GET /api/messages — get messages for current user
 router.get('/', authMiddleware, async (req, res) => {
   try {
@@ -66,30 +105,6 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/messages/users — get all users the current user can message
-router.get('/contacts', authMiddleware, async (req, res) => {
-  try {
-    let result;
-    if (req.user.role === 'manager') {
-      // Manager can see all non-manager users
-      result = await pool.query(
-        `SELECT u.id, u.name, u.role, o.name as org_name 
-         FROM users u 
-         LEFT JOIN organizations o ON o.id = u.org_id
-         WHERE u.role != 'manager'
-         ORDER BY u.role, o.name`
-      );
-    } else {
-      // Orgs can only message the manager
-      result = await pool.query(
-        `SELECT id, name, role FROM users WHERE role = 'manager'`
-      );
-    }
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+
 
 module.exports = router;

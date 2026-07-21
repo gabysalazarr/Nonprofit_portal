@@ -74,7 +74,7 @@
         <a class="nav-item" href="messages.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Messages
-          <span class="nav-badge purple" id="nav-badge-messages">0</span>
+          <span class="nav-badge purple" id="nav-badge-messages"></span>
         </a>
       </div>
       <div class="nav-section">
@@ -148,7 +148,7 @@
         </div>
         <div class="stat-card red">
           <div class="stat-ico red"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-          <div class="stat-num" id="stat-orgs">0</div> 
+          <div class="stat-num" id="stat-unread"></div> 
           <div class="stat-lbl">Unread Messages</div>
 
           <div class="stat-trend trend-neg">From 5 orgs</div>
@@ -244,13 +244,6 @@
         </a>
       </div>
     </div>
-
-  </div>
-
-</div>
-
-      
-    </div>
   </div>
 </div>
 <script src="../js/storage.js"></script>
@@ -321,6 +314,8 @@
     const unreadMsgCount = await getUnreadCount();
     const subsBadge = document.getElementById('nav-badge-submissions');
     const msgsBadge = document.getElementById('nav-badge-messages');
+    const statUnread = document.getElementById('stat-unread');
+    if (statUnread) statUnread.textContent = unreadMsgCount;
     if (subsBadge) {
       subsBadge.textContent = pendingSubsCount;
       subsBadge.style.display = pendingSubsCount > 0 ? '' : 'none';
@@ -396,6 +391,7 @@
           <div class="ann-item-message">Report for Q2 has been uploaded.</div>
         </div>`;
     }
+    updateNavBadges();
   }
 
   init();

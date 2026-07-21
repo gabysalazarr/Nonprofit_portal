@@ -124,8 +124,8 @@ a { text-decoration: none; color: inherit; }
 }
 .nav-item.active .nav-badge { background: rgba(255,255,255,0.25); }
 .nav-badge.amber { background: var(--amber); }
-.nav-badge.red { background: var(--blue); }
-.nav-badge.purple { background: var(--accent); }
+.nav-badge.red { background: var(--red, #ef4444) !important; color: white !important; }
+.nav-badge.purple { background: var(--purple, #7c3aed) !important; color: white !important; }
 
 .sidebar-footer {
   padding: 16px 18px;
@@ -534,13 +534,13 @@ tbody tr:hover { background: var(--bg); }
 
 /* Chat */
 .chat-thread { display: flex; flex-direction: column; gap: 12px; padding: 14px 18px; max-height: 360px; overflow-y: auto; }
-.bubble { display: flex; gap: 8px; }
-.bubble.me { flex-direction: row-reverse; }
+.bubble { display: flex; gap: 8px; max-width: 60%}
+.bubble.me { flex-direction: row-reverse; margin-left: auto}
 .b-avi { width: 28px; height: 28px; border-radius: 50%; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; }
-.b-content { max-width: 75%; }
+.b-content { max-width: 100%; }
 .b-name { font-size: 10px; color: var(--text3); margin-bottom: 3px; }
 .me .b-name { text-align: right; }
-.b-text { background: var(--surface2); border-radius: 10px 10px 10px 2px; padding: 8px 11px; font-size: 12px; line-height: 1.5; }
+.b-text { background: var(--surface2); border-radius: 10px 10px 10px 2px; padding: 8px 11px; font-size: 12px; line-height: 1.5; display: inline-block; max-width: 100%; word-wrap: break-word; white-space: pre-wrap;}
 .me .b-text { background: var(--accent); color: white; border-radius: 10px 10px 2px 10px; }
 .mgr .me .b-text { background: var(--accent); }
 .b-time { font-size: 10px; color: var(--text3); margin-top: 3px; }
@@ -629,7 +629,7 @@ tbody tr:hover { background: var(--bg); }
 .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
 /* Template cards (nonprofit) */
-.template-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; }
+.template-grid { columns:2; column-gap: 14px;}
 .template-card { padding: 0; }
 .template-card .card-body { padding: 16px; }
 .tc-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }

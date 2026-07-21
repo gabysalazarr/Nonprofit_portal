@@ -325,3 +325,21 @@ async function deleteMessage(id) {
 async function getContacts() {
   return await apiFetch('/messages/contacts');
 }
+
+async function updateNavBadges() {
+  const allSubs = await getSubmissions();
+  const pending = allSubs.filter(s => (s.status || 'Pending') === 'Pending').length;
+  const unread = await getUnreadCount();
+
+  const subsBadge = document.getElementById('nav-badge-submissions');
+  const msgsBadge = document.getElementById('nav-badge-messages');
+
+  if (subsBadge) {
+    subsBadge.textContent = pending;
+    subsBadge.style.display = pending > 0 ? '' : 'none';
+  }
+  if (msgsBadge) {
+    msgsBadge.textContent = unread;
+    msgsBadge.style.display = unread > 0 ? '' : 'none';
+  }
+}

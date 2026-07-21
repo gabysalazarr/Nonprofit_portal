@@ -7,7 +7,8 @@
 <link rel="stylesheet" href="../css/styles.css" />
 <style>
   /* ── Card ── */
-  .tc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: box-shadow 0.15s; }
+  .tc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); align-self: start; overflow: hidden; transition: box-shadow 0.15s;   break-inside: avoid;
+  margin-bottom: 14px;}
   .tc:hover { box-shadow: 0 3px 14px rgba(0,0,0,0.08); }
 
   /* Status accent stripe on left edge */
@@ -30,7 +31,7 @@
   .tc-sub-row .sub-date { color: var(--text3); }
 
   /* Rejection callout */
-  .tc-rejection { margin: 0 12px 10px; background: var(--red-light); border: 1.5px solid var(--red); border-radius: var(--radius); padding: 10px 12px; }
+  .tc-rejection { margin: 0 12px 10px; background: var(--red-light); border: 1.5px solid var(--red); border-radius: var(--radius); padding: 10px 12px; position:relative; }
   .tc-rejection-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--red); margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
   .tc-rejection-label svg { width: 12px; height: 12px; stroke: var(--red); fill: none; stroke-width: 2.5; }
   .tc-rejection-comment { font-size: 12.5px; color: var(--red); line-height: 1.5; }
@@ -227,7 +228,7 @@
 
     document.getElementById('details-modal-title').textContent = t.name;
     document.getElementById('details-template-filename').textContent = t.file_name || '—';
-    document.getElementById('details-template-due').textContent = `Due ${t.due_date || '—'}`;
+    document.getElementById('details-template-due').textContent = `Due ${t.due_date ? formatDate(t.due_date) : '—'}`;
     document.getElementById('details-download-template-btn').onclick = () => {
       handleDownload(templateId);
       document.getElementById('details-upload-btn').removeAttribute('disabled');
@@ -405,7 +406,7 @@
           <div class="tc-header">
             <div>
               <div class="tc-name">${t.name}</div>
-              <div class="tc-due">Due ${t.due_date || '—'}</div>
+              <div class="tc-due">Due: ${t.due_date ? formatDate(t.due_date) : '—'}</div>
             </div>
             ${statusPill(sub)}
           </div>

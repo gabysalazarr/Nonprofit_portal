@@ -105,7 +105,7 @@
         <a class="nav-item" href="messages.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Messages
-          <span class="nav-badge purple">5</span>
+          <span class="nav-badge purple" id="nav-badge-messages"></span>
         </a>
       </div>
       <div class="nav-section">
@@ -453,6 +453,19 @@
       if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
       const chipEl = document.getElementById('sidebar-org-chip');
       if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
+    }
+    const [allSubs, unreadMsgCount] = await Promise.all([ getSubmissions(), getUnreadCount(),]);
+    const pendingSubsCount = allSubs.filter(s => (s.status || 'Pending') === 'Pending').length;
+
+    const subsBadge = document.getElementById('nav-badge-submissions');
+    const msgsBadge = document.getElementById('nav-badge-messages');
+    if (subsBadge) {
+      subsBadge.textContent = pendingSubsCount;
+      subsBadge.style.display = pendingSubsCount > 0 ? '' : 'none';
+    }
+    if (msgsBadge) {
+      msgsBadge.textContent = unreadMsgCount;
+      msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
     }
     renderLiveRows();
   }

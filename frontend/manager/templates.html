@@ -74,7 +74,7 @@
         <a class="nav-item" href="submissions.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
           Submissions
-          <span class="nav-badge red">7</span>
+          <span class="nav-badge red" id="nav-badge-submissions"></span>
         </a>
         <a class="nav-item" href="reports.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -83,7 +83,7 @@
         <a class="nav-item" href="messages.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Messages
-          <span class="nav-badge purple">5</span>
+          <span class="nav-badge purple" id="nav-badge-messages"></span>
         </a>
       </div>
       <div class="nav-section">
@@ -443,7 +443,7 @@
         <tr data-live="true">
           <td style="font-weight:500;">${t.name} <span class="source-tag live">LIVE</span></td>
           <td style="color:var(--text2);">—</td>
-          <td style="color:var(--text3);">${t.due_date || '—'}</td>
+          <td style="color:var(--text3);">${t.due_date ? formatDate(t.due_date) : '—'}</td>
           <td><span class="pill pill-purple">—</span></td>
           <td style="display:flex;gap:4px;">
             <button class="btn" style="font-size:11px;padding:4px 8px;" onclick="downloadTemplate(${t.id})">
@@ -480,6 +480,19 @@
       if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
       const chipEl = document.getElementById('sidebar-org-chip');
       if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
+    }
+    const [allSubs, unreadMsgCount] = await Promise.all([ getSubmissions(), getUnreadCount(),]);
+    const pendingSubsCount = allSubs.filter(s => (s.status || 'Pending') === 'Pending').length;
+
+    const subsBadge = document.getElementById('nav-badge-submissions');
+    const msgsBadge = document.getElementById('nav-badge-messages');
+    if (subsBadge) {
+      subsBadge.textContent = pendingSubsCount;
+      subsBadge.style.display = pendingSubsCount > 0 ? '' : 'none';
+    }
+    if (msgsBadge) {
+      msgsBadge.textContent = unreadMsgCount;
+      msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
     }
     renderLiveRows();
   }

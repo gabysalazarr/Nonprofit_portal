@@ -50,7 +50,7 @@
         <a class="nav-item" href="messages.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Messages
-          <span class="nav-badge" style="background:var(--accent);">2</span>
+          <span class="nav-badge purple" id="nav-badge-messages"></span>
         </a>
       </div>
       <div class="nav-section">
@@ -357,6 +357,13 @@
         if (orgEl) orgEl.textContent = _user.org_name || '';
         if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
       }
+    const [allSubs, unreadMsgCount] = await Promise.all([ getSubmissions(), getUnreadCount(),]);
+    const pendingSubsCount = allSubs.filter(s => (s.status || 'Pending') === 'Pending').length;
+    const msgsBadge = document.getElementById('nav-badge-messages');
+    if (msgsBadge) {
+      msgsBadge.textContent = unreadMsgCount;
+      msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
+    }
     renderCSReports();
   }
   init();

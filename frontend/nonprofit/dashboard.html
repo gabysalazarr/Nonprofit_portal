@@ -315,7 +315,7 @@
               <span class="ann-item-author">${t.name}</span>
               <span class="pill ${pillClass}" style="font-size:10px;margin-left:auto;">${status}</span>
             </div>
-            <div class="ann-item-message">Due ${t.due_date || '—'}</div>
+            <div class="ann-item-message">Due: ${t.due_date ? formatDate(t.due_date) : '—'}</div>
           </div>`;
       }).join('');
     }

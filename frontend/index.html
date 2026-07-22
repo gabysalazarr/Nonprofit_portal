@@ -120,7 +120,7 @@
       const data = await res.json();
 
       if (!res.ok) {
-        showFormMessage(data.error || 'Invalid email or password.');
+        showFormMessage(data.error || 'Invalid email or password. Please try again.');
         btn.textContent = 'Sign in';
         btn.disabled = false;
         return;

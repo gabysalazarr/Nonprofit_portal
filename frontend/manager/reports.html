@@ -15,6 +15,27 @@
   .file-name-display { font-size: 12px; color: var(--accent); margin-top: 6px; font-weight: 500; display: none; }
   .file-name-display.show { display: block; }
   .vis-list { max-height: 200px; overflow-y: auto; }
+  .tooltip-wrapper { position: relative; display: inline-block; }
+  .tooltip-trigger { cursor: default; }
+  .global-tooltip {
+    display: none; position: fixed; background: var(--red); color: white;
+    font-size: 11.5px; line-height: 1.5; padding: 8px 12px; border-radius: var(--radius);
+    width: 10; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    pointer-events: none;
+  }
+  .global-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 16px;
+    border: 5px solid transparent; border-top-color: var(--red);
+  }
+  .global-tooltip.neutral {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+  .global-tooltip.neutral::after {
+    border-top-color: var(--border);
+  }
 </style>
 </head>
 <body>
@@ -154,14 +175,7 @@
                   <div class="vis-org" style="font-size:12px;font-weight:500;">All Organizations</div>
                   <div class="toggle on" id="vis-all-toggle" onclick="toggleVisAll()"></div>
                 </div>
-                <div id="vis-individual" style="display:none;">
-                  <div class="vis-row"><div class="vis-org"><div class="vis-avi" style="background:#3D2B6B;width:24px;height:24px;border-radius:50%;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;color:white;">N1</div>Nonprofit #1</div><div class="toggle on" data-org="Nonprofit #1" onclick="this.classList.toggle('on')"></div></div>
-                  <div class="vis-row"><div class="vis-org"><div class="vis-avi" style="background:#2D5016;width:24px;height:24px;border-radius:50%;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;color:white;">N2</div>Nonprofit #2</div><div class="toggle on" data-org="Nonprofit #2" onclick="this.classList.toggle('on')"></div></div>
-                  <div class="vis-row"><div class="vis-org"><div class="vis-avi" style="background:#B45309;width:24px;height:24px;border-radius:50%;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;color:white;">N3</div>Nonprofit #3</div><div class="toggle on" data-org="Nonprofit #3" onclick="this.classList.toggle('on')"></div></div>
-                  <div class="vis-row"><div class="vis-org"><div class="vis-avi" style="background:#9B1C1C;width:24px;height:24px;border-radius:50%;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;color:white;">N4</div>Nonprofit #4</div><div class="toggle on" data-org="Nonprofit #4" onclick="this.classList.toggle('on')"></div></div>
-                  <div class="vis-row"><div class="vis-org"><div class="vis-avi" style="background:#b409a6;width:24px;height:24px;border-radius:50%;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;color:white;">N5</div>Nonprofit #5</div><div class="toggle on" data-org="Nonprofit #5" onclick="this.classList.toggle('on')"></div></div>
-                  <div class="vis-row"><div class="vis-org"><div class="vis-avi" style="background:#999b1c;width:24px;height:24px;border-radius:50%;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;color:white;">N6</div>Nonprofit #6</div><div class="toggle on" data-org="Nonprofit #6" onclick="this.classList.toggle('on')"></div></div>
-                </div>
+                <div id="vis-individual" style="display:none;"></div>
               </div>
             </div>
 
@@ -190,6 +204,25 @@
       el.textContent = '✓ ' + selectedReportFile.name;
       el.classList.add('show');
     }
+  }
+
+  function showAssignTooltip(el) {
+    const tooltip = document.getElementById('global-tooltip');
+    const text = el.dataset.tooltip;
+    tooltip.className = 'global-tooltip neutral';
+    tooltip.innerHTML = text.replace(/\n/g, '<br>');
+    tooltip.style.display = 'block';
+    const rect = el.getBoundingClientRect();
+    const tooltipHeight = tooltip.offsetHeight;
+    const top = rect.top + window.scrollY - tooltipHeight - 10;
+    tooltip.style.top = (top < 0 ? rect.bottom + window.scrollY + 10 : top) + 'px';
+    tooltip.style.left = (rect.left + window.scrollX) + 'px';
+  }
+
+  function hideAssignTooltip() {
+    const tooltip = document.getElementById('global-tooltip');
+    tooltip.style.display = 'none';
+    tooltip.className = 'global-tooltip';
   }
 
   function toggleVisAll() {
@@ -236,6 +269,25 @@
     await renderNPReports();
   }
 
+  let essentialOrgsById = {};
+
+  function renderVisIndividual(orgs) {
+    const container = document.getElementById('vis-individual');
+    const palette = ['#3D2B6B', '#2D5016', '#B45309', '#9B1C1C', '#b409a6', '#999b1c'];
+    container.innerHTML = orgs.map((o, i) => {
+      const initials = o.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const color = palette[i % palette.length];
+      return `
+        <div class="vis-row">
+          <div class="vis-org">
+            <div class="vis-avi" style="background:${color};width:24px;height:24px;border-radius:50%;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;color:white;">${initials}</div>
+            ${o.name}
+          </div>
+          <div class="toggle on" data-org="${o.id}" onclick="this.classList.toggle('on')"></div>
+        </div>`;
+    }).join('');
+  }
+
   async function renderOrgReports() {
     const all = await getSubmissions();
     const filtered = all
@@ -276,12 +328,37 @@
       return;
     }
 
+    const allOrgs = Object.values(essentialOrgsById);
+
     tbody.innerHTML = reports.map(r => {
-      const visLabel = r.visible_to.includes('all') ? 'All Nonprofits' : r.visible_to.join(', ');
+      const isAll = r.visible_to.includes('all');
+      const assignedOrgNames = isAll
+        ? []
+        : r.visible_to.map(id => essentialOrgsById[String(id)] || id);
+
+      const assignedLabel = isAll ? 'All Nonprofits'
+        : assignedOrgNames.length === 0 ? '—'
+        : assignedOrgNames.length === 1 ? assignedOrgNames[0]
+        : assignedOrgNames.length === allOrgs.length ? 'All Orgs'
+        : `${assignedOrgNames.length} Orgs`;
+
+      const tooltipText = assignedOrgNames.length > 1 ? assignedOrgNames.join('\n') : '';
+
       return `
         <tr>
           <td style="font-weight:500;">${r.name}</td>
-          <td style="color:var(--text2);">${visLabel}</td>
+          <td style="color:var(--text2);">
+            ${tooltipText
+              ? `<span
+                  class="tooltip-trigger assigned-tooltip"
+                  data-tooltip="${tooltipText}"
+                  onmouseenter="showAssignTooltip(this)"
+                  onmouseleave="hideAssignTooltip()"
+                  style="border-bottom:1px dashed var(--text3);">
+                  ${assignedLabel}
+                </span>`
+              : assignedLabel}
+          </td>
           <td style="color:var(--text3);">${formatDate(r.uploaded_at)}</td>
           <td style="display:flex;gap:6px;">
             <button class="btn btn-primary mgr" style="font-size:11px;padding:4px 9px;" onclick="downloadReport(${r.id})">Download</button>
@@ -313,7 +390,11 @@
       const chipEl = document.getElementById('sidebar-org-chip');
       if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
     }
-    const [allSubs, unreadMsgCount] = await Promise.all([ getSubmissions(), getUnreadCount(),]);
+    const [allSubs, unreadMsgCount, essentialOrgs] = await Promise.all([
+      getSubmissions(),
+      getUnreadCount(),
+      getOrganizationsByRole('community-essential')   
+    ]);
     const pendingSubsCount = allSubs.filter(s => (s.status || 'Pending') === 'Pending').length;
 
     const subsBadge = document.getElementById('nav-badge-submissions');
@@ -326,6 +407,8 @@
       msgsBadge.textContent = unreadMsgCount;
       msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
     }
+    essentialOrgsById = Object.fromEntries(essentialOrgs.map(o => [String(o.id), o.name]));
+    renderVisIndividual(essentialOrgs);
     renderOrgReports();
     renderNPReports();
   }
@@ -333,6 +416,7 @@
   start();
 
 </script>
+<div class="global-tooltip" id="global-tooltip"></div>
 <div class="modal-overlay" id="validation-modal">
   <div class="modal-box" style="width:360px;">
     <div class="modal-header">

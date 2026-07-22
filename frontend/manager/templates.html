@@ -6,7 +6,17 @@
 <title>Template Library — Manager</title>
 <link rel="stylesheet" href="../css/styles.css" />
 <style>
-  
+  .delete-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+  }
+  .delete-modal-box { width: 320px; }
+  .delete-modal-actions {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 12px 16px; border-top: 1px solid var(--border);
+  }
   .source-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px; }
   .source-tag.live { background: var(--accent-light); color: var(--accent); }
   .source-tag.demo { background: var(--surface2); color: var(--text3); }
@@ -37,6 +47,27 @@
   .add-field-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
   .add-field-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
   .field-empty-state { text-align: center; padding: 18px 12px; color: var(--text3); font-size: 12px; }
+  .tooltip-wrapper { position: relative; display: inline-block; }
+  .tooltip-trigger { cursor: default; }
+  .global-tooltip {
+    display: none; position: fixed; background: var(--red); color: white;
+    font-size: 11.5px; line-height: 1.5; padding: 8px 12px; border-radius: var(--radius);
+    width: 10; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    pointer-events: none;
+  }
+  .global-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 16px;
+    border: 5px solid transparent; border-top-color: var(--red);
+  }
+  .global-tooltip.neutral {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+  .global-tooltip.neutral::after {
+    border-top-color: var(--border);
+  }
 </style>
 </head>
 <body>
@@ -188,14 +219,7 @@
                   <label class="form-label" style="margin:0;">Assign to</label>
                   <span id="select-all-toggle" onclick="toggleSelectAll()" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:500;">Select all</span>
                 </div>
-                <div class="assign-list" id="assign-list">
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #1" onchange="updateCount()" /> Community Essential #1</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #2" onchange="updateCount()" /> Community Essential #2</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #3" onchange="updateCount()" /> Community Essential #3</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #4" onchange="updateCount()" /> Community Essential #4</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #5" onchange="updateCount()" /> Community Essential #5</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #6" onchange="updateCount()" /> Community Essential #6</label>
-                </div>
+                <div class="assign-list" id="assign-list"></div>
                 <div class="assign-count" id="assign-count">0 selected</div>
               </div>
               <button class="btn btn-primary mgr" style="width:100%;justify-content:center;" onclick="uploadTemplate()">
@@ -225,14 +249,7 @@
                   <label class="form-label" style="margin:0;">Assign to</label>
                   <span id="build-select-all-toggle" onclick="toggleBuildSelectAll()" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:500;">Select all</span>
                 </div>
-                <div class="assign-list" id="build-assign-list">
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #1" onchange="updateBuildCount()" /> Community Essential #1</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #2" onchange="updateBuildCount()" /> Community Essential #2</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #3" onchange="updateBuildCount()" /> Community Essential #3</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #4" onchange="updateBuildCount()" /> Community Essential #4</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #5" onchange="updateBuildCount()" /> Community Essential #5</label>
-                  <label class="assign-option"><input type="checkbox" value="Nonprofit #6" onchange="updateBuildCount()" /> Community Essential #6</label>
-                </div>
+                <div class="assign-list" id="build-assign-list"><div>
                 <div class="assign-count" id="build-assign-count">0 selected</div>
               </div>
               <button class="btn btn-primary mgr" style="width:100%;justify-content:center;margin-top:4px;" onclick="submitBuildForm()">
@@ -259,6 +276,25 @@
       display.textContent = '✓ ' + selectedFile.name;
       display.classList.add('show');
     }
+  }
+
+  function showAssignTooltip(el) {
+    const tooltip = document.getElementById('global-tooltip');
+    const text = el.dataset.tooltip;
+    tooltip.className = 'global-tooltip neutral';
+    tooltip.innerHTML = text.replace(/\n/g, '<br>');
+    tooltip.style.display = 'block';
+    const rect = el.getBoundingClientRect();
+    const tooltipHeight = tooltip.offsetHeight;
+    const top = rect.top + window.scrollY - tooltipHeight - 10;
+    tooltip.style.top = (top < 0 ? rect.bottom + window.scrollY + 10 : top) + 'px';
+    tooltip.style.left = (rect.left + window.scrollX) + 'px';
+  }
+
+  function hideAssignTooltip() {
+    const tooltip = document.getElementById('global-tooltip');
+    tooltip.style.display = 'none';
+    tooltip.className = 'global-tooltip';
   }
 
   function toggleSelectAll() {
@@ -422,9 +458,13 @@
 
     renderLiveRows();
   }
-
   async function renderLiveRows() {
-    const templates = await getTemplates();
+    const [templates, allSubs, allOrgs] = await Promise.all([
+      getTemplates(),
+      getSubmissions(),
+      getOrganizationsByRole('community-essential'),
+    ]);
+
     const tbody = document.getElementById('templates-table-body');
     tbody.querySelectorAll('tr[data-live]').forEach(r => r.remove());
 
@@ -439,17 +479,55 @@
     templates.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     const rows = templates.map(t => {
+      const templateSubs = allSubs.filter(s => s.template_id === t.id);
+      const submittedCount = templateSubs.length;
+
+      // Get assigned org names from template_assignments via org list
+      const assignedOrgs = allOrgs.filter(o =>
+        templateSubs.some(s => s.org_id === o.id)
+      );
+
+      // Fetch assignments separately
+      const assignedOrgNames = t.assigned_org_ids
+        ? t.assigned_org_ids.map(id => {
+            const org = allOrgs.find(o => o.id === id);
+            return org ? org.name : `Org #${id}`;
+          })
+        : [];
+
+      const assignedLabel = assignedOrgNames.length === 0 ? '—'
+        : assignedOrgNames.length === 1 ? assignedOrgNames[0]
+        : assignedOrgNames.length === allOrgs.length ? 'All Orgs'
+        : `${assignedOrgNames.length} Orgs`;
+
+      const tooltipText = assignedOrgNames.length > 1 
+      ? assignedOrgNames.join('\n').replace(/'/g, '&#39;').replace(/"/g, '&quot;')
+      : '';
+
+      const submittedLabel = `${submittedCount} submissions`;
+
       return `
         <tr data-live="true">
           <td style="font-weight:500;">${t.name} <span class="source-tag live">LIVE</span></td>
-          <td style="color:var(--text2);">—</td>
+          <td style="color:var(--text2);">
+            ${tooltipText
+              ? `<span 
+                  class="tooltip-trigger assigned-tooltip"
+                    data-tooltip="${tooltipText}"
+                    onmouseenter="showAssignTooltip(this)"
+                    onmouseleave="hideAssignTooltip()"
+                    style="border-bottom:1px dashed var(--text3);">
+                    ${assignedLabel}
+                </span>`
+              : assignedLabel}
+          </td>
           <td style="color:var(--text3);">${t.due_date ? formatDate(t.due_date) : '—'}</td>
-          <td><span class="pill pill-purple">—</span></td>
+          <td><span class="pill pill-purple">${submittedLabel}</span></td>
           <td style="display:flex;gap:4px;">
             <button class="btn" style="font-size:11px;padding:4px 8px;" onclick="downloadTemplate(${t.id})">
               <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:11px;height:11px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             </button>
-            <button class="btn" style="font-size:11px;padding:4px 8px;color:var(--red);" onclick="removeTemplate(${t.id})">
+            <button class="btn" style="font-size:11px;padding:4px 8px;color:var(--red);" onclick="openDeleteModal(${t.id})">
               <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:11px;height:11px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
             </button>
           </td>
@@ -459,11 +537,22 @@
     tbody.insertAdjacentHTML('beforeend', rows);
   }
 
-  async function removeTemplate(id) {
-    if (!confirm('Delete this template?')) return;
-    await deleteTemplate(id);
-    renderLiveRows();
+  function openDeleteModal(id) {
+    pendingDeleteId = id;
+    document.getElementById('delete-modal').style.display = 'flex';
   }
+  function closeDeleteModal() {
+    pendingDeleteId = null;
+    document.getElementById('delete-modal').style.display = 'none';
+  }
+
+  async function confirmDelete() {
+    if (!pendingDeleteId) return;
+    await deleteAnnouncement(pendingDeleteId);
+    closeDeleteModal();
+    await renderBoard();
+  }
+  
   async function start() {
     const _user = await refreshUser();
     if (_user) {
@@ -495,10 +584,30 @@
       msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
     }
     renderLiveRows();
+    // Load orgs dynamically into assign lists
+    const ceOrgs = await getOrganizationsByRole('community-essential');
+
+    const assignList = document.getElementById('assign-list');
+    const buildAssignList = document.getElementById('build-assign-list');
+
+    const checkboxHTML = ceOrgs.map(org => `
+      <label class="assign-option">
+        <input type="checkbox" value="${org.name}" onchange="updateCount()" /> ${org.name}
+      </label>`).join('');
+
+    const buildCheckboxHTML = ceOrgs.map(org => `
+      <label class="assign-option">
+        <input type="checkbox" value="${org.name}" onchange="updateBuildCount()" /> ${org.name}
+      </label>`).join('');
+
+    if (assignList) assignList.innerHTML = checkboxHTML;
+    if (buildAssignList) buildAssignList.innerHTML = buildCheckboxHTML;
   }
 
   start()
 </script>
+
+<div class="global-tooltip" id="global-tooltip"></div>
 <div class="modal-overlay" id="validation-modal">
   <div class="modal-box" style="width:360px;">
     <div class="modal-header">
@@ -514,6 +623,18 @@
     </div>
     <div class="modal-footer" style="justify-content:center;">
       <button class="btn btn-primary" style="padding:9px 24px;" onclick="document.getElementById('validation-modal').classList.remove('open')">OK</button>
+    </div>
+  </div>
+</div>
+<div id="delete-modal" class="delete-modal-overlay" style="display:none;">
+  <div class="delete-modal-box card">
+    <div class="card-header"><div class="card-title">Delete announcement?</div></div>
+    <div class="card-body">
+      <p style="color:var(--text2);font-size:13px;padding-left: 10px;">This can't be undone.</p>
+    </div>
+    <div class="delete-modal-actions">
+      <button class="btn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-delete-btn">Delete</button>
     </div>
   </div>
 </div>

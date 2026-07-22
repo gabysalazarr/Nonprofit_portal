@@ -23,6 +23,18 @@
   .ann-empty svg { width: 36px; height: 36px; stroke: var(--text3); fill: none; stroke-width: 1.5; margin-bottom: 12px; display: block; margin-inline: auto; }
   .char-count { font-size: 11px; color: var(--text3); text-align: right; margin-top: 4px; }
   .post-btn-row { display: flex; align-items: center; justify-content: flex-end; margin-top: 10px; }
+  
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+  }
+  .modal-box { width: 320px; }
+  .modal-actions {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 12px 16px; border-top: 1px solid var(--border);
+  }
 
   .audience-selector { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
   .audience-radio-row { display: flex; gap: 6px; }
@@ -198,18 +210,12 @@
                 </div>
               </div>
 
-              <!-- Essential checklist -->
+               <!-- Essential checklist -->
               <div class="org-checklist show" id="np-checklist">
                 <div class="select-all-row">
                   <span style="font-size:11px;color:var(--text2);font-weight:500;">Community Essential</span>
                   <span onclick="toggleSelectAll('np-checklist')">Deselect all</span>
                 </div>
-                <label class="org-check-item"><input type="checkbox" value="Nonprofit #1" checked /> Community Essential #1</label>
-                <label class="org-check-item"><input type="checkbox" value="Nonprofit #2" checked /> Community Essential #2</label>
-                <label class="org-check-item"><input type="checkbox" value="Nonprofit #3" checked /> Community Essential #3</label>
-                <label class="org-check-item"><input type="checkbox" value="Nonprofit #4" checked /> Community Essential #4</label>
-                <label class="org-check-item"><input type="checkbox" value="Nonprofit #5" checked /> Community Essential #5</label>
-                <label class="org-check-item"><input type="checkbox" value="Nonprofit #6" checked /> Community Essential #6</label>
               </div>
 
               <!-- Community Support checklist -->
@@ -218,9 +224,6 @@
                   <span style="font-size:11px;color:var(--text2);font-weight:500;">Community Support</span>
                   <span onclick="toggleSelectAll('cs-checklist')">Deselect all</span>
                 </div>
-                <label class="org-check-item"><input type="checkbox" value="Community Support #1" checked /> Community Support #1</label>
-                <label class="org-check-item"><input type="checkbox" value="Community Support #2" checked /> Community Support #2</label>
-                <label class="org-check-item"><input type="checkbox" value="Community Support #3" checked /> Community Support #3</label>
               </div>
             </div>
             <label class="form-label">Message</label>
@@ -289,6 +292,8 @@
       el.classList.add('show');
     }
   }
+
+  
 
   function getAudienceSelection() {
     const val = document.querySelector('input[name="audience"]:checked').value;
@@ -369,6 +374,25 @@
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return formatDate(isoString);
   }
+  function renderChecklist(containerId, orgs) {
+    const container = document.getElementById(containerId);
+    const header = container.querySelector('.select-all-row');
+    container.innerHTML = '';
+    container.appendChild(header);
+
+    if (orgs.length === 0) {
+      container.insertAdjacentHTML('beforeend',
+        `<div style="font-size:11px;color:var(--text3);padding:6px 0;">No organizations found.</div>`);
+      return;
+    }
+
+    orgs.forEach(o => {
+      container.insertAdjacentHTML('beforeend', `
+        <label class="org-check-item">
+          <input type="checkbox" value="${o.name}" checked /> ${o.name}
+        </label>`);
+    });
+  }
 
   async function renderBoard() {
     const posts = await getAnnouncements();
@@ -399,7 +423,7 @@
               <span class="ann-audience-tag">→ ${audLabel}</span>
             </div>
             <div class="ann-time">${timeAgo(a.posted_at)}</div>
-            <button class="ann-delete" onclick="removePost(${a.id})">
+            <button class="ann-delete" onclick="openDeleteModal('${a.id}')">
               <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
               Delete
             </button>
@@ -420,6 +444,25 @@
         </div>`;
     }).join('');
   }
+  let pendingDeleteId = null;
+
+  function openDeleteModal(id) {
+    pendingDeleteId = id;
+    document.getElementById('delete-modal').style.display = 'flex';
+  }
+  function closeDeleteModal() {
+    pendingDeleteId = null;
+    document.getElementById('delete-modal').style.display = 'none';
+  }
+
+  async function confirmDelete() {
+    if (!pendingDeleteId) return;
+    await deleteAnnouncement(pendingDeleteId);
+    closeDeleteModal();
+    await renderBoard();
+  }
+
+  
   async function start() {
       const _user = await refreshUser();
       if (_user) {
@@ -440,7 +483,15 @@
         AUTHOR.name = _user.name;
         AUTHOR.role = roleLabels[_user.role] || _user.role;
       }
-      const [allSubs, unreadMsgCount] = await Promise.all([ getSubmissions(), getUnreadCount(),]);
+      const [allSubs, unreadMsgCount, essentialOrgs, supportOrgs] = await Promise.all([
+        getSubmissions(),
+        getUnreadCount(),
+        getOrganizationsByRole('community-essential'),
+        getOrganizationsByRole('community-support'),
+      ]);
+
+      renderChecklist('np-checklist', essentialOrgs);
+      renderChecklist('cs-checklist', supportOrgs);
       const pendingSubsCount = allSubs.filter(s => (s.status || 'Pending') === 'Pending').length;
 
       const subsBadge = document.getElementById('nav-badge-submissions');
@@ -458,5 +509,17 @@
 
   start();
 </script>
+<div id="delete-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box card">
+    <div class="card-header"><div class="card-title">Delete announcement?</div></div>
+    <div class="card-body">
+      <p style="color:var(--text2);font-size:13px;padding-left: 10px;">This can't be undone.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

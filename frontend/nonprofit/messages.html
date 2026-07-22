@@ -26,6 +26,7 @@
         <a class="nav-item" href="templates.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
           My Templates
+          <span class="nav-badge red" id="nav-badge-templates"></span>
         </a>
         <a class="nav-item" href="reports.html">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -192,6 +193,7 @@
   async function init() {
     const _user = await refreshUser();
     currentUser = _user;
+    currentOrgId = _user ? _user.org_id : null;
     if (_user) {
       const nameEl = document.querySelector('.user-name');
       const roleEl = document.querySelector('.user-role');
@@ -210,6 +212,29 @@
       if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
       const orgEl = document.querySelector('.user-org_name');
       if (orgEl) orgEl.textContent = _user.org_name || '';
+    }
+
+    const [allSubs, allTemplates, unreadMsgCount] = await Promise.all([
+      getSubmissions(),
+      getTemplates(),
+      getUnreadCount(),
+    ]);
+
+    const pending = allTemplates.filter(t => {
+      const sub = allSubs.find(s => s.template_id === t.id && s.org_id === currentOrgId);
+      return !sub || sub.status === 'Rejected';
+    }).length;
+
+    const msgsBadge = document.getElementById('nav-badge-messages');
+    if (msgsBadge) {
+      msgsBadge.textContent = unreadMsgCount;
+      msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
+    }
+
+    const templatesBadge = document.getElementById('nav-badge-templates');
+    if (templatesBadge) {
+      templatesBadge.textContent = pending;
+      templatesBadge.style.display = pending > 0 ? '' : 'none';
     }
     loadMessages();
   }

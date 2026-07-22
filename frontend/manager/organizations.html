@@ -271,7 +271,6 @@
     }
     const [allSubs, unreadMsgCount] = await Promise.all([ getSubmissions(), getUnreadCount(),]);
     const pendingSubsCount = allSubs.filter(s => (s.status || 'Pending') === 'Pending').length;
-
     const subsBadge = document.getElementById('nav-badge-submissions');
     const msgsBadge = document.getElementById('nav-badge-messages');
     if (subsBadge) {

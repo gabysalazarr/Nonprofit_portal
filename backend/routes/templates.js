@@ -8,12 +8,22 @@ router.get('/', authMiddleware, async (req, res) => {
   try {
     let result;
     if (req.user.role === 'manager') {
-      result = await pool.query('SELECT * FROM templates ORDER BY created_at DESC');
+      result = await pool.query(`
+        SELECT t.*, 
+          COALESCE(json_agg(ta.org_id) FILTER (WHERE ta.org_id IS NOT NULL), '[]') as assigned_org_ids
+        FROM templates t
+        LEFT JOIN template_assignments ta ON ta.template_id = t.id
+        GROUP BY t.id
+        ORDER BY t.created_at DESC
+      `);
     } else {
       result = await pool.query(`
-        SELECT t.* FROM templates t
+        SELECT t.*,
+          COALESCE(json_agg(ta.org_id) FILTER (WHERE ta.org_id IS NOT NULL), '[]') as assigned_org_ids
+        FROM templates t
         JOIN template_assignments ta ON ta.template_id = t.id
         WHERE ta.org_id = $1
+        GROUP BY t.id
         ORDER BY t.created_at DESC
       `, [req.user.org_id]);
     }

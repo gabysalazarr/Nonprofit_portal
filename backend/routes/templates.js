@@ -34,6 +34,32 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/templates/progress — per-org assigned vs submitted counts (manager only)
+router.get('/progress', authMiddleware, async (req, res) => {
+  if (req.user.role !== 'manager') {
+    return res.status(403).json({ error: 'Not authorized' });
+  }
+  try {
+    const result = await pool.query(`
+      SELECT
+        o.id AS org_id,
+        o.name AS org_name,
+        COUNT(DISTINCT ta.template_id) AS assigned_count,
+        COUNT(DISTINCT s.template_id) AS submitted_count
+      FROM organizations o
+      LEFT JOIN template_assignments ta ON ta.org_id = o.id
+      LEFT JOIN submissions s ON s.org_id = o.id AND s.template_id = ta.template_id
+      WHERE o.role = 'community-essential'
+      GROUP BY o.id, o.name
+      ORDER BY o.name
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // GET /api/templates/:id
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
@@ -106,5 +132,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+
 
 module.exports = router;

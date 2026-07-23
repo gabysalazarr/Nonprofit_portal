@@ -68,6 +68,7 @@
   .global-tooltip.neutral::after {
     border-top-color: var(--border);
   }
+  body { visibility: hidden; }
 </style>
 </head>
 <body>
@@ -266,7 +267,13 @@
 
 <script src="../js/storage.js"></script>
 <script>
-  if (!requireRole('manager')) throw new Error('Not authorized');
+  (function () {
+    const token = getToken();
+    const user = getUser();
+    if (!token || !user || user.role !== 'manager') {
+      window.location.replace('../index.html');
+    }
+  })();
   let selectedFile = null;
 
   function handleFileSelect(input) {
@@ -602,6 +609,8 @@
 
     if (assignList) assignList.innerHTML = checkboxHTML;
     if (buildAssignList) buildAssignList.innerHTML = buildCheckboxHTML;
+    updateNavBadges();
+    document.body.style.visibility = "visible";
   }
 
   start()

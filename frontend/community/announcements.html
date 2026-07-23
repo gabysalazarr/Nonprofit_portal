@@ -58,6 +58,7 @@
   }
   .ann-file-attachment svg { width: 16px; height: 16px; stroke: var(--text2); fill: none; stroke-width: 2; flex-shrink: 0; }
   .ann-file-attachment span { font-size: 12.5px; color: var(--text2); font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body { visibility: hidden;}
 </style>
 </head>
 <body>
@@ -164,7 +165,13 @@
 </div>
 <script src="../js/storage.js"></script>
 <script>
-  if (!requireRole('community-support')) throw new Error('Not authorized');
+  (function () {
+    const token = getToken();
+    const user = getUser();
+    if (!token || !user || user.role !== 'community-support') {
+      window.location.replace('../index.html');
+    }
+  })();
   let currentUser = getUser();
   let currentOrgId = currentUser ? currentUser.org_id : null;
   let selectedVideo = null;
@@ -338,6 +345,8 @@
       msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
     }
     renderBoard();
+    updateNavBadges();
+    document.body.style.visibility = 'visible';
   }
   init();
 </script>

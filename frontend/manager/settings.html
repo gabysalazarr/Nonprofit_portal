@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Settings — Bastrop Manager</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<style>
+  body {visibility: hidden; }
+</style>
 </head>
 <body>
 <div class="app">
@@ -101,7 +104,13 @@
 <script src="../js/shared.js"></script>
 <script src="../js/storage.js"></script>
 <script>
-  if (!requireRole('manager')) throw new Error('Not authorized');
+  (function () {
+    const token = getToken();
+    const user = getUser();
+    if (!token || !user || user.role !== 'manager') {
+       window.location.replace('../index.html');
+    }
+  })();
 
   async function init() {
     const _user = await refreshUser();
@@ -139,6 +148,8 @@
       msgsBadge.textContent = unreadMsgCount;
       msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
     }
+    updateNavBadges();
+    document.body.style.visibility = 'visible';
   }
 
   function toggleSwitch(el) {

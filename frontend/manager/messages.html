@@ -14,6 +14,7 @@
   .contact-name { font-size: 13px; font-weight: 500; }
   .contact-role { font-size: 11px; color: var(--text3); }
   .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-left: auto; flex-shrink: 0; }
+  body { visibility: hidden;}
 </style>
 </head>
 <body>
@@ -125,19 +126,20 @@
 
 <script src="../js/storage.js"></script>
 <script>
-  if (!requireRole('manager')) throw new Error('Not authorized');
+  (function () {
+    const token = getToken();
+    const user = getUser();
+    if (!token || !user || user.role !== 'manager') {
+      window.location.replace('../index.html');
+    }
+  })();
 
   let currentUser = getUser();
   let activeContactId = null;
   let allMessages = [];
-  const AVATAR_COLORS = ['#3D2B6B','#2D5016','#B45309','#9B1C1C','#1e40af','#065f46','#7c3aed','#b45309'];
 
   function initials(name) {
     return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-  }
-
-  function avatarColor(id) {
-    return AVATAR_COLORS[id % AVATAR_COLORS.length];
   }
 
   function formatTime(isoString) {
@@ -162,7 +164,7 @@
       const unread = allMessages.filter(m => m.sender_id === c.id && !m.is_read).length;
       return `
         <div class="contact-row ${activeContactId === c.id ? 'active' : ''}" onclick="selectContact(${c.id}, '${c.name}', '${c.role}')">
-          <div class="contact-avi" style="background:${avatarColor(c.id)};">${initials(c.name)}</div>
+          <div class="contact-avi" style="background:${avatarColorForId(c.id)};">${initials(c.name)}</div>
           <div style="flex:1;min-width:0;">
             <div class="contact-name">${c.name}</div>
             <div class="contact-role">${c.org_name || c.role}</div>
@@ -207,7 +209,7 @@
       const isMe = m.sender_id === currentUser.id;
       return `
         <div class="bubble ${isMe ? 'me' : ''}">
-          <div class="b-avi" style="background:${isMe ? '#2D5016' : avatarColor(m.sender_id)};">${initials(isMe ? currentUser.name : m.sender_name)}</div>
+          <div class="b-avi" <div class="b-avi" style="background:${avatarColorForId(isMe ? currentUser.id : m.sender_id, isMe ? currentUser.name : m.sender_name)};">${initials(isMe ? currentUser.name : m.sender_name)}</div>
           <div class="b-content">
             <div class="b-name">${isMe ? 'You' : m.sender_name}</div>
             <div class="b-text">${m.body}</div>
@@ -268,7 +270,20 @@
       msgsBadge.textContent = unreadMsgCount;
       msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
     }
-    loadContacts();
+    await loadContacts();  // note: now awaited, see below
+
+    const params = new URLSearchParams(window.location.search);
+    const contactId = params.get('contact');
+    if (contactId) {
+      const contacts = await getContacts();
+      const match = contacts.find(c => String(c.id) === contactId);
+      if (match) {
+        selectContact(match.id, match.name, match.role);
+      }
+    }
+
+    updateNavBadges();
+    document.body.style.visibility = 'visible';
   }
 
   start();

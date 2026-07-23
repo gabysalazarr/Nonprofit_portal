@@ -48,6 +48,10 @@ async function getTemplates() {
   return await apiFetch('/templates');
 }
 
+async function getTemplateProgress() {
+  return await apiFetch('/templates/progress');
+}
+
 async function getTemplateById(id) {
   return await apiFetch(`/templates/${id}`);
 }
@@ -112,7 +116,8 @@ async function getSubmissionForOrg(templateId, orgId) {
   return all.find(s => s.template_id === templateId && s.org_id === orgId) || null;
 }
 
-async function updateNavBadge() {
+// could be deleted is no error wiht nav badges occur
+/*async function updateNavBadge() {
   const count = await getUnreadCount();
   const badges = document.querySelectorAll('.nav-badge.purple');
   badges.forEach(b => {
@@ -123,7 +128,7 @@ async function updateNavBadge() {
       b.style.display = 'none';
     }
   });
-}
+}*/
 
 async function refreshUser() {
   const data = await apiFetch('/auth/me');
@@ -208,8 +213,6 @@ async function addAnnouncement(data) {
   return await apiFetch('/announcements', {
     method: 'POST',
     body: JSON.stringify({
-      author_name:     data.authorName,
-      author_role:     data.authorRole,
       message:         data.message,
       audience:        data.audience,
       video_name:      data.videoName || null,
@@ -342,4 +345,15 @@ async function updateNavBadges() {
     msgsBadge.textContent = unread;
     msgsBadge.style.display = unread > 0 ? '' : 'none';
   }
+}
+
+const AVATAR_COLORS = ['#3D2B6B','#2D5016','#B45309','#9B1C1C','#1e40af','#065f46','#7c3aed','#b45309'];
+
+function avatarColorForId(id, fallbackName) {
+  if (id != null) return AVATAR_COLORS[id % AVATAR_COLORS.length];
+  // pre-migration rows with no author_id — fall back to name-hash so old posts still get a stable (if different) color
+  let hash = 0;
+  const name = fallbackName || '';
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }

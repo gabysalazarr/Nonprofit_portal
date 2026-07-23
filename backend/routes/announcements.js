@@ -14,14 +14,16 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/announcements
 router.post('/', authMiddleware, async (req, res) => {
   const { message, audience, video_name, attachment_name } = req.body;
   try {
+    const userResult = await pool.query('SELECT name FROM users WHERE id = $1', [req.user.id]);
+    const authorName = userResult.rows[0]?.name || 'Unknown';
+
     const result = await pool.query(
-      `INSERT INTO announcements (author_name, author_role, message, audience, video_name, attachment_name)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [req.body.author_name, req.body.author_role, message, JSON.stringify(audience), video_name || null, attachment_name || null]
+      `INSERT INTO announcements (author_id, author_name, author_role, message, audience, video_name, attachment_name, posted_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *`,
+      [req.user.id, authorName, req.user.role, message, JSON.stringify(audience), video_name || null, attachment_name || null]
     );
     res.json(result.rows[0]);
   } catch (err) {

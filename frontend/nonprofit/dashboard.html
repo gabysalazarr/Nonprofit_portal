@@ -46,8 +46,7 @@
   .ann-item-author { font-size: 12px; font-weight: 600; }
   .ann-item-time { font-size: 10.5px; color: var(--text3); margin-left: auto; }
   .ann-item-message { font-size: 12px; color: var(--text2); line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-  
+  body {visibility: hidden;}
 </style>
 </head>
 <body>
@@ -223,7 +222,13 @@
 </div>
 <script src="../js/storage.js"></script>
 <script>
-  if (!requireRole('nonprofit', 'community-essential')) throw new Error('Not authorized');
+  (function () {
+    const token = getToken();
+    const user = getUser();
+    if (!token || !user || !['nonprofit', 'community-essential'].includes(user.role)) {
+      window.location.replace('../index.html');
+    }
+  })();
   let currentUser = getUser();
   let currentOrgId = currentUser ? currentUser.org_id : null;
 
@@ -394,6 +399,8 @@
           <div class="ann-item-message">Reminder: annual report is due next month.</div>
         </div>`;
     }
+    updateNavBadges();
+    document.body.style.visibility = 'visible';
   }
 
   init();

@@ -6,6 +6,7 @@
 <title>Dashboard - Manager</title>
 <link rel="stylesheet" href="../css/styles.css" />
 <style>
+  body {visibility: hidden;}
   .welcome-banner {
     background:  var(--accent); color: white;
     border-radius: var(--radius-lg); padding: 24px 28px;
@@ -114,7 +115,7 @@
   
           <div class="stat-chip">
             <div class="stat-chip-num" id="stat-reports">0</div>
-            <div class="stat-chip-lbl">REPORTS</div>
+            <div class="stat-chip-lbl">Reports</div>
           </div>
           <div class="stat-chip">
             <div class="stat-chip-num" id="stat-announcements">0</div>
@@ -130,28 +131,28 @@
           <div class="stat-num" id="stat-orgs">0</div> 
           <div class="stat-lbl">Active Nonprofits</div>
 
-          <div class="stat-trend trend-pos">+3 this month</div>
+          <div class="stat-trend trend-pos">+3 this month, HARDCODED</div>
         </div>
         <div class="stat-card purple">
           <div class="stat-ico purple"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>
           <div class="stat-num" id="stat-submissions">0</div> 
           <div class="stat-lbl">Submissions</div>
 
-          <div class="stat-trend trend-pos">8 this week</div>
-        </div>
+          <div class="stat-trend trend-pos">8 this week, HARDCODED</div>
+        </div> 
         <div class="stat-card amber">
           <div class="stat-ico amber"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>
           <div class="stat-num" id="stat-pending">0</div> 
           <div class="stat-lbl">Pending Review</div>
 
-          <div class="stat-trend trend-warn">2 overdue</div>
+          <div class="stat-trend trend-warn">2 overdue, HARDCODED</div>
         </div>
         <div class="stat-card red">
           <div class="stat-ico red"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
           <div class="stat-num" id="stat-unread"></div> 
           <div class="stat-lbl">Unread Messages</div>
 
-          <div class="stat-trend trend-neg">From 5 orgs</div>
+          <div class="stat-trend trend-neg">From 5 orgs, HARDCODED</div>
         </div>
       </div>
       <div class="two-col" style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px; align-items: start;">
@@ -164,41 +165,16 @@
         2026 Template Submission Progress
       </div>
     </div>
-    <!-- Height adjusts to content dynamically up to 700px -->
-    <div class="card-body" style="padding-bottom:20px; padding-top:10px; max-height: 700px; overflow-y: auto;">
-      <div class="prog-item">
-        <div class="prog-hdr"><span>Community Essential #1</span><span>0/ 4</span></div>
-        <div class="prog-track"><div class="prog-fill" style="width:0%;background:#ee0808;"></div></div>
-      </div>
-      <div class="prog-item">
-        <div class="prog-hdr"><span>Community Essential #2</span><span>2 / 4</span></div>
-        <div class="prog-track"><div class="prog-fill" style="width:50%;background:#ecd505;"></div></div>
-      </div>
-      <div class="prog-item">
-        <div class="prog-hdr"><span>Community Essential #3</span><span>4 / 4</span></div>
-        <div class="prog-track"><div class="prog-fill" style="width:100%;background:#05aa44;"></div></div>
-      </div>
-      <div class="prog-item">
-        <div class="prog-hdr"><span>Community Essential #4</span><span>3 / 4</span></div>
-        <div class="prog-track"><div class="prog-fill" style="width:75%;background:#05ecec;"></div></div>
-      </div>
-      <div class="prog-item">
-        <div class="prog-hdr"><span>Community Essential #5</span><span>4 / 4</span></div>
-        <div class="prog-track"><div class="prog-fill" style="width:100%;background:#05aa44;"></div></div>
-      </div>
-      <div class="prog-item">
-        <div class="prog-hdr"><span>Community Essential #6</span><span>1 / 4</span></div>
-        <div class="prog-track"><div class="prog-fill" style="width:25%;background:#ee0808;"></div></div>
-      </div>
+    <div class="card-body" id="progress-list" style="padding-bottom:20px; padding-top:10px; max-height: 700px; overflow-y: auto;">
+      <div class="prog-item"></div>
     </div>
   </div>
 
   <!-- RIGHT COLUMN: Stacked Container (Announcements on TOP of Messages) -->
   <div style="display: flex; flex-direction: column; gap: 14px;">
     
-    <!-- Announcements Card (Placed on Top) --> 
+    <!-- Announcements Card --> 
     <div class="card"> 
-      <!-- Added padding-bottom: 0; here -->
       <div class="card-header" style="padding-bottom: 0;"> 
         <div class="card-title"> 
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
@@ -226,29 +202,21 @@
         </div>
         <a class="btn" href="messages.html" style="font-size:11px;padding:4px 9px;">View all</a>
       </div>
-      <div class="msg-list" style="padding:0 14px; max-height: 350px; overflow-y: auto;">
-        <a class="msg-row unread" href="messages.html">
-          <div class="msg-avi" style="background:var(--red);">N1</div>
-          <div class="msg-body"><div class="msg-from">Community Essential #1</div><div class="msg-preview">Re: Q2 report — clarification needed</div></div>
-          <div class="msg-meta"><span class="msg-time">2h</span><div class="unread-dot"></div></div>
-        </a>
-        <a class="msg-row unread" href="messages.html">
-          <div class="msg-avi" style="background:#257c0b;">N3</div>
-          <div class="msg-body"><div class="msg-from">Community Essential #2</div><div class="msg-preview">Budget form submitted for approval</div></div>
-          <div class="msg-meta"><span class="msg-time">5h</span><div class="unread-dot"></div></div>
-        </a>
-        <a class="msg-row" href="messages.html">
-          <div class="msg-avi" style="background:#0953b4;">N4</div>
-          <div class="msg-body"><div class="msg-from">Community Suppport #1</div><div class="msg-preview">Question about volunteer log template</div></div>
-          <div class="msg-meta"><span class="msg-time">1d</span></div>
-        </a>
+      <div class="msg-list" id="recent-messages-list" style="padding:0 14px; max-height: 180px; overflow-y: auto;">
+        <div style="text-align:center; padding: 4px 0px; color:var(--text3); font-size:12.5px;">Loading…</div>
       </div>
     </div>
   </div>
 </div>
 <script src="../js/storage.js"></script>
 <script>
-  if (!requireRole('manager')) throw new Error('Not authorized');
+  (function () {
+      const token = getToken();
+      const user = getUser();
+      if (!token || !user || user.role !== 'manager') {
+        window.location.replace('../index.html');
+      }
+  })();
   function toggleNotifDropdown(e) {
     e.stopPropagation();
     document.getElementById('notif-dropdown').classList.toggle('open');
@@ -276,15 +244,61 @@
     return formatDate(isoString);
   }
 
-  function avatarColor(role) {
-    if (role === 'Manager') return '#2D5016';
-    if (role === 'Community Support') return '#3D2B6B';
-    return '#B45309';
+  function renderProgress(progress) {
+    const container = document.getElementById('progress-list');
+    container.innerHTML = progress.map(p => {
+      const pct = p.assigned_count > 0
+        ? Math.round((p.submitted_count / p.assigned_count) * 100)
+        : 0;
+      const color = pct === 100 ? '#05aa44' : pct === 0 ? '#ee0808' : '#ecd505';
+      return `
+        <div class="prog-item">
+          <div class="prog-hdr"><span>${p.org_name}</span><span>${p.submitted_count} / ${p.assigned_count}</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${color};"></div></div>
+        </div>`;
+    }).join('');
   }
   
+  async function renderRecentMessages() {
+    const [allMessages, contacts] = await Promise.all([getMessages(), getContacts()]);
+    const contactsById = Object.fromEntries(contacts.map(c => [c.id, c]));
+
+    const latestByPartner = {};
+    allMessages.forEach(m => {
+      const partnerId = m.sender_id === currentUser.id ? m.recipient_id : m.sender_id;
+      if (!latestByPartner[partnerId] || new Date(m.created_at) > new Date(latestByPartner[partnerId].created_at)) {
+        latestByPartner[partnerId] = m;
+      }
+    });
+
+    const recent = Object.values(latestByPartner)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    const container = document.getElementById('recent-messages-list');
+    if (recent.length === 0) {
+      container.innerHTML = `<div style="text-align:center;padding:12px;color:var(--text3);font-size:12.5px;">No messages yet.</div>`;
+      return;
+    }
+
+    container.innerHTML = recent.map(m => {
+      const partnerId = m.sender_id === currentUser.id ? m.recipient_id : m.sender_id;
+      const partner = contactsById[partnerId];
+      const isUnread = m.recipient_id === currentUser.id && !m.is_read;
+      const label = (partner?.name || 'Unknown').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      return `
+        <a class="msg-row ${isUnread ? 'unread' : ''}" href="messages.html?contact=${partnerId}">
+          <div class="msg-avi" style="background:${avatarColorForId(partnerId)};">${label}</div>
+          <div class="msg-body"><div class="msg-from">${partner?.name || 'Unknown'}</div><div class="msg-preview">${m.body}</div></div>
+          <div class="msg-meta"><span class="msg-time">${timeAgo(m.created_at)}</span>${isUnread ? '<div class="unread-dot"></div>' : ''}</div>
+        </a>`;
+    }).join('');
+  }
+
+  let currentUser = null;  
 
   async function init() {
     const _user = await refreshUser();
+    currentUser = _user;
     if (_user) {
       const nameEl = document.querySelector('.user-name');
       const roleEl = document.querySelector('.user-role');
@@ -303,10 +317,11 @@
       if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
       
     }
-    const [templates, allSubs, allAnns] = await Promise.all([
+    const [templates, allSubs, allAnns, progress] = await Promise.all([
       getTemplates(),
       getSubmissions(),
       getAnnouncements(),
+      getTemplateProgress(),
     ]);
 
     // Update nav badges with real counts
@@ -330,11 +345,13 @@
     const orgs = await getOrganizationsByRole('community-essential');
     const activeOrgs = orgs.filter(o => o.status === 'active').length;
     const allReports = await getReports();
-
+    const orgReportsCount = allSubs.filter(s =>
+      s.role === 'community-support' || s.role === 'nonprofit-report'
+    ).length;
     // 1. Update elements directly by ID (safely using optional chaining if they might be missing)
     document.getElementById('stat-templates').textContent     = templates.length;
     document.getElementById('stat-pending').textContent       = pending;
-    document.getElementById('stat-reports').textContent       = allReports.length;
+    document.getElementById('stat-reports').textContent       = allReports.length + orgReportsCount;
     document.getElementById('stat-announcements').textContent = allAnns.length;
     document.getElementById('stat-submissions').textContent   = allSubs.length; // Fixed missing textContent assignment
 
@@ -359,14 +376,14 @@
         annEl.innerHTML = `<div class="dash-empty">No announcements yet.</div>`;
       } else {
         annEl.innerHTML = allAnns.map(a => `
-          <div class="ann-item">
-            <div class="ann-item-header">
-              <div class="ann-mini-avi" style="background:${avatarColor(a.author_role)};">${a.author_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-              <span class="ann-item-author">${a.author_name}</span>
-              <span class="ann-item-time">${timeAgo(a.posted_at)}</span>
-            </div>
-            <div class="ann-item-message">${a.message || '(attachment)'}</div>
-          </div>`).join('');
+        <div class="ann-item">
+          <div class="ann-item-header">
+            <div class="ann-mini-avi" style="background:${avatarColorForId(a.author_id, a.author_name)};">${(a.author_name || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+            <span class="ann-item-author">${a.author_name}</span>
+            <span class="ann-item-time">${timeAgo(a.posted_at)}</span>
+          </div>
+          <div class="ann-item-message">${a.message || '(attachment)'}</div>
+        </div>`).join('');
       }
     }
 
@@ -391,7 +408,10 @@
           <div class="ann-item-message">Report for Q2 has been uploaded.</div>
         </div>`;
     }
+    renderProgress(progress);
+    renderRecentMessages();
     updateNavBadges();
+    document.body.style.visibility = 'visible';
   }
 
   init();

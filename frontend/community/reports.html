@@ -20,6 +20,7 @@
     content: ''; position: absolute; top: 100%; left: 16px;
     border: 5px solid transparent; border-top-color: var(--red);
   }
+  body { visibility: hidden;}
 </style>
 </head>
 <body>
@@ -199,7 +200,13 @@
 <div class="global-tooltip" id="global-tooltip"></div>
 <script src="../js/storage.js"></script>
 <script>
-  if (!requireRole('community-support')) throw new Error('Not authorized');
+    (function () {
+      const token = getToken();
+      const user = getUser();
+      if (!token || !user || user.role !== 'community-support') {
+        window.location.replace('../index.html');
+      }
+  })();
 
   let currentUser = getUser();
   let currentOrgId = currentUser ? currentUser.org_id : null;
@@ -365,6 +372,8 @@
       msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
     }
     renderCSReports();
+    updateNavBadges()
+    document.body.style.visibility = 'visible';
   }
   init();
 </script>

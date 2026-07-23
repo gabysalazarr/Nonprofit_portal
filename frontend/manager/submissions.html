@@ -60,6 +60,7 @@
   .modal-body { padding: 20px; }
   .modal-body p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 14px; }
   .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+  body { visibility: hidden; }
 </style>
 </head>
 <body>
@@ -258,7 +259,13 @@
 
 <script src="../js/storage.js"></script>
 <script>
-  if (!requireRole('manager')) throw new Error('Not authorized');
+  (function () {
+    const token = getToken();
+    const user = getUser();
+    if (!token || !user || user.role !== 'manager') {
+       window.location.replace('../index.html');
+    }
+  })();
   let activeSubId = null;
   let activeSub = null;
 
@@ -468,6 +475,8 @@
       msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
     }
     renderLiveRows();
+    updateNavBadges();
+    document.body.style.visibility = 'visible';
   }
 
   start();

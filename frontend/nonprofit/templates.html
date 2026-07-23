@@ -57,6 +57,7 @@
   .fill-field textarea.form-input { min-height: 80px; resize: vertical; }
   .form-submitted-banner { background: var(--accent-light); color: var(--accent); border-radius: var(--radius); padding: 10px 14px; font-size: 12.5px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
   .form-submitted-banner svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+  body {visibility: hidden; }
 </style>
 </head>
 <body>
@@ -186,7 +187,13 @@
 
 <script src="../js/storage.js"></script>
 <script>
-  if (!requireRole('nonprofit', 'community-essential')) throw new Error('Not authorized');
+  (function () {
+    const token = getToken();
+    const user = getUser();
+    if (!token || !user || !['nonprofit', 'community-essential'].includes(user.role)) {
+      window.location.replace('../index.html');
+    }
+  })();
   const DOWNLOADED_KEY = 'np_downloaded_templates';
   let activeUploadId = null;
   let activeFillTemplateId = null;
@@ -485,9 +492,9 @@
         msgsBadge.textContent = unreadMsgCount;
         msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
       }
-
       render();
-      
+      updateNavBadges();
+      document.body.style.visibility = 'visible';
     }
 
   init();

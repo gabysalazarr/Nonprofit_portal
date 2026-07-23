@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Organizations — Manager</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<style>
+  body {visibility: hidden;}
+</style>
 </head>
 <body>
 <div class="app">
@@ -146,8 +149,13 @@
 
 <script src="../js/storage.js"></script>
 <script>
-  if (!requireRole('manager')) throw new Error('Not authorized');
-  const AVATAR_COLORS = ['#3D2B6B','#2D5016','#B45309','#9B1C1C','#1e40af','#065f46','#7c3aed','#b45309'];
+  (function () {
+      const token = getToken();
+      const user = getUser();
+      if (!token || !user || user.role !== 'manager') {
+        window.location.replace('../index.html');
+      }
+  })();
   let currentRole   = 'community-essential';
   let currentStatus = 'all';
   let allOrgs       = [];
@@ -156,16 +164,12 @@
     return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   }
 
-  function getColor(index) {
-    return AVATAR_COLORS[index % AVATAR_COLORS.length];
-  }
-
   function buildCard(org, index) {
     const isActive = org.status === 'active';
     return `
       <div class="org-card" data-status="${org.status}">
         <div class="org-card-top">
-          <div class="org-avi" style="background:${getColor(index)};">${initials(org.name)}</div>
+          <div class="org-avi" style="background:${avatarColorForId(index)};">${initials(org.name)}</div>
           <div>
             <div class="org-name">${org.name}</div>
             <div class="org-contact">${org.email}</div>
@@ -282,6 +286,8 @@
       msgsBadge.style.display = unreadMsgCount > 0 ? '' : 'none';
     }
     loadOrgs();
+    updateNavBadges();
+    document.body.style.visibility = 'visible';
   }
 
   init();

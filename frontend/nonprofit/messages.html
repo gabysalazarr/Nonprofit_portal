@@ -53,7 +53,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi" style="background:var(--red);"></div>
+      <div class="user-avi"></div>
       <div style="min-width:0;">
         <div class="user-name" id="sidebar-name"></div>
         <div class="user-org_name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="sidebar-role"></div>
@@ -101,7 +101,7 @@
 
         <!-- Info panel -->
         <div class="card">
-          <div class="card-header"><div class="card-title">Info</div></div>
+          <div class="card-header"><div class="card-title">Info HARDCODED</div></div>
           <div class="card-body">
             <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">Your manager</div>
             <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
@@ -175,9 +175,9 @@
       const isMe = m.sender_id === currentUser.id;
       return `
         <div class="bubble ${isMe ? 'me' : ''}">
-          <div class="b-avi" style="background:${isMe ? 'var(--accent)' : '#2D5016'};">${isMe ? initials(currentUser.name) : 'TA'}</div>
+          <div class="b-avi" style="background:${avatarColorForId(isMe ? currentUser.id : m.sender_id, isMe ? currentUser.name : m.sender_name)};">${initials(isMe ? currentUser.name : m.sender_name)}</div>
           <div class="b-content">
-            <div class="b-name">${isMe ? 'You' : 'Taylor Andry'}</div>
+            <div class="b-name">${isMe ? 'You' :  m.sender_name}</div>
             <div class="b-text">${m.body}</div>
             <div class="b-time">${formatTime(m.created_at)}</div>
           </div>
@@ -216,7 +216,10 @@
       };
       if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
       const aviEl = document.querySelector('.user-avi');
-      if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      if (aviEl) {
+        aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        aviEl.style.background = avatarColorForId(_user.id, _user.name);
+      }
       const chipEl = document.getElementById('sidebar-org-chip');
       if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
       const orgEl = document.querySelector('.user-org_name');

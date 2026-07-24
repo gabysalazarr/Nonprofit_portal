@@ -65,7 +65,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi mgr"></div>
+      <div class="user-avi"></div>
       <div><div class="user-name"></div><div class="user-role"></div></div>
       <a class="sign-out" href="#" onclick="signOut()" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -166,10 +166,12 @@
 
   function buildCard(org, index) {
     const isActive = org.status === 'active';
+    const personName = org.user_name || org.contact || org.name;
+    const colorId = org.user_id ?? org.id; // prefer the real user's id; fall back if no account exists yet
     return `
       <div class="org-card" data-status="${org.status}">
         <div class="org-card-top">
-          <div class="org-avi" style="background:${avatarColorForId(index)};">${initials(org.name)}</div>
+          <div class="org-avi" style="background:${avatarColorForId(colorId, personName)};">${initials(personName)}</div>
           <div>
             <div class="org-name">${org.name}</div>
             <div class="org-contact">${org.email}</div>
@@ -265,11 +267,14 @@
         'community-support': 'Community Support',
       };
       const nameEl = document.querySelector('.user-name');
-      const roleEl = document.querySelector('.user-role');
-      const aviEl = document.querySelector('.user-avi');
       if (nameEl) nameEl.textContent = _user.name;
+      const roleEl = document.querySelector('.user-role');
       if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
-      if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const aviEl = document.querySelector('.user-avi');
+      if (aviEl) {
+        aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        aviEl.style.background = avatarColorForId(_user.id, _user.name);  
+      }
       const chipEl = document.getElementById('sidebar-org-chip');
       if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
     }

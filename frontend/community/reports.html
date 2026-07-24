@@ -63,7 +63,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi" style="background:#0953b4;;"></div>
+      <div class="user-avi"></div>
       <div style="min-width:0;">
         <div class="user-name"></div>
         <div class="user-org_name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
@@ -221,6 +221,19 @@
     }
   }
 
+  let pendingUploadAfterDuplicateCheck = null;
+
+  function closeDuplicateModal() {
+    document.getElementById('duplication-modal').classList.remove('open');
+    pendingUploadAfterDuplicateCheck = null;
+  }
+
+  function confirmDuplicateUpload() {
+    document.getElementById('duplication-modal').classList.remove('open');
+    if (pendingUploadAfterDuplicateCheck) pendingUploadAfterDuplicateCheck();
+    pendingUploadAfterDuplicateCheck = null;
+  }
+
   async function submitCSReport() {
     const reportName = document.getElementById('cs-report-name').value.trim();
     if (!reportName || !selectedFile) {
@@ -228,6 +241,23 @@
       return;
     }
 
+    const existing = await getSubmissions();
+    const duplicate = existing
+      .filter(s => s.org_id === currentOrgId)
+      .find(s => (s.report_name || '').trim().toLowerCase() === reportName.toLowerCase());
+
+    if (duplicate) {
+      document.getElementById('duplicate-modal-text').textContent =
+        `You already submitted a report named "${reportName}" on ${formatDate(duplicate.submitted_at)}.`;
+      document.getElementById('duplication-modal').classList.add('open');
+      pendingUploadAfterDuplicateCheck = () => doSubmitCSReport(reportName);
+      return;
+    }
+
+    await doSubmitCSReport(reportName);
+  }
+
+  async function doSubmitCSReport(reportName) {
     const btn = document.getElementById('submit-cs-btn');
     btn.textContent = 'Uploading…';
     btn.disabled = true;
@@ -354,15 +384,18 @@
           'community-support': 'Community Support',
         };
         const nameEl = document.querySelector('.user-name');
+        if (nameEl) nameEl.textContent = _user.name;
         const roleEl = document.querySelector('.user-role');
+        if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
         const orgEl = document.querySelector('.user-org_name');
-        const aviEl = document.querySelector('.user-avi');
+        if (orgEl) orgEl.textContent = _user.org_name || '';
         const chipEl = document.getElementById('sidebar-org-chip');
         if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
-        if (nameEl) nameEl.textContent = _user.name;
-        if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
-        if (orgEl) orgEl.textContent = _user.org_name || '';
-        if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const aviEl = document.querySelector('.user-avi');
+        if (aviEl) {
+          aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+          aviEl.style.background = avatarColorForId(_user.id, _user.name);  
+        }
       }
     const [allSubs, unreadMsgCount] = await Promise.all([ getSubmissions(), getUnreadCount(),]);
     const pendingSubsCount = allSubs.filter(s => (s.status || 'Pending') === 'Pending').length;
@@ -392,6 +425,25 @@
     </div>
     <div class="modal-footer" style="justify-content:center;">
       <button class="btn btn-primary" style="padding:9px 24px;" onclick="document.getElementById('validation-modal').classList.remove('open')">OK</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="duplication-modal">
+  <div class="modal-box" style="width:360px;">
+    <div class="modal-header">
+      <h3>Possible Duplicate</h3>
+      <button class="modal-close" onclick="closeDuplicateModal()">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:24px 20px;">
+      <div style="width:50px;height:50px;background:var(--amber-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+        <svg viewBox="0 0 24 24" stroke="var(--amber)" fill="none" stroke-width="2.5" style="width:22px;height:22px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Report name already used!</div>
+      <div id="duplicate-modal-text" style="font-size:13px;color:var(--text2);line-height:1.6;"></div>
+    </div>
+    <div class="modal-footer" style="justify-content:center;gap:8px;">
+      <button class="btn" onclick="closeDuplicateModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmDuplicateUpload()">Upload anyway</button>
     </div>
   </div>
 </div>

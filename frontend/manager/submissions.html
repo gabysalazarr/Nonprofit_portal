@@ -31,8 +31,12 @@
   .drawer-file-icon { width: 38px; height: 38px; background: var(--accent-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .drawer-file-icon svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; }
 
-  .drawer-actions { display: flex; flex-direction: column; gap: 8px; }
+  .drawer-actions { display: flex; flex-direction: column; gap: 1px; }
   .drawer-actions .btn { justify-content: center; padding: 10px; font-size: 13px; }
+
+  .drawer-history-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 12px; background: var(--bg); }
+  .drawer-history-item:hover { background: var(--surface2); }
+  .drawer-history-item.active { border-color: var(--accent); background: var(--accent-light); }
   .btn-approve { background: var(--accent); color: white; border-color: var(--accent); }
   .btn-approve:hover { background: var(--accent-hover); }
   .btn-reject { background: var(--red-light); color: var(--red); border-color: var(--red); }
@@ -118,7 +122,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi mgr"></div>
+      <div class="user-avi"></div>
       <div><div class="user-name"></div><div class="user-role"></div></div>
       <a class="sign-out" href="#" onclick="signOut()" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -212,20 +216,21 @@
     <span id="drawer-status-pill" class="pill pill-gray">Pending</span>
   </div>
   <div class="drawer-body">
-    <div class="drawer-file-card">
-      <div class="drawer-file-icon">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+    <div id="drawer-history-list" style="display:none;flex-direction:column;gap:6px;margin-bottom:4px;"></div>
+      <div class="drawer-file-card">
+        <div class="drawer-file-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div id="drawer-file-name" style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          <div id="drawer-file-meta" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
+        </div>
+        <button class="btn btn-primary mgr" style="font-size:11px;padding:6px 12px;flex-shrink:0;" id="drawer-download-btn">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </button>
       </div>
-      <div style="flex:1;min-width:0;">
-        <div id="drawer-file-name" style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-        <div id="drawer-file-meta" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
-      </div>
-      <button class="btn btn-primary mgr" style="font-size:11px;padding:6px 12px;flex-shrink:0;" id="drawer-download-btn">
-        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download
-      </button>
     </div>
-
     <!-- Rejection comment shown here when status is Rejected -->
     <div id="drawer-rejection-comment" style="display:none;"></div>
 
@@ -269,77 +274,137 @@
   let activeSubId = null;
   let activeSub = null;
 
+function groupSubmissions(subs, keyFn) {
+  const groups = {};
+  subs.forEach(s => {
+    const key = keyFn(s);
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(s);
+  });
+  return Object.values(groups).map(group => {
+    group.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+    return { latest: group[0], all: group, count: group.length };
+  });
+}
+
   async function renderLiveRows() {
     const all = await getSubmissions();
     all.sort((a,b) => new Date(b.submitted_at) - new Date(a.submitted_at));
 
     // Community Essential
     const npSubs = all.filter(s => s.role !== 'community-support');
+    const npGroups = groupSubmissions(npSubs, s => `${s.template_id}::${s.org_id}`);
     const npTbody = document.getElementById('np-submissions-tbody');
     npTbody.innerHTML = '';
 
-    if (npSubs.length === 0) {
+    if (npGroups.length === 0) {
       npTbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Essential submissions yet.</td></tr>`;
     } else {
-      npSubs.forEach(sub => {
+      npGroups.forEach(group => {
+        const sub = group.latest;
         const status = sub.status || 'Pending';
         const pillClass = getStatusPillClass(status);
-        const submissionName = sub.role === 'nonprofit-report' ? (sub.report_name || sub.file_name || '—') : (sub.report_name || sub.file_name || '—');
+        const submissionName = sub.report_name || sub.file_name || '—';
         const templateOrReport = sub.role === 'nonprofit-report' ? 'Report' : 'Template';
+        const resubmissionBadge = group.count > 1
+          ? `<span class="pill pill-amber" style="font-size:10px;margin-left:6px;">${group.count} submissions</span>`
+          : '';
         const tr = document.createElement('tr');
         tr.dataset.live = 'true';
         tr.dataset.status = status.toLowerCase();
         tr.innerHTML = `
-          <td style="font-weight:500;">${submissionName}</td>
+          <td style="font-weight:500;">${submissionName}${resubmissionBadge}</td>
           <td style="color:var(--text2);">${templateOrReport}</td>
           <td style="color:var(--text2);">${sub.org_name || '—'}</td>
           <td style="color:var(--text3);">${formatDate(sub.submitted_at)}</td>
           <td><span class="pill ${pillClass}">${status}</span></td>
-          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openDrawer(${sub.id})">Open</button></td>`;
+          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick='openDrawer(${JSON.stringify(group.all.map(s => s.id))})'>Open</button></td>`;
         npTbody.appendChild(tr);
       });
     }
 
     // Community Support
     const csSubs = all.filter(s => s.role === 'community-support');
+    const csGroups = groupSubmissions(csSubs, s => `${s.org_id}::${s.report_name || s.file_name}`);
     const csTbody = document.getElementById('cs-submissions-tbody');
     csTbody.innerHTML = '';
 
-    if (csSubs.length === 0) {
+    if (csGroups.length === 0) {
       csTbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:12px;">No Community Support submissions yet.</td></tr>`;
     } else {
-      csSubs.forEach(sub => {
+      csGroups.forEach(group => {
+        const sub = group.latest;
         const status = sub.status || 'Pending';
         const pillClass = getStatusPillClass(status);
+        const resubmissionBadge = group.count > 1
+          ? `<span class="pill pill-amber" style="font-size:10px;margin-left:6px;">${group.count} submissions</span>`
+          : '';
         const tr = document.createElement('tr');
         tr.dataset.live = 'true';
         tr.dataset.status = status.toLowerCase();
         tr.innerHTML = `
-          <td style="font-weight:500;">${sub.report_name || sub.file_name || '—'}</td>
+          <td style="font-weight:500;">${sub.report_name || sub.file_name || '—'}${resubmissionBadge}</td>
           <td style="color:var(--text2);">${sub.org_name || '—'}</td>
           <td style="color:var(--text3);">${formatDate(sub.submitted_at)}</td>
           <td><span class="pill ${pillClass}">${status}</span></td>
-          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick="openDrawer(${sub.id})">Open</button></td>`;
+          <td><button class="btn" style="font-size:11px;padding:4px 9px;" onclick='openDrawer(${JSON.stringify(group.all.map(s => s.id))})'>Open</button></td>`;
         csTbody.appendChild(tr);
       });
     }
   }
 
-  async function openDrawer(id) {
-    activeSubId = id;  // ← move here, before await
-    activeSub = null;
+  let drawerGroup = []; // holds the current group of submissions shown in the drawer
+
+  async function openDrawer(idOrIds) {
+    const ids = Array.isArray(idOrIds) ? idOrIds : [idOrIds];
     const all = await getSubmissions();
-    const sub = all.find(s => s.id == id);
+    drawerGroup = all.filter(s => ids.includes(s.id)).sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+    if (drawerGroup.length === 0) return;
+
+    renderDrawerHistory(drawerGroup[0].id);
+    showSubmissionDetail(drawerGroup[0]);
+    document.getElementById('review-drawer').classList.add('open');
+  }
+
+  function renderDrawerHistory(activeId) {
+    const historyEl = document.getElementById('drawer-history-list');
+
+    if (drawerGroup.length <= 1) {
+      historyEl.style.display = 'none';
+      historyEl.innerHTML = '';
+      return;
+    }
+
+    historyEl.style.display = 'flex';
+    historyEl.innerHTML = drawerGroup.map((s, i) => {
+      const status = s.status || 'Pending';
+      const label = i === 0 ? 'Latest' : `Attempt ${drawerGroup.length - i}`;
+      const isActive = s.id === activeId;
+      return `
+        <div class="drawer-history-item ${isActive ? 'active' : ''}" onclick="selectDrawerAttempt(${s.id})">
+          <span>${label} — ${formatDate(s.submitted_at)}</span>
+          <span class="pill ${getStatusPillClass(status)}" style="font-size:10px;">${status}</span>
+        </div>`;
+    }).join('');
+  }
+
+  function selectDrawerAttempt(id) {
+    const sub = drawerGroup.find(s => s.id === id);
     if (!sub) return;
+    renderDrawerHistory(id);
+    showSubmissionDetail(sub);
+  }
+
+  function showSubmissionDetail(sub) {
+    activeSubId = sub.id;
     activeSub = sub;
 
     document.getElementById('drawer-template-name').textContent = sub.report_name || sub.file_name || '—';
     document.getElementById('drawer-org-name').textContent = sub.org_name || '—';
     document.getElementById('drawer-file-name').textContent = sub.file_name || '—';
     document.getElementById('drawer-file-meta').textContent = `Submitted ${formatDate(sub.submitted_at)}`;
-    document.getElementById('drawer-download-btn').onclick = () => downloadSubmission(id);
+    document.getElementById('drawer-download-btn').onclick = () => downloadSubmission(sub.id);
     renderDrawerActions(sub.status || 'Pending', sub.rejection_comment || '');
-    document.getElementById('review-drawer').classList.add('open');
   }
 
   function closeDrawer() {
@@ -453,11 +518,14 @@
         'community-support': 'Community Support',
       };
       const nameEl = document.querySelector('.user-name');
-      const roleEl = document.querySelector('.user-role');
-      const aviEl = document.querySelector('.user-avi');
       if (nameEl) nameEl.textContent = _user.name;
+      const roleEl = document.querySelector('.user-role');
       if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
-      if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const aviEl = document.querySelector('.user-avi');
+      if (aviEl) {
+        aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        aviEl.style.background = avatarColorForId(_user.id, _user.name);  
+      }
       const chipEl = document.getElementById('sidebar-org-chip');
       if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
     }

@@ -104,7 +104,7 @@
         <img src="../images/bastrop_logo.png" alt="Portal logo" style="height:75px;width:125px;max-width:160px;object-fit:contain;" />
         <span class="brand-name"></span>
       </div>
-      <span class="org-chip" id="sidebar-org-chip"></span>
+      <span class="org-chip"  id="sidebar-org-chip"></span>
     </div>
     <nav class="nav">
       <div class="nav-section">
@@ -152,7 +152,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi mgr"></div>
+      <div class="user-avi"></div>
       <div><div class="user-name"></div><div class="user-role"></div></div>
       <a class="sign-out" href="#" onclick="signOut()" title="Sign out">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -265,6 +265,11 @@
       }
   })();
   const AUTHOR = { name: 'Taylor Andry', role: 'Manager' }; // REMOVE THIS????
+  const roleLabels = {
+    'manager': 'Manager',
+    'community-essential': 'Community Essential',
+    'community-support': 'Community Support',
+  };
   let selectedVideo = null;
   let selectedAttachment = null;
 
@@ -422,7 +427,7 @@
             <div class="ann-avatar" style="background:${avatarColorForId(a.author_id, a.author_name)};">${init}</div>
             <div>
               <div class="ann-author">${a.author_name}</div>
-              <span class="ann-role-tag" style="background:var(--accent-light);color:var(--accent);">${a.author_role}</span>
+              <span class="ann-role-tag" style="background:var(--accent-light);color:var(--accent);">${roleLabels[a.author_role] || a.author_role}</span>
               <span class="ann-audience-tag">→ ${audLabel}</span>
             </div>
             <div class="ann-time">${timeAgo(a.posted_at)}</div>
@@ -469,20 +474,17 @@
   async function start() {
       const _user = await refreshUser();
       if (_user) {
-        const roleLabels = {
-          'manager': 'Manager',
-          'community-essential': 'Community Essential',
-          'community-support': 'Community Support',
-        };
-        const nameEl = document.querySelector('.user-name');
-        const roleEl = document.querySelector('.user-role');
         const aviEl = document.querySelector('.user-avi');
+        if (aviEl) {
+          aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+          aviEl.style.background = avatarColorForId(_user.id, _user.name);
+        }
+        const nameEl = document.querySelector('.user-name');
         if (nameEl) nameEl.textContent = _user.name;
+        const roleEl = document.querySelector('.user-role');
         if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
-        if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
         const chipEl = document.getElementById('sidebar-org-chip');
         if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
-        // Update AUTHOR from real user data
         AUTHOR.name = _user.name;
         AUTHOR.role = roleLabels[_user.role] || _user.role;
       }

@@ -49,7 +49,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi" style="background:#0953b4;"></div>
+      <div class="user-avi"></div>
       <div style="min-width:0;">
         <div class="user-name"></div>
         <div class="user-org_name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
@@ -105,16 +105,19 @@
         'community-essential': 'Community Essential',
         'community-support': 'Community Support',
       };
-      const nameEl = document.querySelector('.user-name');
-      const roleEl = document.querySelector('.user-role');
-      const orgEl = document.querySelector('.user-org_name');
-      const aviEl = document.querySelector('.user-avi');
-      const chipEl = document.getElementById('sidebar-org-chip');
-      if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
-      if (nameEl) nameEl.textContent = _user.name;
-      if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
-      if (orgEl) orgEl.textContent = _user.org_name || '';
-      if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const nameEl = document.querySelector('.user-name');
+        if (nameEl) nameEl.textContent = _user.name;
+        const roleEl = document.querySelector('.user-role');
+        if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
+        const orgEl = document.querySelector('.user-org_name');
+        if (orgEl) orgEl.textContent = _user.org_name || '';
+        const chipEl = document.getElementById('sidebar-org-chip');
+        if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
+        const aviEl = document.querySelector('.user-avi');
+        if (aviEl) {
+          aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+          aviEl.style.background = avatarColorForId(_user.id, _user.name);  
+        }
     }
     const [allSubs, unreadMsgCount] = await Promise.all([ getSubmissions(), getUnreadCount(),]);
     const pendingSubsCount = allSubs.filter(s => (s.status || 'Pending') === 'Pending').length;

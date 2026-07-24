@@ -56,7 +56,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi" style="background:#0953b4;"></div>
+      <div class="user-avi"></div>
       <div style="min-width:0;">
         <div class="user-name"></div>
         <div class="user-org_name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
@@ -140,7 +140,7 @@
             <div class="card-header">
               <div class="card-title">
                 <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Messages
+                Messages HARDCODED
               </div>
               <a class="btn" href="messages.html" style="font-size:11px;padding:5px 10px;">View all</a>
             </div>
@@ -192,15 +192,18 @@
         'community-support': 'Community Support',
       };
       const nameEl = document.querySelector('.user-name');
+      if (nameEl) nameEl.textContent = _user.name;
       const roleEl = document.querySelector('.user-role');
+      if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
       const orgEl = document.querySelector('.user-org_name');
-      const aviEl = document.querySelector('.user-avi');
+      if (orgEl) orgEl.textContent = _user.org_name || '';
       const chipEl = document.getElementById('sidebar-org-chip');
       if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
-      if (nameEl) nameEl.textContent = _user.name;
-      if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
-      if (orgEl) orgEl.textContent = _user.org_name || '';
-      if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const aviEl = document.querySelector('.user-avi');
+      if (aviEl) {
+        aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        aviEl.style.background = avatarColorForId(_user.id, _user.name);  
+      }
     }
     const [allSubs, allAnns, unreadMsgCount] = await Promise.all([
       getSubmissions(),
@@ -248,19 +251,23 @@
     }
 
     // Announcements
+
+    // Announcements
     const annEl = document.getElementById('dashboard-announcements');
-    if (announcements.length === 0) {
-      annEl.innerHTML = `<div class="dash-empty">No announcements yet.</div>`;
-    } else {
-      annEl.innerHTML = announcements.map(a => `
-        <div class="ann-item">
-          <div class="ann-item-header">
-            <div class="ann-mini-avi" style="background:${avatarColor(a.author_role)};">${(a.author_name || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-            <span class="ann-item-author">${a.author_name}</span>
-            <span class="ann-item-time">${timeAgo(a.posted_at)}</span>
-          </div>
-          <div class="ann-item-message">${a.message || '(attachment)'}</div>
-        </div>`).join('');
+    if (annEl) {
+      if (allAnns.length === 0) {
+        annEl.innerHTML = `<div class="dash-empty">No announcements yet.</div>`;
+      } else {
+        annEl.innerHTML = allAnns.map(a => {
+          const initials = (a.author_name || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+          return `
+            <a class="msg-row" href="announcements.html">
+              <div class="msg-avi" style="background:${avatarColorForId(a.author_id, a.author_name)};">${initials}</div>
+              <div class="msg-body"><div class="msg-from">${a.author_name || 'Unknown'}</div><div class="msg-preview">${a.message || '(attachment)'}</div></div>
+              <div class="msg-meta"><span class="msg-time">${timeAgo(a.posted_at)}</span></div>
+            </a>`;
+        }).join('');
+      }
     }
 
     // Messages (demo)

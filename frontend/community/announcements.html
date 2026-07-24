@@ -101,7 +101,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi" style="background:#0953b4;"></div>
+      <div class="user-avi"></div>
       <div style="min-width:0;">
         <div class="user-name"></div>
         <div class="user-org_name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
@@ -283,6 +283,7 @@
 
     board.innerHTML = announcements.map(a => {
       const canDelete = currentUser && a.author_name === currentUser.name;
+      const initials = (a.author_name || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
       const deleteBtn = canDelete
         ? `<button class="ann-delete" onclick="removeAnnouncement(${a.id})">
             <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
@@ -292,7 +293,7 @@
       return `
         <div class="ann-post">
           <div class="ann-post-header">
-            <div class="ann-avatar" style="background:${avatarColor(a.author_role)};">${initials(a.author_name)}</div>
+            <div class="ann-avatar" style="background:${avatarColorForId(a.author_id, a.author_name)};">${initials}</div>
             <div>
               <div class="ann-author">${a.author_name}</div>
               <span class="ann-role-tag" style="${roleStyle(a.author_role)}">${a.author_role}</span>
@@ -327,15 +328,18 @@
         'community-support': 'Community Support',
       };
       const nameEl = document.querySelector('.user-name');
+      if (nameEl) nameEl.textContent = _user.name;
       const roleEl = document.querySelector('.user-role');
+      if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
       const orgEl = document.querySelector('.user-org_name');
-      const aviEl = document.querySelector('.user-avi');
+      if (orgEl) orgEl.textContent = _user.org_name || '';
       const chipEl = document.getElementById('sidebar-org-chip');
       if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
-      if (nameEl) nameEl.textContent = _user.name;
-      if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
-      if (orgEl) orgEl.textContent = _user.org_name || '';
-      if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const aviEl = document.querySelector('.user-avi');
+      if (aviEl) {
+        aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        aviEl.style.background = avatarColorForId(_user.id, _user.name);  
+      }
     }
     const [allSubs, unreadMsgCount] = await Promise.all([ getSubmissions(), getUnreadCount(),]);
     const pendingSubsCount = allSubs.filter(s => (s.status || 'Pending') === 'Pending').length;

@@ -66,7 +66,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-avi" style="background:var(--red);"></div>
+      <div class="user-avi"></div>
       <div style="min-width:0;">
         <div class="user-name"></div>
         <div class="user-org_name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
@@ -322,7 +322,10 @@
       };
       if (roleEl) roleEl.textContent = roleLabels[_user.role] || _user.role;
       const aviEl = document.querySelector('.user-avi');
-      if (aviEl) aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      if (aviEl) {
+        aviEl.textContent = _user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        aviEl.style.background = avatarColorForId(_user.id, _user.name);  
+      }
       const chipEl = document.getElementById('sidebar-org-chip');
       if (chipEl) chipEl.textContent = roleLabels[_user.role] || _user.role;
       const orgEl = document.querySelector('.user-org_name');

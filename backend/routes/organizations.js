@@ -3,10 +3,14 @@ const router = express.Router();
 const pool = require('../db');
 const authMiddleware = require('../middleware/auth');
 
-// GET /api/organizations — get all orgs
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM organizations ORDER BY created_at DESC');
+    const result = await pool.query(`
+      SELECT o.*, u.id AS user_id, u.name AS user_name
+      FROM organizations o
+      LEFT JOIN users u ON u.org_id = o.id
+      ORDER BY o.created_at DESC
+    `);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -14,13 +18,15 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/organizations/:role — get orgs by role
 router.get('/role/:role', authMiddleware, async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM organizations WHERE role = $1 ORDER BY name ASC',
-      [req.params.role]
-    );
+    const result = await pool.query(`
+      SELECT o.*, u.id AS user_id, u.name AS user_name
+      FROM organizations o
+      LEFT JOIN users u ON u.org_id = o.id
+      WHERE o.role = $1
+      ORDER BY o.name ASC
+    `, [req.params.role]);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
